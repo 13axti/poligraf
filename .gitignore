@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# müvəqqəti sifarişlər (Supabase-ə qədər)
+/data/
+!.env.local.example
