@@ -1,4 +1,5 @@
 import { LoginForm } from "./LoginForm";
+import { BRAND } from "@/lib/site-config";
 import { supabaseConfigured } from "@/lib/supabase/public";
 
 export default function LoginPage() {
@@ -7,7 +8,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm rounded-[2rem] bg-white p-8 shadow-xl">
         <div className="mb-6 flex items-center gap-2 text-xl font-extrabold">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand text-sm text-white">P</span>
-          Poligraf Admin
+          {BRAND} Admin
         </div>
         {supabaseConfigured ? (
           <LoginForm />
@@ -27,3 +28,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}</pre>
     </div>
   );
 }
+
+// Admin səhifələri giriş tələb edir: ani keçid yoxlaması lazım deyil (Next.js "instant" doğrulaması)
+export const instant = false;

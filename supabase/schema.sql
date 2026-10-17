@@ -1,4 +1,4 @@
--- Poligraf — Supabase sxemi.
+-- Lemur Group — Supabase sxemi.
 -- İstifadə: Supabase → SQL Editor → bu faylı yapışdırıb "Run" edin (təkrar işlətmək təhlükəsizdir).
 
 -- ============ CƏDVƏLLƏR ============
@@ -102,3 +102,25 @@ create policy "orders files upload" on storage.objects for insert to anon, authe
 drop policy if exists "orders files admin" on storage.objects;
 create policy "orders files admin" on storage.objects for all to authenticated
   using (bucket_id = 'orders') with check (bucket_id = 'orders');
+
+-- ============ SAYT AYARLARI (telefon, sosial şəbəkələr, müştərilər) ============
+create table if not exists public.settings (
+  key text primary key,
+  value jsonb not null default '{}',
+  updated_at timestamptz not null default now()
+);
+alter table public.settings enable row level security;
+
+drop policy if exists "settings read" on public.settings;
+create policy "settings read" on public.settings for select to anon, authenticated using (true);
+drop policy if exists "settings admin" on public.settings;
+create policy "settings admin" on public.settings for all to authenticated using (true) with check (true);
+
+-- ============ CANLI BİLDİRİŞ: yeni sifariş gələndə admin panel dərhal xəbər tutsun ============
+do $$
+begin
+  alter publication supabase_realtime add table public.orders;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end $$;

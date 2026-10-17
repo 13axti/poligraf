@@ -4,7 +4,7 @@ import { CategoryTabs } from "@/components/CategoryTabs";
 import { CatalogHeader } from "@/components/CatalogHeader";
 
 export const metadata = {
-  title: "Kataloq — Poligraf",
+  title: "Kataloq",
 };
 
 export default async function KataloqPage() {

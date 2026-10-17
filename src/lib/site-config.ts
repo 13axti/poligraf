@@ -1,28 +1,36 @@
-// Sayt üzrə ümumi məlumat — nömrə, linklər, müştərilər buradan dəyişdirilir.
-// DİQQƏT: aşağıdakı dəyərlər müvəqqəti nümunədir, real məlumatla əvəz edin.
+// Sayt ayarlarının ilkin (default) dəyərləri.
+// Real dəyərlər admin paneldən (Ayarlar bölməsi) yazılır və bazada saxlanır;
+// baza boşdursa və ya qoşulmayıbsa bu dəyərlər göstərilir.
 
-export const site = {
-  name: "Poligraf",
+/** Saytın adı: başlıqlar, loqo və admin burdan oxuyur */
+export const BRAND = "Lemur Group";
+
+export interface SiteSettings {
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+  hours: string;
+  socials: { id: string; label: string; href: string }[];
+  clients: { name: string; logo?: string }[];
+}
+
+export const defaultSettings: SiteSettings = {
+  name: BRAND,
   phone: "+994 50 000 00 00",
-  phoneHref: "tel:+994500000000",
-  email: "info@poligraf.az",
+  email: "",
   address: "Bakı, Azərbaycan",
   hours: "B.e – Şən: 09:00 – 18:00",
   socials: [
-    { id: "facebook", label: "Facebook", href: "https://facebook.com/" },
-    { id: "instagram", label: "Instagram", href: "https://instagram.com/" },
-    { id: "tiktok", label: "TikTok", href: "https://tiktok.com/" },
-    { id: "linkedin", label: "LinkedIn", href: "https://linkedin.com/" },
+    { id: "facebook", label: "Facebook", href: "" },
+    { id: "instagram", label: "Instagram", href: "" },
+    { id: "tiktok", label: "TikTok", href: "" },
+    { id: "linkedin", label: "LinkedIn", href: "" },
   ],
-  // Çalışdığımız şirkətlər. Loqo faylı olanda `logo: "/clients/ad.svg"` əlavə edin.
-  clients: [
-    { name: "Azercell" },
-    { name: "Kapital Bank" },
-    { name: "Bravo" },
-    { name: "Baku Electronics" },
-    { name: "Pasha Holding" },
-    { name: "Park Bulvar" },
-    { name: "Azersun" },
-    { name: "Rahat" },
-  ] as { name: string; logo?: string }[],
+  clients: [],
 };
+
+/** "+994 50 000 00 00" → "tel:+994500000000" */
+export function phoneHref(phone: string) {
+  return `tel:${phone.replace(/[^\d+]/g, "")}`;
+}

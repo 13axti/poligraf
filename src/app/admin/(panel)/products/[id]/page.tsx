@@ -27,3 +27,6 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     </div>
   );
 }
+
+// Admin səhifələri giriş tələb edir: ani keçid yoxlaması lazım deyil (Next.js "instant" doğrulaması)
+export const instant = false;

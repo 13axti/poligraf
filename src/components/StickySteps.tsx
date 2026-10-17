@@ -161,71 +161,90 @@ function DoneStep({ p }: { p: MotionValue<number> }) {
   );
 }
 
-/** İki addımı birləşdirən xətt: scroll-la yuxarıdan aşağı dolur */
-function Connector({ p, i }: { p: MotionValue<number>; i: number }) {
-  const fill = useTransform(p, [i / N + 0.04, (i + 1) / N - 0.02], [0, 1], { clamp: true });
-  return (
-    <div className="absolute left-[22px] top-[52px] -bottom-[28px] w-0.5 -translate-x-1/2 rounded-full bg-foreground/10">
-      <motion.div style={{ scaleY: fill }} className="h-full origin-top rounded-full bg-brand" />
-    </div>
-  );
-}
-
-/** Apple tipli: bölmə yerində qalır, scroll hər şeyi irəli aparır */
-export function StickySteps() {
-  const ref = useRef<HTMLDivElement>(null);
+/**
+ * Böyük ekran: sol tərəfdəki səhnə yerində qalır (sticky), sağdakı addımlar isə səhifə ilə
+ * normal sürətlə axır. Scroll heç vaxt "tutulmur", səhnə hansı addım görünürsə ona keçir.
+ */
+function PinnedSteps() {
+  const ref = useRef<HTMLOListElement>(null);
   const [active, setActive] = useState(0);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const p = scrollYProgress;
+  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start 62%", "end 62%"] });
 
   useMotionValueEvent(p, "change", (v) =>
     setActive(Math.min(N - 1, Math.max(0, Math.floor(v * N))))
   );
 
   return (
-    <div ref={ref} style={{ height: `${N * 100 + 40}vh` }} className="relative">
-      <div className="sticky top-16 flex h-[calc(100svh-4rem)] items-center">
-        <div className="mx-auto w-full max-w-[88rem] px-3 sm:px-4">
-          <div className="grid max-h-[calc(100svh-5rem)] items-center gap-5 overflow-hidden rounded-[2rem] bg-surface p-4 sm:gap-8 sm:rounded-[2.5rem] sm:p-8 lg:grid-cols-[1.25fr_1fr] lg:gap-14 lg:p-16">
-            {/* Səhnə */}
-            <div className="relative h-[34svh] min-h-[230px] overflow-hidden rounded-[1.5rem] bg-white/60 sm:h-[42svh] sm:rounded-[2rem] lg:h-[min(62svh,640px)]">
-              <Layer p={p} i={0}><PickStep p={p} /></Layer>
-              <Layer p={p} i={1}><LogoStep p={p} /></Layer>
-              <Layer p={p} i={2}><PriceStep p={p} /></Layer>
-              <Layer p={p} i={3}><DoneStep p={p} /></Layer>
-            </div>
-
-            {/* Siyahı */}
-            <div>
-              <h2 className="text-3xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">Necə işləyir</h2>
-              <ol className="mt-5 space-y-6 sm:mt-8 sm:space-y-8 lg:mt-12">
-                {steps.map((s, i) => (
-                  <li key={s.t} className="relative flex gap-4 sm:gap-5">
-                    {i < N - 1 && <Connector p={p} i={i} />}
-                    <span
-                      className={`z-10 grid h-11 w-11 shrink-0 place-items-center rounded-full text-base font-bold text-white transition duration-500 ${
-                        i === active ? "scale-110 bg-brand shadow-lg shadow-brand/40" : i < active ? "bg-brand" : "bg-foreground"
-                      }`}
-                    >
-                      {i + 1}
-                    </span>
-                    <div className={`pt-0.5 transition duration-500 ${i === active ? "opacity-100" : "opacity-40"}`}>
-                      <h3 className="text-lg font-bold sm:text-xl lg:text-2xl">{s.t}</h3>
-                      <p
-                        className={`overflow-hidden text-sm text-neutral-600 transition-all duration-500 sm:text-base lg:text-lg ${
-                          i === active ? "mt-1 max-h-24 opacity-100" : "max-h-0 opacity-0 lg:mt-1 lg:max-h-24 lg:opacity-100"
-                        }`}
-                      >
-                        {s.d}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
+    <div className="mx-auto max-w-[88rem] px-4">
+      <div className="rounded-[2.5rem] bg-surface p-12 lg:p-16">
+        <h2 className="text-5xl font-extrabold tracking-tight lg:text-6xl">Necə işləyir</h2>
+        <div className="mt-10 grid grid-cols-[1.25fr_1fr] gap-14">
+          <div className="sticky top-24 h-[34rem] self-start overflow-hidden rounded-[2rem] bg-white/60">
+            <Layer p={p} i={0}><PickStep p={p} /></Layer>
+            <Layer p={p} i={1}><LogoStep p={p} /></Layer>
+            <Layer p={p} i={2}><PriceStep p={p} /></Layer>
+            <Layer p={p} i={3}><DoneStep p={p} /></Layer>
           </div>
+
+          <ol ref={ref}>
+            {steps.map((s, i) => (
+              <li key={s.t} className="flex min-h-[24rem] items-center">
+                <div className={`flex gap-5 transition duration-500 ${i === active ? "opacity-100" : "opacity-30"}`}>
+                  <span
+                    className={`grid h-12 w-12 shrink-0 place-items-center rounded-full text-lg font-bold text-white transition duration-500 ${
+                      i === active ? "scale-110 bg-brand shadow-lg shadow-brand/40" : "bg-foreground"
+                    }`}
+                  >
+                    {i + 1}
+                  </span>
+                  <div>
+                    <h3 className="text-2xl font-bold lg:text-3xl">{s.t}</h3>
+                    <p className="mt-2 text-lg text-neutral-600">{s.d}</p>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
         </div>
       </div>
     </div>
+  );
+}
+
+/** Kiçik ekranlarda pinləmə yoxdur: sadə, normal scroll edən siyahı */
+function StepsList() {
+  return (
+    <div className="mx-auto max-w-7xl px-3 sm:px-4">
+      <div className="rounded-[2rem] bg-surface p-5 sm:p-8">
+        <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Necə işləyir</h2>
+        <ol className="mt-6 grid gap-3 sm:grid-cols-2">
+          {steps.map((s, i) => (
+            <li key={s.t} className="flex gap-4 rounded-3xl bg-white p-5">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand text-base font-bold text-white">
+                {i + 1}
+              </span>
+              <div>
+                <h3 className="text-lg font-bold">{s.t}</h3>
+                <p className="mt-1 text-sm text-neutral-600">{s.d}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  );
+}
+
+/** Böyük ekranda: Apple tipli pinlənmiş bölmə. Kiçik ekranda: sadə siyahı. */
+export function StickySteps() {
+  return (
+    <>
+      <div className="hidden lg:block">
+        <PinnedSteps />
+      </div>
+      <div className="lg:hidden">
+        <StepsList />
+      </div>
+    </>
   );
 }

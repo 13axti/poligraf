@@ -1,4 +1,3 @@
-import { site } from "@/lib/site-config";
 
 const paths: Record<string, string> = {
   facebook:
@@ -11,10 +10,16 @@ const paths: Record<string, string> = {
     "M6.9 8.9H4V20h2.9V8.9zM5.5 4a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4zM20 13.5c0-2.7-1.4-4.8-3.9-4.8-1.3 0-2.2.7-2.6 1.3V8.9h-2.8V20h2.9v-6c0-1.6.6-2.5 1.8-2.5s1.7.9 1.7 2.5V20H20v-6.5z",
 };
 
-export function SocialIcons({ className = "" }: { className?: string }) {
+export function SocialIcons({
+  socials,
+  className = "",
+}: {
+  socials: { id: string; label: string; href: string }[];
+  className?: string;
+}) {
   return (
     <div className={`flex gap-2 ${className}`}>
-      {site.socials.map((s) => (
+      {socials.filter((s) => s.href).map((s) => (
         <a
           key={s.id}
           href={s.href}

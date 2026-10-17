@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { getCategories, getFeaturedProducts } from "@/lib/data";
 import { ProductCard } from "@/components/ProductCard";
-import { site } from "@/lib/site-config";
+import { getSettings } from "@/lib/settings";
+import { phoneHref } from "@/lib/site-config";
 import { Reveal, SplitHeading } from "@/components/Reveal";
 import { HomeHero } from "@/components/HomeHero";
 import { StickySteps } from "@/components/StickySteps";
@@ -11,7 +12,12 @@ import { Perks } from "@/components/Perks";
 export default async function HomePage() {
   const categories = await getCategories();
   const featured = await getFeaturedProducts();
-  const loop = [...site.clients, ...site.clients];
+  const site = await getSettings();
+  // Zolaq boş görünməsin: ən azı 8 element olana qədər təkrarla, sonra sonsuz dövr üçün 2 dəfə
+  const base = site.clients.length
+    ? Array.from({ length: Math.max(site.clients.length, 8) }, (_, i) => site.clients[i % site.clients.length])
+    : [];
+  const loop = [...base, ...base];
 
   return (
     <>
@@ -19,7 +25,7 @@ export default async function HomePage() {
       <HomeHero
         items={featured.map((p) => ({ id: p.id, name: p.name, image: p.image }))}
         phone={site.phone}
-        phoneHref={site.phoneHref}
+        phoneHref={phoneHref(site.phone)}
       />
       <Perks />
 
@@ -90,6 +96,7 @@ export default async function HomePage() {
       </section>
 
       {/* MÜŞTƏRİLƏR */}
+      {loop.length > 0 && (
       <section id="musteriler" className="scroll-mt-20 pb-20">
         <p className="mb-8 text-center text-sm font-semibold uppercase tracking-widest text-neutral-500">
           Bizə güvənən şirkətlər
@@ -111,6 +118,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      )}
     </>
   );
 }

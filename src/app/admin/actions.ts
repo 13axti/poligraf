@@ -7,9 +7,10 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { productToRow } from "@/lib/db-map";
 import { slugify } from "@/lib/slug";
+import { BRAND } from "@/lib/site-config";
 import type { Product, ProductMockup } from "@/lib/types";
 
-export type ActionState = { error?: string } | undefined;
+export type ActionState = { error?: string; ok?: boolean } | undefined;
 
 /* ---------------- Giriş / çıxış ---------------- */
 
@@ -205,4 +206,97 @@ export async function deleteOrder(formData: FormData) {
   if (paths.length) await supabase.storage.from("orders").remove(paths);
   await supabase.from("orders").delete().eq("id", id);
   redirect("/admin/orders");
+}
+
+/* ---------------- Sayt ayarları ---------------- */
+
+export interface SettingsPayload {
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+  hours: string;
+  socials: { id: string; label: string; href: string }[];
+  clients: { name: string; logo?: string; fileKey?: string }[];
+}
+
+function cleanUrl(u: string) {
+  const v = u.trim();
+  if (!v) return "";
+  return /^https?:\/\//i.test(v) ? v : `https://${v}`;
+}
+
+export async function saveSettings(formData: FormData): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+  let p: SettingsPayload;
+  try {
+    p = JSON.parse(String(formData.get("payload")));
+  } catch {
+    return { error: "Form məlumatı oxunmadı" };
+  }
+
+  try {
+    const clients: { name: string; logo?: string }[] = [];
+    for (const c of p.clients) {
+      if (!c.name?.trim()) continue;
+      const file = c.fileKey ? formData.get(`file_${c.fileKey}`) : null;
+      const logo = isFile(file) ? await uploadPublic(supabase, file, "clients") : c.logo;
+      clients.push({ name: c.name.trim().slice(0, 60), ...(logo ? { logo } : {}) });
+    }
+
+    const value = {
+      name: p.name.trim().slice(0, 60) || BRAND,
+      phone: p.phone.trim().slice(0, 40),
+      email: p.email.trim().slice(0, 100),
+      address: p.address.trim().slice(0, 200),
+      hours: p.hours.trim().slice(0, 100),
+      socials: p.socials.map((s) => ({ id: s.id, label: s.label, href: cleanUrl(s.href) })),
+      clients,
+    };
+    const { error } = await supabase
+      .from("settings")
+      .upsert({ key: "site", value, updated_at: new Date().toISOString() });
+    if (error) return { error: error.message };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Xəta baş verdi" };
+  }
+  updateTag("settings");
+  return { ok: true };
+}
+
+/** Sürətli status dəyişmə (daxili qeydə toxunmur) */
+export async function setOrderStatus(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = String(formData.get("id"));
+  const status = String(formData.get("status"));
+  if (!STATUSES.includes(status)) return;
+  await supabase.from("orders").update({ status }).eq("id", id);
+  redirect(`/admin/orders/${id}`);
+}
+
+/* ---------------- Məhsul: sürətli əməliyyatlar ---------------- */
+
+export async function toggleProductFlag(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const field = String(formData.get("field"));
+  if (field !== "active" && field !== "featured") return;
+  await supabase
+    .from("products")
+    .update({ [field]: formData.get("value") === "true" })
+    .eq("id", String(formData.get("id")));
+  updateTag("catalog");
+  redirect("/admin/products");
+}
+
+export async function duplicateProduct(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const { data: p } = await supabase.from("products").select("*").eq("id", String(formData.get("id"))).single();
+  if (!p) redirect("/admin/products");
+  const { id: _id, created_at: _c, ...rest } = p;
+  void _id;
+  void _c;
+  const copy = { ...rest, name: `${p.name} (surət)`, slug: `${p.slug}-${randomUUID().slice(0, 4)}`, active: false, featured: false };
+  const { data: created } = await supabase.from("products").insert(copy).select("id").single();
+  updateTag("catalog");
+  redirect(created ? `/admin/products/${created.id}` : "/admin/products");
 }

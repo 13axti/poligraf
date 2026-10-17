@@ -14,11 +14,29 @@ function fallback<T>(what: string, message: string, mockValue: () => T): T {
   return mockValue();
 }
 
+/**
+ * Development-də bazada hələ məhsul yoxdursa, sayt boş qalmasın deyə mock kataloq göstərilir.
+ * Production-da bu işləmir: orada boş baza = boş kataloq.
+ */
+async function shouldUseMock(): Promise<boolean> {
+  if (!supabaseConfigured) return true;
+  if (process.env.NODE_ENV === "production") return false;
+  const { count, error } = await createPublicClient()
+    .from("products")
+    .select("*", { count: "exact", head: true })
+    .eq("active", true);
+  if (error || !count) {
+    console.warn("[data] bazada aktiv məhsul yoxdur, mock kataloq göstərilir (yalnız development). Seed: npx tsx --env-file=.env.local scripts/seed.ts");
+    return true;
+  }
+  return false;
+}
+
 export async function getCategories(): Promise<Category[]> {
   "use cache";
   cacheLife("minutes");
   cacheTag("catalog");
-  if (!supabaseConfigured) return mock.getCategories();
+  if (await shouldUseMock()) return mock.getCategories();
   const { data, error } = await createPublicClient()
     .from("categories")
     .select("*")
@@ -31,7 +49,7 @@ export async function getAllProducts(): Promise<Product[]> {
   "use cache";
   cacheLife("minutes");
   cacheTag("catalog");
-  if (!supabaseConfigured) return mock.getAllProducts();
+  if (await shouldUseMock()) return mock.getAllProducts();
   const { data, error } = await createPublicClient()
     .from("products")
     .select("*")

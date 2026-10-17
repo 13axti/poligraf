@@ -3,7 +3,14 @@ import { notFound } from "next/navigation";
 import { ConfirmButton } from "@/components/admin/ConfirmButton";
 import { requireAdmin } from "@/lib/admin-auth";
 import { STATUS } from "@/lib/order-status";
-import { deleteOrder, updateOrder } from "../../../actions";
+import { PrintButton } from "@/components/admin/PrintButton";
+import { deleteOrder, setOrderStatus, updateOrder } from "../../../actions";
+
+const NEXT: Record<string, { to: string; label: string } | undefined> = {
+  new: { to: "in_progress", label: "İcraya götür" },
+  in_progress: { to: "ready", label: "Hazırdır" },
+  ready: { to: "done", label: "Təhvil verildi" },
+};
 
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -13,7 +20,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
 
   const sign = async (path: string | null) =>
     path ? (await supabase.storage.from("orders").createSignedUrl(path, 3600)).data?.signedUrl ?? null : null;
-  const [mockupUrl, logoUrl] = await Promise.all([sign(o.mockup_path), sign(o.logo_path)]);
+  // Sifariş qovluğundakı bütün loqolar (logo.*, logo-1.*, logo-2.*); köhnə sifarişlərdə yalnız logo_path
+  const { data: files } = await supabase.storage.from("orders").list(o.id);
+  const logoPaths = (files ?? []).filter((f) => /^logo/i.test(f.name)).map((f) => `${o.id}/${f.name}`).sort();
+  if (!logoPaths.length && o.logo_path) logoPaths.push(o.logo_path);
+  const [mockupUrl, logoUrls] = await Promise.all([sign(o.mockup_path), Promise.all(logoPaths.map(sign))]);
 
   const phoneDigits = String(o.customer_phone).replace(/[^\d]/g, "");
   const size =
@@ -32,10 +43,20 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="space-y-4">
-      <Link href="/admin/orders" className="text-sm font-semibold text-neutral-500 hover:text-foreground">← Sifarişlər</Link>
+      <Link href="/admin/orders" className="print:hidden text-sm font-semibold text-neutral-500 hover:text-foreground">← Sifarişlər</Link>
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-3xl font-extrabold tracking-tight">Sifariş #{o.id.slice(0, 8)}</h1>
         <span className={`rounded-full px-3 py-1 text-xs font-bold ${STATUS[o.status].cls}`}>{STATUS[o.status].label}</span>
+        <div className="ml-auto flex gap-2 print:hidden">
+          {NEXT[o.status] && (
+            <form action={setOrderStatus}>
+              <input type="hidden" name="id" value={o.id} />
+              <input type="hidden" name="status" value={NEXT[o.status]!.to} />
+              <button className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark">{NEXT[o.status]!.label} →</button>
+            </form>
+          )}
+          <PrintButton className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold hover:bg-foreground hover:text-white" />
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -49,13 +70,13 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                 </div>
               ))}
             </dl>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2 print:hidden">
               <a href={`tel:${o.customer_phone}`} className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-white">Zəng et</a>
               <a href={`https://wa.me/${phoneDigits}`} target="_blank" rel="noopener noreferrer" className="rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white">WhatsApp</a>
             </div>
           </div>
 
-          <form action={updateOrder} className="space-y-3 rounded-3xl bg-white p-6">
+          <form action={updateOrder} className="space-y-3 rounded-3xl bg-white p-6 print:hidden">
             <input type="hidden" name="id" value={o.id} />
             <h2 className="font-extrabold">Status</h2>
             <select name="status" defaultValue={o.status} className="w-full rounded-2xl bg-surface px-4 py-3 font-semibold outline-none">
@@ -81,21 +102,24 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               <p className="text-sm text-neutral-500">Müştəri loqo yükləməyib.</p>
             )}
           </div>
-          {logoUrl && (
-            <div className="rounded-3xl bg-white p-6">
-              <h2 className="mb-3 font-extrabold">Orijinal loqo</h2>
+          {logoUrls.filter(Boolean).map((u, i, all) => (
+            <div key={i} className="rounded-3xl bg-white p-6">
+              <h2 className="mb-3 font-extrabold">Orijinal loqo{all.length > 1 ? ` ${i + 1}` : ""}</h2>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={logoUrl} alt="Loqo" className="max-h-56 rounded-2xl bg-surface object-contain p-4" />
-              <a href={logoUrl} download className="mt-3 inline-block text-sm font-semibold text-brand">Yüklə</a>
+              <img src={u!} alt={`Loqo ${i + 1}`} className="max-h-56 rounded-2xl bg-surface object-contain p-4" />
+              <a href={u!} download className="mt-3 inline-block text-sm font-semibold text-brand">Yüklə</a>
             </div>
-          )}
+          ))}
         </div>
       </div>
 
-      <form action={deleteOrder}>
+      <form action={deleteOrder} className="print:hidden">
         <input type="hidden" name="id" value={o.id} />
         <ConfirmButton message="Sifariş və şəkilləri silinsin?" className="text-sm font-semibold text-neutral-400 hover:text-accent">Sifarişi sil</ConfirmButton>
       </form>
     </div>
   );
 }
+
+// Admin səhifələri giriş tələb edir: ani keçid yoxlaması lazım deyil (Next.js "instant" doğrulaması)
+export const instant = false;

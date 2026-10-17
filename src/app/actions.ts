@@ -19,7 +19,7 @@ export interface OrderPayload {
   customerPhone: string;
   note?: string;
   mockupDataUrl?: string;
-  logoDataUrl?: string;
+  logoDataUrls?: string[]; // ən çox 2 loqo
 }
 
 const MAX_FILE = 6 * 1024 * 1024;
@@ -56,7 +56,7 @@ export async function submitOrder(input: OrderPayload): Promise<OrderResult> {
   if (price.total <= 0) return { ok: false, error: price.breakdown };
 
   const mockup = parseDataUrl(input.mockupDataUrl);
-  const logo = parseDataUrl(input.logoDataUrl);
+  const logos = (input.logoDataUrls ?? []).slice(0, 2).map(parseDataUrl).filter((x): x is NonNullable<ReturnType<typeof parseDataUrl>> => !!x);
   const note = input.note?.trim().slice(0, 1000) ?? "";
   const id = randomUUID();
 
@@ -64,20 +64,24 @@ export async function submitOrder(input: OrderPayload): Promise<OrderResult> {
   if (supabaseConfigured) {
     const sb = createPublicClient();
     let mockupPath: string | null = null;
-    let logoPath: string | null = null;
+    let logoPath: string | null = null; // birinci loqo; ikincisi eyni qovluqda logo-2.* kimi saxlanır
 
-    for (const [file, kind] of [[mockup, "mockup"], [logo, "logo"]] as const) {
-      if (!file) continue;
-      const p = `${id}/${kind}.${file.ext}`;
+    const uploads = [
+      ...(mockup ? [{ file: mockup, name: "mockup" }] : []),
+      ...logos.map((file, i) => ({ file, name: `logo-${i + 1}` })),
+    ];
+    for (const { file, name: fname } of uploads) {
+      const p = `${id}/${fname}.${file.ext}`;
       const { error } = await sb.storage.from("orders").upload(p, file.buf, { contentType: file.mime });
       if (error) return { ok: false, error: "Şəkil yüklənmədi, yenidən cəhd edin" };
-      if (kind === "mockup") mockupPath = p;
-      else logoPath = p;
+      if (fname === "mockup") mockupPath = p;
+      else if (fname === "logo-1") logoPath = p;
     }
 
     const { error } = await sb.from("orders").insert({
       id,
-      product_id: product.id,
+      // mock məhsulun id-si uuid deyil; belə halda null yazılır
+      product_id: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(product.id) ? product.id : null,
       product_slug: product.slug,
       product_name: product.name,
       variant_name: variant?.name ?? null,
@@ -100,11 +104,11 @@ export async function submitOrder(input: OrderPayload): Promise<OrderResult> {
   const dir = path.join(process.cwd(), "data", "orders", id);
   await mkdir(dir, { recursive: true });
   if (mockup) await writeFile(path.join(dir, `mockup.${mockup.ext}`), mockup.buf);
-  if (logo) await writeFile(path.join(dir, `logo.${logo.ext}`), logo.buf);
+  for (const [i, lg] of logos.entries()) await writeFile(path.join(dir, `logo-${i + 1}.${lg.ext}`), lg.buf);
   await writeFile(
     path.join(dir, "order.json"),
     JSON.stringify(
-      { id, product: product.name, variant: variant?.name, price: price.total, name, phone, note, input: { ...input, mockupDataUrl: undefined, logoDataUrl: undefined } },
+      { id, product: product.name, variant: variant?.name, price: price.total, name, phone, note, input: { ...input, mockupDataUrl: undefined, logoDataUrls: undefined } },
       null,
       2
     )

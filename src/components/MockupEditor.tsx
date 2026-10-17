@@ -1,18 +1,48 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type { ProductMockup } from "@/lib/types";
+import { CropDialog, FULL_CROP, type Crop } from "./CropDialog";
 
-const SAMPLE_LOGO =
-  "data:image/svg+xml;utf8," +
-  encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="120" viewBox="0 0 400 120">
+export interface MockupExport {
+  mockup: string; // JPEG dataURL (sifarişdə göstərilən nəticə)
+  logos: string[]; // orijinal loqo faylları (dataURL), ən çox 2
+}
+
+const MAX_LAYERS = 2;
+const MAX_FILE = 3 * 1024 * 1024;
+
+/** Mockup üzərindəki bir loqo qatı */
+interface Layer {
+  id: string;
+  name: string;
+  src: string; // orijinal şəkil (dataURL)
+  nw: number; // orijinal ölçü
+  nh: number;
+  crop: Crop; // kəsmə (şəklin ölçüsünə nisbətən)
+  cx: number; // mərkəz: səhnənin eninə/hündürlüyünə nisbətən
+  cy: number;
+  w: number; // en: səhnənin eninə nisbətən
+  rot: number; // dərəcə
+  flip: boolean;
+  opacity: number;
+  white: boolean; // tünd məhsul üçün ağ rəng
+  whiteTouched: boolean;
+}
+
+const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="120" viewBox="0 0 400 120">
       <rect x="4" y="20" width="80" height="80" rx="20" fill="#3d4dff"/>
       <text x="44" y="78" font-family="Arial" font-weight="900" font-size="52" fill="#fff" text-anchor="middle">L</text>
       <text x="100" y="80" font-family="Arial" font-weight="900" font-size="60" fill="#ff4a2b">LOGO</text>
-    </svg>`
-  );
+    </svg>`;
+// base64 formatında: server yalnız belə data URL-ləri qəbul edir
+const SAMPLE_LOGO = "data:image/svg+xml;base64," + btoa(SAMPLE_SVG);
+
+const uid = () => Math.random().toString(36).slice(2, 9);
+const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+const aspectOf = (l: Layer) => (l.nw * l.crop.w) / (l.nh * l.crop.h);
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -39,9 +69,40 @@ async function makeWhite(src: string): Promise<string> {
   return c.toDataURL("image/png");
 }
 
-export interface MockupExport {
-  mockup: string; // JPEG dataURL (sifariş üçün)
-  logo: string; // orijinal loqo dataURL
+/** Mockup-ın standart yerinə görə qatın başlanğıc yeri */
+function place(m: ProductMockup, index: number, aspect: number) {
+  const p = m.placement;
+  const w = Math.min(p.w, p.h * aspect);
+  if (index === 1) {
+    // 2-ci loqo: birincinin altında, bir az kiçik (istifadəçi sürüşdürüb dəyişəcək)
+    return { cx: p.cx, cy: clamp(p.cy + p.h * 0.75, 0.05, 0.95), w: w * 0.85, rot: p.rotation };
+  }
+  return { cx: p.cx, cy: p.cy, w, rot: p.rotation };
+}
+
+type Gesture =
+  | { type: "move"; id: string; px: number; py: number; cx: number; cy: number }
+  | { type: "scale"; id: string; cx: number; cy: number; d0: number; w0: number }
+  | { type: "rotate"; id: string; cx: number; cy: number };
+
+/** Kəsmə tətbiq olunmuş şəkli qatın qutusuna yerləşdirir */
+function LayerImage({ l, src }: { l: Layer; src: string }) {
+  return (
+    <div className="absolute inset-0 overflow-hidden" style={{ transform: l.flip ? "scaleX(-1)" : undefined }}>
+      <img
+        src={src}
+        alt=""
+        draggable={false}
+        style={{
+          position: "absolute",
+          maxWidth: "none",
+          width: `${100 / l.crop.w}%`,
+          left: `${(-l.crop.x / l.crop.w) * 100}%`,
+          top: `${(-l.crop.y / l.crop.h) * 100}%`,
+        }}
+      />
+    </div>
+  );
 }
 
 export function MockupEditor({
@@ -57,86 +118,196 @@ export function MockupEditor({
   const [active, setActive] = useState(0);
   const mockup = mockups[active];
 
-  const [logoSrc, setLogoSrc] = useState<string | null>(null);
-  const [white, setWhite] = useState(false);
-  const [whiteSrc, setWhiteSrc] = useState<string | null>(null);
-
-  // Hər mockup üçün ayrı yer/ölçü/dönmə
-  const [pos, setPos] = useState({ cx: mockup.placement.cx, cy: mockup.placement.cy });
-  const [scale, setScale] = useState(1);
-  const [rotation, setRotation] = useState(mockup.placement.rotation);
+  const [layers, setLayers] = useState<Layer[]>([]);
+  const [sel, setSel] = useState<string | null>(null);
+  const [whites, setWhites] = useState<Record<string, string>>({});
+  const [cropId, setCropId] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
   const stageRef = useRef<HTMLDivElement>(null);
-  const drag = useRef<{ x: number; y: number; cx: number; cy: number } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const layersRef = useRef(layers);
+  layersRef.current = layers;
+  const whitesRef = useRef(whites);
+  whitesRef.current = whites;
+  const gesture = useRef<Gesture | null>(null);
+  const history = useRef<Layer[][]>([]);
+  const future = useRef<Layer[][]>([]);
+  const lastNudge = useRef(0);
+  const whiteJobs = useRef(new Set<string>());
+  const [, bump] = useState(0);
+
+  const selected = layers.find((l) => l.id === sel) ?? null;
+
+  /* ---------- tarixçə (geri al / irəli) ---------- */
+  function snapshot() {
+    history.current.push(layersRef.current);
+    if (history.current.length > 60) history.current.shift();
+    future.current = [];
+    bump((n) => n + 1);
+  }
+  function undo() {
+    const prev = history.current.pop();
+    if (!prev) return;
+    future.current.push(layersRef.current);
+    setLayers(prev);
+    bump((n) => n + 1);
+  }
+  function redo() {
+    const next = future.current.pop();
+    if (!next) return;
+    history.current.push(layersRef.current);
+    setLayers(next);
+    bump((n) => n + 1);
+  }
+  const patch = (id: string, p: Partial<Layer>) => setLayers((ls) => ls.map((l) => (l.id === id ? { ...l, ...p } : l)));
+  const commit = (id: string, p: Partial<Layer>) => {
+    snapshot();
+    patch(id, p);
+  };
+
+  /* ---------- ağ variant hazırla ---------- */
+  useEffect(() => {
+    layers.forEach((l) => {
+      if (l.white && !whites[l.id] && !whiteJobs.current.has(l.id)) {
+        whiteJobs.current.add(l.id);
+        makeWhite(l.src).then((u) => setWhites((w) => ({ ...w, [l.id]: u })));
+      }
+    });
+  }, [layers, whites]);
+
+  /* ---------- qat əlavə et ---------- */
+  async function addLayer(src: string, name: string) {
+    if (layersRef.current.length >= MAX_LAYERS) return;
+    const img = await loadImage(src);
+    const nw = img.naturalWidth || 400;
+    const nh = img.naturalHeight || 120;
+    const idx = layersRef.current.length;
+    const l: Layer = {
+      id: uid(),
+      name,
+      src,
+      nw,
+      nh,
+      crop: FULL_CROP,
+      ...place(mockup, idx, nw / nh),
+      flip: false,
+      opacity: 1,
+      white: !!mockup.darkProduct,
+      whiteTouched: false,
+    };
+    snapshot();
+    setLayers((ls) => [...ls, l]);
+    setSel(l.id);
+  }
+
+  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    setError("");
+    if (!f.type.startsWith("image/")) return setError("Yalnız şəkil faylı seçin (PNG, JPG, SVG)");
+    if (f.size > MAX_FILE) return setError("Fayl 3 MB-dan böyükdür. Daha kiçik loqo seçin.");
+    const reader = new FileReader();
+    reader.onload = () => addLayer(reader.result as string, f.name.replace(/\.[^.]+$/, "").slice(0, 24) || "Loqo");
+    reader.readAsDataURL(f);
+  }
+
+  function removeLayer(id: string) {
+    snapshot();
+    setLayers((ls) => ls.filter((l) => l.id !== id));
+    setSel((s) => (s === id ? null : s));
+  }
+
+  function resetAll() {
+    if (!layers.length) return;
+    snapshot();
+    setLayers((ls) => ls.map((l, i) => ({ ...l, crop: FULL_CROP, flip: false, opacity: 1, white: !!mockup.darkProduct, whiteTouched: false, ...place(mockup, i, l.nw / l.nh) })));
+  }
 
   function selectMockup(i: number) {
     const m = mockups[i];
     setActive(i);
-    setPos({ cx: m.placement.cx, cy: m.placement.cy });
-    setRotation(m.placement.rotation);
-    setScale(1);
-    setWhite(!!m.darkProduct);
+    // Yeni mockup-da qatlar onun standart yerinə qoyulur; kəsmə, güzgü və şəffaflıq qalır
+    setLayers((ls) => ls.map((l, idx) => ({ ...l, ...place(m, idx, aspectOf(l)), white: l.whiteTouched ? l.white : !!m.darkProduct })));
   }
 
-  // Ağ variantı hazırla
-  useEffect(() => {
-    let cancelled = false;
-    if (logoSrc && white) {
-      makeWhite(logoSrc).then((u) => !cancelled && setWhiteSrc(u));
+  /* ---------- sürüşdürmə, ölçü, dönmə ---------- */
+  const rect = () => stageRef.current!.getBoundingClientRect();
+
+  function startMove(e: React.PointerEvent, l: Layer) {
+    e.stopPropagation();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    setSel(l.id);
+    snapshot();
+    gesture.current = { type: "move", id: l.id, px: e.clientX, py: e.clientY, cx: l.cx, cy: l.cy };
+  }
+  function startScale(e: React.PointerEvent, l: Layer) {
+    e.stopPropagation();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    snapshot();
+    const r = rect();
+    const cx = r.left + l.cx * r.width;
+    const cy = r.top + l.cy * r.height;
+    gesture.current = { type: "scale", id: l.id, cx, cy, d0: Math.max(8, Math.hypot(e.clientX - cx, e.clientY - cy)), w0: l.w };
+  }
+  function startRotate(e: React.PointerEvent, l: Layer) {
+    e.stopPropagation();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    snapshot();
+    const r = rect();
+    gesture.current = { type: "rotate", id: l.id, cx: r.left + l.cx * r.width, cy: r.top + l.cy * r.height };
+  }
+  function onMove(e: React.PointerEvent) {
+    const g = gesture.current;
+    if (!g) return;
+    if (g.type === "move") {
+      const r = rect();
+      patch(g.id, {
+        cx: clamp(g.cx + (e.clientX - g.px) / r.width, 0, 1),
+        cy: clamp(g.cy + (e.clientY - g.py) / r.height, 0, 1),
+      });
+    } else if (g.type === "scale") {
+      const d = Math.hypot(e.clientX - g.cx, e.clientY - g.cy);
+      patch(g.id, { w: clamp((g.w0 * d) / g.d0, 0.03, 1.6) });
     } else {
-      setWhiteSrc(null);
+      let a = (Math.atan2(e.clientY - g.cy, e.clientX - g.cx) * 180) / Math.PI + 90;
+      if (a > 180) a -= 360;
+      for (const s of [0, 90, -90, 180, -180, 45, -45, 135, -135]) if (Math.abs(a - s) < 3) a = s;
+      patch(g.id, { rot: Math.round(a * 10) / 10 });
     }
-    return () => {
-      cancelled = true;
-    };
-  }, [logoSrc, white]);
+  }
+  const onUp = () => {
+    gesture.current = null;
+  };
 
-  const shownLogo = white && whiteSrc ? whiteSrc : logoSrc;
-  // Açıq rəngli məhsulda "multiply" mürəkkəb effekti verir; ağ loqo üçün normal rejim
-  const blendMode = white ? "normal" : "multiply";
-
-  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    if (f.size > 3 * 1024 * 1024) {
-      alert("Fayl 3 MB-dan böyükdür. Daha kiçik loqo seçin.");
-      return;
+  /* ---------- klaviatura ---------- */
+  function onKeyDown(e: React.KeyboardEvent) {
+    const mod = e.metaKey || e.ctrlKey;
+    if (mod && e.key.toLowerCase() === "z") {
+      e.preventDefault();
+      return e.shiftKey ? redo() : undo();
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setLogoSrc(reader.result as string);
-      setWhite(!!mockup.darkProduct);
-    };
-    reader.readAsDataURL(f);
-    e.target.value = "";
+    if (!selected) return;
+    if (e.key === "Delete" || e.key === "Backspace") {
+      e.preventDefault();
+      return removeLayer(selected.id);
+    }
+    const step = e.shiftKey ? 0.02 : 0.004;
+    const d: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+    if (d[e.key]) {
+      e.preventDefault();
+      if (Date.now() - lastNudge.current > 600) snapshot();
+      lastNudge.current = Date.now();
+      patch(selected.id, { cx: clamp(selected.cx + d[e.key][0], 0, 1), cy: clamp(selected.cy + d[e.key][1], 0, 1) });
+    }
   }
 
-  function onPointerDown(e: React.PointerEvent) {
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    drag.current = { x: e.clientX, y: e.clientY, cx: pos.cx, cy: pos.cy };
-  }
-  function onPointerMove(e: React.PointerEvent) {
-    if (!drag.current || !stageRef.current) return;
-    const r = stageRef.current.getBoundingClientRect();
-    const dx = (e.clientX - drag.current.x) / r.width;
-    const dy = (e.clientY - drag.current.y) / r.height;
-    setPos({
-      cx: Math.min(1, Math.max(0, drag.current.cx + dx)),
-      cy: Math.min(1, Math.max(0, drag.current.cy + dy)),
-    });
-  }
-  function onPointerUp() {
-    drag.current = null;
-  }
-
+  /* ---------- nəticəni çək ---------- */
   async function render(maxW?: number): Promise<HTMLCanvasElement | null> {
-    if (!shownLogo) return null;
-    const [base, logo, overlay] = await Promise.all([
-      loadImage(mockup.image),
-      loadImage(shownLogo),
-      mockup.overlay ? loadImage(mockup.overlay) : Promise.resolve(null),
-    ]);
+    const ls = layersRef.current;
+    if (!ls.length) return null;
+    const [base, overlay] = await Promise.all([loadImage(mockup.image), mockup.overlay ? loadImage(mockup.overlay) : Promise.resolve(null)]);
     const k = maxW ? Math.min(1, maxW / base.naturalWidth) : 1;
     const W = Math.round(base.naturalWidth * k);
     const H = Math.round(base.naturalHeight * k);
@@ -146,22 +317,23 @@ export function MockupEditor({
     const ctx = c.getContext("2d")!;
     ctx.drawImage(base, 0, 0, W, H);
 
-    const boxW = mockup.placement.w * scale * W;
-    const boxH = mockup.placement.h * scale * W;
-    const lw = logo.naturalWidth || 400;
-    const lh = logo.naturalHeight || 120;
-    const fit = Math.min(boxW / lw, boxH / lh);
-    const dw = lw * fit;
-    const dh = lh * fit;
-
     const spots = [{ dx: 0, dy: 0 }, ...(mockup.clones ?? [])];
-    for (const s of spots) {
-      ctx.save();
-      ctx.globalCompositeOperation = blendMode === "multiply" ? "multiply" : "source-over";
-      ctx.translate((pos.cx + s.dx) * W, (pos.cy + s.dy) * H);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.drawImage(logo, -dw / 2, -dh / 2, dw, dh);
-      ctx.restore();
+    for (const l of ls) {
+      const img = await loadImage(l.white && whitesRef.current[l.id] ? whitesRef.current[l.id] : l.src);
+      const iw = img.naturalWidth || l.nw;
+      const ih = img.naturalHeight || l.nh;
+      const dw = l.w * W;
+      const dh = dw / aspectOf(l);
+      for (const s of spots) {
+        ctx.save();
+        ctx.globalCompositeOperation = l.white ? "source-over" : "multiply";
+        ctx.globalAlpha = l.opacity;
+        ctx.translate((l.cx + s.dx) * W, (l.cy + s.dy) * H);
+        ctx.rotate((l.rot * Math.PI) / 180);
+        ctx.scale(l.flip ? -1 : 1, 1);
+        ctx.drawImage(img, l.crop.x * iw, l.crop.y * ih, l.crop.w * iw, l.crop.h * ih, -dw / 2, -dh / 2, dw, dh);
+        ctx.restore();
+      }
     }
     if (overlay) ctx.drawImage(overlay, 0, 0, W, H);
     return c;
@@ -176,17 +348,15 @@ export function MockupEditor({
     a.click();
   }
 
-  // Sifariş formu üçün cari nəticəni təqdim et
   const renderRef = useRef(render);
   renderRef.current = render;
-  const logoRef = useRef(logoSrc);
-  logoRef.current = logoSrc;
   useEffect(() => {
     if (!exportRef) return;
     exportRef.current = async () => {
+      const ls = layersRef.current;
       const c = await renderRef.current(1000);
-      if (!c || !logoRef.current) return null;
-      return { mockup: c.toDataURL("image/jpeg", 0.88), logo: logoRef.current };
+      if (!c || !ls.length) return null;
+      return { mockup: c.toDataURL("image/jpeg", 0.88), logos: ls.map((l) => l.src) };
     };
     return () => {
       exportRef.current = null;
@@ -194,157 +364,211 @@ export function MockupEditor({
   }, [exportRef]);
 
   const spots = [{ dx: 0, dy: 0 }, ...(mockup.clones ?? [])];
-  const ratio = mockup.placement.w / mockup.placement.h;
+  const cropLayer = layers.find((l) => l.id === cropId) ?? null;
+  const btn = "rounded-full bg-white px-4 py-2 text-sm font-semibold transition hover:bg-foreground hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-foreground";
 
   return (
     <div>
-      {/* Səhnə */}
+      {/* ---------- Səhnə ---------- */}
       <div className="rounded-[2.5rem] bg-surface p-4">
         <div
           ref={stageRef}
-          className="relative mx-auto w-full max-w-xl select-none overflow-hidden rounded-[2rem] bg-white"
+          tabIndex={0}
+          onKeyDown={onKeyDown}
+          onPointerDown={() => setSel(null)}
+          className="relative mx-auto w-full max-w-xl touch-none select-none overflow-hidden rounded-[2rem] bg-white outline-none focus-visible:ring-2 focus-visible:ring-brand"
           style={{ aspectRatio: `${mockup.width} / ${mockup.height}`, maxHeight: "70vh" }}
         >
-          <Image
-            src={mockup.image}
-            alt={mockup.name}
-            fill
-            sizes="(max-width: 1024px) 100vw, 55vw"
-            className="pointer-events-none object-cover"
-            priority
-          />
-          {shownLogo &&
-            spots.map((s, i) => (
-              <div
-                key={i}
-                onPointerDown={i === 0 ? onPointerDown : undefined}
-                onPointerMove={i === 0 ? onPointerMove : undefined}
-                onPointerUp={i === 0 ? onPointerUp : undefined}
-                className={`absolute touch-none ${i === 0 ? "cursor-grab active:cursor-grabbing" : "pointer-events-none"}`}
-                style={{
-                  left: `${(pos.cx + s.dx) * 100}%`,
-                  top: `${(pos.cy + s.dy) * 100}%`,
-                  width: `${mockup.placement.w * scale * 100}%`,
-                  aspectRatio: `${ratio}`,
-                  transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-                  mixBlendMode: blendMode,
-                }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={shownLogo}
-                  alt="Loqo"
-                  draggable={false}
-                  className="pointer-events-none h-full w-full object-contain"
-                />
-                {i === 0 && (
-                  <span className="pointer-events-none absolute -inset-1 rounded border border-dashed border-brand/60" />
+          <Image src={mockup.image} alt={mockup.name} fill sizes="(max-width: 1024px) 100vw, 55vw" className="pointer-events-none object-cover" priority />
+
+          {layers.map((l) => {
+            const geo = (dx: number, dy: number): React.CSSProperties => ({
+              left: `${(l.cx + dx) * 100}%`,
+              top: `${(l.cy + dy) * 100}%`,
+              width: `${l.w * 100}%`,
+              aspectRatio: `${aspectOf(l)}`,
+              transform: `translate(-50%, -50%) rotate(${l.rot}deg)`,
+            });
+            const src = l.white && whites[l.id] ? whites[l.id] : l.src;
+            return spots.map((s, si) => (
+              <div key={`${l.id}-${si}`}>
+                {/* görünən loqo (blend rejimi ilə mockup-a "çap olunur") */}
+                <div
+                  className="pointer-events-none absolute"
+                  style={{ ...geo(s.dx, s.dy), opacity: l.opacity, mixBlendMode: l.white ? "normal" : "multiply" }}
+                >
+                  <LayerImage l={l} src={src} />
+                </div>
+                {/* idarə qatı: sürüşdürmə + tutacaqlar (yalnız əsas nüsxədə) */}
+                {si === 0 && (
+                  <div
+                    onPointerDown={(e) => startMove(e, l)}
+                    onPointerMove={onMove}
+                    onPointerUp={onUp}
+                    className={`absolute cursor-move ${sel === l.id ? "outline outline-2 outline-brand" : "hover:outline hover:outline-1 hover:outline-brand/50"}`}
+                    style={geo(0, 0)}
+                  >
+                    {sel === l.id && (
+                      <>
+                        {(["-left-2 -top-2", "-right-2 -top-2", "-left-2 -bottom-2", "-right-2 -bottom-2"] as const).map((pos) => (
+                          <span
+                            key={pos}
+                            onPointerDown={(e) => startScale(e, l)}
+                            onPointerMove={onMove}
+                            onPointerUp={onUp}
+                            className={`absolute h-4 w-4 cursor-nwse-resize rounded-full border-2 border-brand bg-white shadow ${pos}`}
+                          />
+                        ))}
+                        <span className="pointer-events-none absolute -top-7 left-1/2 h-7 w-px -translate-x-1/2 bg-brand" />
+                        <span
+                          onPointerDown={(e) => startRotate(e, l)}
+                          onPointerMove={onMove}
+                          onPointerUp={onUp}
+                          title="Döndər"
+                          className="absolute -top-11 left-1/2 grid h-6 w-6 -translate-x-1/2 cursor-grab place-items-center rounded-full border-2 border-brand bg-white text-[11px] font-black text-brand shadow active:cursor-grabbing"
+                        >
+                          ↻
+                        </span>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
-            ))}
-          {mockup.overlay && (
-            <Image src={mockup.overlay} alt="" fill sizes="55vw" className="pointer-events-none object-cover" />
-          )}
-          {!shownLogo && (
-            <div className="absolute inset-x-4 bottom-4 rounded-full bg-foreground/90 px-4 py-2 text-center text-xs font-semibold text-white">
-              Loqonu yüklə və məhsul üzərində gör
-            </div>
+            ));
+          })}
+
+          {mockup.overlay && <Image src={mockup.overlay} alt="" fill sizes="55vw" className="pointer-events-none object-cover" />}
+
+          {!layers.length && (
+            <button
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => fileRef.current?.click()}
+              className="absolute inset-x-4 bottom-4 rounded-full bg-foreground/90 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-brand"
+            >
+              + Loqonu yüklə və məhsul üzərində gör
+            </button>
           )}
         </div>
 
         {/* Mockup seçimi */}
-        <div className="mt-4 flex justify-center gap-2">
-          {mockups.map((m, i) => (
-            <button
-              key={m.id}
-              onClick={() => selectMockup(i)}
-              aria-label={m.name}
-              className={`relative h-16 w-16 overflow-hidden rounded-2xl bg-white transition ${
-                i === active ? "ring-2 ring-brand" : "opacity-70 hover:opacity-100"
-              }`}
-            >
-              <Image src={m.image} alt={m.name} fill sizes="64px" className="object-cover" />
-            </button>
-          ))}
-        </div>
+        {mockups.length > 1 && (
+          <div className="mt-4 flex justify-center gap-2">
+            {mockups.map((m, i) => (
+              <button
+                key={m.id}
+                onClick={() => selectMockup(i)}
+                aria-label={m.name}
+                className={`relative h-16 w-16 overflow-hidden rounded-2xl bg-white transition ${i === active ? "ring-2 ring-brand" : "opacity-70 hover:opacity-100"}`}
+              >
+                <Image src={m.image} alt={m.name} fill sizes="64px" className="object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* İdarə paneli */}
-      <div className="mt-4 rounded-[2rem] bg-surface p-5">
+      {/* ---------- Redaktor paneli ---------- */}
+      <div className="mt-4 space-y-4 rounded-[2rem] bg-surface p-5">
         <input ref={fileRef} type="file" accept="image/*" onChange={onFile} className="hidden" />
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
-          >
-            {logoSrc ? "Loqonu dəyiş" : "Loqonu yüklə"}
-          </button>
-          <button
-            onClick={() => {
-              setLogoSrc(SAMPLE_LOGO);
-              setWhite(false);
-            }}
-            className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold transition hover:bg-foreground hover:text-white"
-          >
-            Nümunə loqo
-          </button>
-          {logoSrc && (
-            <button
-              onClick={download}
-              className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand"
-            >
-              Şəkli yüklə
-            </button>
+
+        {/* Qatlar */}
+        <div className="flex flex-wrap items-center gap-2">
+          {layers.map((l, i) => (
+            <div key={l.id} className={`flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 text-sm font-semibold transition ${sel === l.id ? "bg-foreground text-white" : "bg-white"}`}>
+              <button onClick={() => setSel(l.id)} className="flex items-center gap-2">
+                <span className="relative grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-surface ring-1 ring-black/10">
+                  <img src={l.src} alt="" className="h-full w-full object-contain p-0.5" />
+                </span>
+                Loqo {i + 1}
+              </button>
+              <button onClick={() => removeLayer(l.id)} aria-label="Sil" className={`text-base leading-none ${sel === l.id ? "text-white/60 hover:text-white" : "text-neutral-400 hover:text-accent"}`}>
+                ×
+              </button>
+            </div>
+          ))}
+          {layers.length < MAX_LAYERS && (
+            <>
+              <button onClick={() => fileRef.current?.click()} className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark">
+                {layers.length ? `+ ${layers.length + 1}-ci loqo` : "Loqonu yüklə"}
+              </button>
+              <button onClick={() => addLayer(SAMPLE_LOGO, "Nümunə")} className={btn}>
+                Nümunə loqo
+              </button>
+            </>
           )}
         </div>
+        {error && <p className="text-sm font-semibold text-accent">{error}</p>}
 
-        {logoSrc && (
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-semibold">
-              Ölçü
-              <input
-                type="range"
-                min={0.3}
-                max={2.2}
-                step={0.01}
-                value={scale}
-                onChange={(e) => setScale(Number(e.target.value))}
-                className="mt-2 w-full accent-brand"
-              />
-            </label>
-            <label className="text-sm font-semibold">
-              Dönmə ({Math.round(rotation)}°)
-              <input
-                type="range"
-                min={-180}
-                max={180}
-                step={1}
-                value={rotation}
-                onChange={(e) => setRotation(Number(e.target.value))}
-                className="mt-2 w-full accent-brand"
-              />
-            </label>
-            <label className="flex items-center gap-2 text-sm font-semibold">
-              <input
-                type="checkbox"
-                checked={white}
-                onChange={(e) => setWhite(e.target.checked)}
-                className="h-4 w-4 accent-brand"
-              />
-              Loqonu ağ rəngə çevir
-            </label>
-            <button
-              onClick={() => selectMockup(active)}
-              className="w-fit text-left text-sm font-semibold text-neutral-500 underline hover:text-foreground"
-            >
-              Yeri sıfırla
+        {/* Seçilmiş qat üçün alətlər */}
+        {selected ? (
+          <div className="space-y-4 rounded-3xl bg-white p-4">
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => setCropId(selected.id)} className={btn}>✂ Kəs</button>
+              <button onClick={() => commit(selected.id, { flip: !selected.flip })} className={btn}>⇋ Güzgü</button>
+              <button
+                onClick={() => commit(selected.id, { white: !selected.white, whiteTouched: true })}
+                className={`${btn} ${selected.white ? "!bg-foreground !text-white" : ""}`}
+              >
+                ◐ Ağ rəng
+              </button>
+              <button
+                onClick={() => commit(selected.id, { ...place(mockup, layers.indexOf(selected), aspectOf(selected)) })}
+                className={btn}
+              >
+                ⌖ Yerinə qoy
+              </button>
+              <button onClick={() => removeLayer(selected.id)} className={`${btn} hover:!bg-accent`}>🗑 Sil</button>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <label className="text-xs font-bold uppercase tracking-wide text-neutral-500">
+                Ölçü
+                <input type="range" min={0.03} max={1.2} step={0.005} value={selected.w} onPointerDown={snapshot} onChange={(e) => patch(selected.id, { w: Number(e.target.value) })} className="mt-2 w-full accent-brand" />
+              </label>
+              <label className="text-xs font-bold uppercase tracking-wide text-neutral-500">
+                Dönmə ({Math.round(selected.rot)}°)
+                <input type="range" min={-180} max={180} step={1} value={selected.rot} onPointerDown={snapshot} onChange={(e) => patch(selected.id, { rot: Number(e.target.value) })} className="mt-2 w-full accent-brand" />
+              </label>
+              <label className="text-xs font-bold uppercase tracking-wide text-neutral-500">
+                Şəffaflıq ({Math.round(selected.opacity * 100)}%)
+                <input type="range" min={0.2} max={1} step={0.01} value={selected.opacity} onPointerDown={snapshot} onChange={(e) => patch(selected.id, { opacity: Number(e.target.value) })} className="mt-2 w-full accent-brand" />
+              </label>
+            </div>
+          </div>
+        ) : (
+          layers.length > 0 && <p className="text-sm text-neutral-500">Redaktə etmək üçün loqonun üzərinə klikləyin.</p>
+        )}
+
+        {/* Ümumi */}
+        {layers.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 border-t border-black/5 pt-4">
+            <button onClick={undo} disabled={!history.current.length} className={btn}>↶ Geri al</button>
+            <button onClick={redo} disabled={!future.current.length} className={btn}>↷ İrəli</button>
+            <button onClick={resetAll} className={btn}>Sıfırla</button>
+            <button onClick={download} className="ml-auto rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand">
+              Şəkli yüklə
             </button>
           </div>
         )}
-        <p className="mt-4 text-xs text-neutral-500">
-          Loqonu şəkil üzərində sürüşdürərək yerini dəyiş. Bu, təxmini göstəricidir, yekun çap dizayner təsdiqindən sonra hazırlanır.
+
+        <p className="text-xs leading-relaxed text-neutral-500">
+          Sürüşdürmək üçün loqonu dartın, künc dairələri ölçünü, yuxarıdakı ↻ dönməni dəyişir. Ox düymələri dəqiq yerləşdirmə, Cmd/Ctrl+Z geri alma üçündür. Bu, təxmini göstəricidir, yekun çap dizayner təsdiqindən sonra hazırlanır.
         </p>
       </div>
+
+      {cropLayer && (
+        <CropDialog
+          src={cropLayer.src}
+          nw={cropLayer.nw}
+          nh={cropLayer.nh}
+          initial={cropLayer.crop}
+          onClose={() => setCropId(null)}
+          onApply={(c) => {
+            // Görünən miqyas dəyişməsin: yeni en = köhnə en × (yeni kəsmə eni / köhnə kəsmə eni)
+            commit(cropLayer.id, { crop: c, w: clamp((cropLayer.w * c.w) / cropLayer.crop.w, 0.03, 1.6) });
+            setCropId(null);
+          }}
+        />
+      )}
     </div>
   );
 }

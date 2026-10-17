@@ -40,7 +40,7 @@ export function OrderDialog({
         customerPhone: phone,
         note,
         mockupDataUrl: mockup?.mockup,
-        logoDataUrl: mockup?.logo,
+        logoDataUrls: mockup?.logos,
       });
       if (res.ok) setDoneId(res.id);
       else setError(res.error);

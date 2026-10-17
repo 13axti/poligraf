@@ -1,0 +1,18 @@
+{
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/node_modules.nosync/**": true,
+    "**/.next/**": true,
+    "**/.next.nosync/**": true
+  },
+  "search.exclude": {
+    "**/node_modules.nosync": true,
+    "**/.next": true
+  },
+  "files.exclude": {
+    "**/node_modules.nosync": false
+  },
+  "typescript.tsserver.watchOptions": {
+    "excludeDirectories": ["**/node_modules.nosync", "**/.next"]
+  }
+}

@@ -10,7 +10,8 @@ import { CategoryTabs } from "@/components/CategoryTabs";
 import { CatalogHeader } from "@/components/CatalogHeader";
 
 export async function generateStaticParams() {
-  return (await getCategories()).map((c) => ({ slug: c.slug }));
+  const slugs = (await getCategories()).map((c) => ({ slug: c.slug }));
+  return slugs.length ? slugs : [{ slug: "_" }];
 }
 
 export async function generateMetadata({
@@ -20,7 +21,7 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const category = await getCategoryBySlug(slug);
-  return { title: category ? `${category.name} — Poligraf` : "Kateqoriya" };
+  return { title: category ? category.name : "Kateqoriya" };
 }
 
 export default async function CategoryPage({

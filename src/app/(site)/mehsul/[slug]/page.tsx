@@ -8,7 +8,9 @@ import {
 import { ProductConfigurator } from "@/components/ProductConfigurator";
 
 export async function generateStaticParams() {
-  return (await getAllProducts()).map((p) => ({ slug: p.slug }));
+  const slugs = (await getAllProducts()).map((p) => ({ slug: p.slug }));
+  // Cache Components ən azı 1 nəticə tələb edir; baza boşdursa yer tutucu (səhifə 404 verir)
+  return slugs.length ? slugs : [{ slug: "_" }];
 }
 
 export async function generateMetadata({
@@ -19,7 +21,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   return {
-    title: product ? `${product.name} — Poligraf` : "Məhsul",
+    title: product ? product.name : "Məhsul",
     description: product?.description,
   };
 }

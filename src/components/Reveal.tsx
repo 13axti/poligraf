@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 
 const ease = [0.22, 1, 0.36, 1] as const; // Apple-ə yaxın yumşaq əyri
 
@@ -16,9 +16,6 @@ export function Reveal({
   className?: string;
   variant?: "rise" | "scale";
 }) {
-  const reduce = useReducedMotion();
-  if (reduce) return <div className={className}>{children}</div>;
-
   const from =
     variant === "scale"
       ? { opacity: 0, scale: 0.92, filter: "blur(10px)" }
@@ -48,7 +45,6 @@ export function SplitHeading({
   className?: string;
   as?: "h1" | "h2" | "h3";
 }) {
-  const reduce = useReducedMotion();
   const words = text.split(" ");
   return (
     <Tag className={className} aria-label={text}>
@@ -56,7 +52,7 @@ export function SplitHeading({
         <span key={i} aria-hidden className="inline-block overflow-hidden pb-[0.12em] align-bottom">
           <motion.span
             className="inline-block"
-            initial={reduce ? false : { y: "110%" }}
+            initial={{ y: "110%" }}
             whileInView={{ y: 0 }}
             viewport={{ once: true, margin: "0px 0px -10% 0px" }}
             transition={{ duration: 0.8, delay: i * 0.06, ease }}

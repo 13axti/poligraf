@@ -11,3 +11,6 @@ export default async function NewProductPage() {
     </div>
   );
 }
+
+// Admin səhifələri giriş tələb edir: ani keçid yoxlaması lazım deyil (Next.js "instant" doğrulaması)
+export const instant = false;

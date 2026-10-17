@@ -8,6 +8,7 @@
  * (service role açarı yalnız bu skriptdə istifadə olunur — heç vaxt saytın koduna və git-ə qoymayın).
  */
 import { createClient } from "@supabase/supabase-js";
+import WS from "next/dist/compiled/ws"; // Node 20-də native WebSocket yoxdur; Supabase client bunu tələb edir
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { categories, products } from "../src/lib/mock-data.source";
@@ -18,7 +19,7 @@ if (!url || !key) {
   console.error("NEXT_PUBLIC_SUPABASE_URL və SUPABASE_SERVICE_ROLE_KEY .env.local-da olmalıdır");
   process.exit(1);
 }
-const sb = createClient(url, key, { auth: { persistSession: false } });
+const sb = createClient(url, key, { auth: { persistSession: false }, realtime: { transport: WS as never } });
 
 const cache = new Map<string, string>();
 async function upload(localPath: string): Promise<string> {
