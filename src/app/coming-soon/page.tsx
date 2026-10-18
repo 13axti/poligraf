@@ -6,7 +6,7 @@ import { MotionProvider } from "@/components/MotionProvider";
 import { Reveal } from "@/components/Reveal";
 import { SocialIcons } from "@/components/SocialIcons";
 import { getSettings } from "@/lib/settings";
-import { BRAND, phoneHref } from "@/lib/site-config";
+import { BRAND } from "@/lib/site-config";
 
 export const metadata = {
   title: "Tezliklə",
@@ -19,13 +19,14 @@ const chips = ["Poliqrafiya", "Promo hədiyyələr", "Reklam & Banner", "Vinil k
 async function Contact() {
   const s = await getSettings();
   return (
-    <div className="flex flex-wrap items-center gap-4">
-      <a
-        href={phoneHref(s.phone)}
-        className="rounded-full bg-[#ff7a1a] px-7 py-3.5 text-sm font-bold text-black transition hover:-translate-y-0.5 hover:bg-[#ff9a4a]"
-      >
-        {s.phone}
-      </a>
+    <div className="space-y-5">
+      <p className="max-w-md text-lg font-semibold leading-snug text-white sm:text-xl">
+        Öz sifarişini yarat, <span style={{ color: ORANGE }}>biz hazırlayaq</span>{" "}
+        <span aria-hidden>🧡</span>
+      </p>
+      <p className="max-w-md text-sm leading-relaxed text-white/60">
+        Fikrini göndər, qalan hər şeyi, dizayndan çapa və çatdırılmaya qədər, bizə burax. Hər detala sevgi ilə yanaşırıq.
+      </p>
       <SocialIcons socials={s.socials} />
     </div>
   );
@@ -55,15 +56,7 @@ export default function ComingSoonPage() {
         <div className="pointer-events-none absolute -left-40 top-1/4 -z-10 h-[28rem] w-[28rem] rounded-full bg-[#ff7a1a]/20 blur-[120px]" />
 
         <div className="mx-auto flex w-full max-w-[90rem] flex-col justify-between px-6 py-8 sm:px-12 sm:py-10 lg:px-20">
-          {/* yuxarı: loqo */}
-          <Reveal>
-            <div className="flex items-center gap-3 text-xl font-extrabold tracking-tight">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#ff7a1a] text-lg text-black">
-                {BRAND.charAt(0)}
-              </span>
-              {BRAND}
-            </div>
-          </Reveal>
+          <div />
 
           {/* mərkəz: mətn */}
           <div className="max-w-xl py-14">
