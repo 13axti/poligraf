@@ -20,6 +20,7 @@ export interface OrderPayload {
   note?: string;
   mockupDataUrl?: string;
   logoDataUrls?: string[]; // ən çox 2 loqo
+  aiDataUrl?: string; // AI təqdimat şəkli
 }
 
 const MAX_FILE = 6 * 1024 * 1024;
@@ -57,6 +58,7 @@ export async function submitOrder(input: OrderPayload): Promise<OrderResult> {
 
   const mockup = parseDataUrl(input.mockupDataUrl);
   const logos = (input.logoDataUrls ?? []).slice(0, 2).map(parseDataUrl).filter((x): x is NonNullable<ReturnType<typeof parseDataUrl>> => !!x);
+  const ai = parseDataUrl(input.aiDataUrl);
   const note = input.note?.trim().slice(0, 1000) ?? "";
   const id = randomUUID();
 
@@ -69,6 +71,7 @@ export async function submitOrder(input: OrderPayload): Promise<OrderResult> {
     const uploads = [
       ...(mockup ? [{ file: mockup, name: "mockup" }] : []),
       ...logos.map((file, i) => ({ file, name: `logo-${i + 1}` })),
+      ...(ai ? [{ file: ai, name: "ai" }] : []),
     ];
     for (const { file, name: fname } of uploads) {
       const p = `${id}/${fname}.${file.ext}`;

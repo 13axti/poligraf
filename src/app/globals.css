@@ -3,15 +3,19 @@
 :root {
   --background: #ffffff;
   --foreground: #0d0d0f;
+  --surface: #efefef;
+  --card: #ffffff;
+  --strong: #0d0d0f;
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-brand: #3d4dff;
-  --color-brand-dark: #2c39d6;
-  --color-accent: #ff4a2b;
-  --color-surface: #efefef;
+  --color-foreground: var(--strong);
+  --color-brand: #ff5a1f;
+  --color-brand-dark: #e04810;
+  --color-accent: #e5341d;
+  --color-surface: var(--surface);
+  --color-card: var(--card);
   --font-sans: var(--font-geist-sans);
 }
 
@@ -31,3 +35,100 @@ body {
   to { transform: translateX(-50%); }
 }
 .animate-marquee { animation: marquee 30s linear infinite; }
+
+/* Ictimai sayt: qara + narıncı tema (admin panel açıq qalır) */
+.site-dark {
+  --background: #161616;
+  --strong: #ff5a1f;
+  --surface: #1f1f1f;
+  --card: #1d1d1d;
+  --color-neutral-400: #7a7a7a;
+  --color-neutral-500: #a1a1a1;
+  --color-neutral-600: #b8b8b8;
+  --color-neutral-700: #d4d4d4;
+  background:
+    radial-gradient(70rem 36rem at 72% -4%, rgba(255, 90, 31, 0.22), transparent 62%),
+    radial-gradient(60rem 30rem at 105% 100%, rgba(255, 90, 31, 0.2), transparent 60%),
+    radial-gradient(40rem 24rem at -5% 55%, rgba(255, 90, 31, 0.08), transparent 60%),
+    #161616;
+  color: #f5f5f5;
+  color-scheme: dark;
+}
+body:has(.site-dark) { background: #161616; }
+.site-dark .bg-foreground.text-white { color: #0a0a0a; }
+.site-dark input,
+.site-dark select,
+.site-dark textarea { color: #f5f5f5; }
+
+/* Hero: arxa plan ellipsləri sağa-sola hərəkət edir */
+/* Sol və sağdan eyni anda yola çıxıb ortada toqquşur, sonra yenidən kənarlara qayıdır */
+@keyframes drift-a { 0%, 100% { transform: translateX(-10rem) scale(0.9); } 50% { transform: translateX(calc(50vw - 18rem)) scale(1.25); } }
+@keyframes drift-b { 0%, 100% { transform: translateX(10rem) scale(0.9); } 50% { transform: translateX(calc(-50vw + 16rem)) scale(1.25); } }
+@keyframes drift-c { 0%, 100% { transform: translateX(-30%); } 50% { transform: translateX(55%); } }
+.blob-a, .blob-b { animation-duration: 9s; animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); animation-iteration-count: infinite; }
+.blob-a { animation-name: drift-a; }
+.blob-b { animation-name: drift-b; }
+.blob-c { animation: drift-c 20s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .blob-a, .blob-b, .blob-c { animation: none; }
+}
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* ====== Admin: "sifariş masası" ======
+   Kağız-boz zəmin, tutqun mürəkkəb mətn, narıncı yalnız yeni/əsas əməliyyat üçün.
+   Statuslar çap mürəkkəblərinin rəngləri (cyan, sarı, qara) ilə fərqlənir. */
+.admin-ui {
+  --background: #eceef0;
+  --foreground: #1b1d1f;
+  --strong: #1b1d1f;
+  --surface: #e4e7ea;
+  --card: #ffffff;
+  --line: #d6dadd;
+  --ink-soft: #5b6368;
+  --color-neutral-400: #8b9398;
+  --color-neutral-500: #5b6368;
+  --color-neutral-600: #454c51;
+  --color-neutral-700: #2f3438;
+  font-family: var(--font-admin-ui), system-ui, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  letter-spacing: -0.005em;
+}
+.admin-ui h1,
+.admin-ui h2,
+.admin-ui .font-display {
+  font-family: var(--font-admin-display), var(--font-admin-ui), system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+/* Səthlər: kölgəsiz, nazik xətt */
+.admin-ui .bg-white { background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
+.admin-ui .shadow-xl, .admin-ui .shadow-lg, .admin-ui .shadow { box-shadow: none; }
+.admin-ui .rounded-3xl { border-radius: 12px; }
+.admin-ui .rounded-\[2rem\] { border-radius: 12px; }
+.admin-ui .rounded-2xl { border-radius: 8px; }
+.admin-ui .rounded-xl { border-radius: 6px; }
+.admin-ui input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.admin-ui select,
+.admin-ui textarea {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--line);
+  border-radius: 6px;
+}
+.admin-ui input:focus-visible, .admin-ui select:focus-visible, .admin-ui textarea:focus-visible,
+.admin-ui a:focus-visible, .admin-ui button:focus-visible {
+  outline: 2px solid #ff5a1f;
+  outline-offset: 2px;
+}
+.admin-ui .num { font-variant-numeric: tabular-nums; }
+
+/* Sifariş "proof" şəkli: çap kəsim işarələri (crop marks) */
+.crop { position: relative; padding: 14px; }
+.crop::before, .crop::after, .crop > i::before, .crop > i::after {
+  content: ""; position: absolute; width: 14px; height: 14px; border: 0 solid #1b1d1f;
+}
+.crop::before { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+.crop::after { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
+.crop > i::before { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
+.crop > i::after { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }

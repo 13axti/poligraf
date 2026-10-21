@@ -6,6 +6,7 @@ import type { Product } from "@/lib/types";
 import { MockupEditor, type MockupExport } from "./MockupEditor";
 import { PriceCalculator, type CalcSelection } from "./PriceCalculator";
 import { OrderDialog } from "./OrderDialog";
+import { AiPresent } from "./AiPresent";
 
 /** Məhsul səhifəsinin interaktiv hissəsi: mockup + kalkulyator + sifariş */
 export function ProductConfigurator({
@@ -18,6 +19,7 @@ export function ProductConfigurator({
   const exportRef = useRef<(() => Promise<MockupExport | null>) | null>(null);
   const [selection, setSelection] = useState<CalcSelection | null>(null);
   const [mockup, setMockup] = useState<MockupExport | null>(null);
+  const [aiImage, setAiImage] = useState<string | null>(null);
 
   async function openOrder(sel: CalcSelection) {
     setMockup((await exportRef.current?.()) ?? null);
@@ -30,10 +32,16 @@ export function ProductConfigurator({
         {product.mockups?.length ? (
           <div className="lg:sticky lg:top-24 lg:self-start">
             <MockupEditor mockups={product.mockups} productName={product.name} exportRef={exportRef} />
+            <AiPresent
+              productName={product.name}
+              getMockup={async () => (await exportRef.current?.()) ?? null}
+              value={aiImage}
+              onChange={setAiImage}
+            />
           </div>
         ) : (
           <div className="relative aspect-square overflow-hidden rounded-[2.5rem] bg-surface p-4 lg:sticky lg:top-24 lg:self-start">
-            <div className="relative h-full w-full overflow-hidden rounded-[2rem] bg-white">
+            <div className="relative h-full w-full overflow-hidden rounded-[2rem] bg-card">
               <Image src={product.image} alt={product.name} fill sizes="(max-width: 1024px) 100vw, 55vw" className="object-cover" priority />
             </div>
           </div>
@@ -55,7 +63,7 @@ export function ProductConfigurator({
       </div>
 
       {selection && (
-        <OrderDialog product={product} selection={selection} mockup={mockup} onClose={() => setSelection(null)} />
+        <OrderDialog product={product} selection={selection} mockup={mockup} aiImage={aiImage} onClose={() => setSelection(null)} />
       )}
     </>
   );

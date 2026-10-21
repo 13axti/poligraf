@@ -13,7 +13,7 @@ function Toggle({ id, field, value, on, off }: { id: string; field: "active" | "
       <input type="hidden" name="value" value={String(!value)} />
       <button
         title={value ? "Söndürmək üçün klik" : "Yandırmaq üçün klik"}
-        className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition ${
+        className={`rounded-md px-3 py-1.5 text-[11px] font-bold transition ${
           value ? (field === "featured" ? "bg-accent text-white" : "bg-emerald-500 text-white") : "bg-surface text-neutral-500 hover:bg-neutral-200"
         }`}
       >
@@ -43,7 +43,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-3xl font-extrabold tracking-tight">Məhsullar</h1>
+        <h1 className="text-3xl font-bold">Məhsullar</h1>
         <Link href="/admin/products/new" className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark">+ Yeni məhsul</Link>
       </div>
 
@@ -90,7 +90,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             ))}
           </ul>
         ) : (
-          <p className="p-8 text-center text-neutral-500">Məhsul tapılmadı.</p>
+          <div className="px-5 py-12 text-center"><p className="text-neutral-500">{sp.q || sp.cat ? "Bu axtarışa uyğun məhsul yoxdur." : "Kataloqda hələ məhsul yoxdur."}</p>{!(sp.q || sp.cat) && <Link href="/admin/products/new" className="mt-3 inline-block rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white">İlk məhsulu əlavə et</Link>}</div>
         )}
       </div>
     </div>

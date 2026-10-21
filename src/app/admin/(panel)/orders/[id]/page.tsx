@@ -24,7 +24,8 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const { data: files } = await supabase.storage.from("orders").list(o.id);
   const logoPaths = (files ?? []).filter((f) => /^logo/i.test(f.name)).map((f) => `${o.id}/${f.name}`).sort();
   if (!logoPaths.length && o.logo_path) logoPaths.push(o.logo_path);
-  const [mockupUrl, logoUrls] = await Promise.all([sign(o.mockup_path), Promise.all(logoPaths.map(sign))]);
+  const aiFile = (files ?? []).find((f) => /^ai\./i.test(f.name));
+  const [mockupUrl, logoUrls, aiUrl] = await Promise.all([sign(o.mockup_path), Promise.all(logoPaths.map(sign)), aiFile ? sign(`${o.id}/${aiFile.name}`) : Promise.resolve(null)]);
 
   const phoneDigits = String(o.customer_phone).replace(/[^\d]/g, "");
   const size =
@@ -41,29 +42,83 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
     ["Tarix", new Date(o.created_at).toLocaleString("az-AZ", { dateStyle: "long", timeStyle: "short" })],
   ];
 
+  const st = STATUS[o.status] ?? STATUS.new;
+  const proof = (url: string, alt: string) => (
+    <div className="crop">
+      <i />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={url} alt={alt} className="w-full bg-[var(--surface)]" />
+    </div>
+  );
+
   return (
-    <div className="space-y-4">
-      <Link href="/admin/orders" className="print:hidden text-sm font-semibold text-neutral-500 hover:text-foreground">← Sifarişlər</Link>
+    <div className="space-y-6">
+      <Link href="/admin/orders" className="print:hidden text-sm font-semibold text-neutral-600 underline-offset-4 hover:text-foreground hover:underline">Sifarişlərə qayıt</Link>
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-3xl font-extrabold tracking-tight">Sifariş #{o.id.slice(0, 8)}</h1>
-        <span className={`rounded-full px-3 py-1 text-xs font-bold ${STATUS[o.status].cls}`}>{STATUS[o.status].label}</span>
+        <h1 className="text-3xl font-bold">{o.product_name}</h1>
+        <span className="flex items-center gap-2 rounded-md bg-white px-2.5 py-1 text-sm font-semibold">
+          <i className="h-2.5 w-2.5 rounded-[3px]" style={{ background: st.dot }} />
+          {st.label}
+        </span>
+        <span className="num text-sm text-neutral-500">#{o.id.slice(0, 8)}</span>
         <div className="ml-auto flex gap-2 print:hidden">
           {NEXT[o.status] && (
             <form action={setOrderStatus}>
               <input type="hidden" name="id" value={o.id} />
               <input type="hidden" name="status" value={NEXT[o.status]!.to} />
-              <button className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark">{NEXT[o.status]!.label} →</button>
+              <button className="rounded-md bg-[#ff5a1f] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#e04810]">{NEXT[o.status]!.label}</button>
             </form>
           )}
-          <PrintButton className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold hover:bg-foreground hover:text-white" />
+          <PrintButton className="rounded-md bg-white px-4 py-2.5 text-sm font-semibold hover:bg-[var(--surface)]" />
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="space-y-4">
-          <div className="rounded-3xl bg-white p-6">
-            <dl className="divide-y divide-neutral-100">
-              {rows.map(([k, v]) => (
+      <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr]">
+        {/* Sol: çap üçün nə lazımdır */}
+        <div className="space-y-8">
+          <section>
+            <h2 className="mb-3 text-lg font-bold">Müştərinin göndərdiyi nümunə</h2>
+            {mockupUrl ? (
+              <>
+                {proof(mockupUrl, "Mockup")}
+                <a href={mockupUrl} download className="mt-2 inline-block text-sm font-semibold text-neutral-600 underline-offset-4 hover:text-foreground hover:underline">Şəkli yüklə</a>
+              </>
+            ) : (
+              <p className="rounded-xl bg-white p-5 text-sm text-neutral-500">Müştəri loqo yükləməyib, sifariş loqosuz gəlib.</p>
+            )}
+          </section>
+
+          {logoUrls.filter(Boolean).length > 0 && (
+            <section>
+              <h2 className="mb-3 text-lg font-bold">Orijinal loqolar (çap faylı)</h2>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {logoUrls.filter(Boolean).map((u, i, all) => (
+                  <div key={i} className="rounded-xl bg-white p-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={u!} alt={`Loqo ${i + 1}`} className="h-36 w-full rounded-md bg-[var(--surface)] object-contain p-3" />
+                    <a href={u!} download className="mt-2 inline-block text-sm font-semibold text-neutral-600 underline-offset-4 hover:text-foreground hover:underline">
+                      Loqo{all.length > 1 ? ` ${i + 1}` : ""} yüklə
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {aiUrl && (
+            <section>
+              <h2 className="mb-3 text-lg font-bold">AI təqdimat şəkli</h2>
+              {proof(aiUrl, "AI təqdimat")}
+              <a href={aiUrl} download className="mt-2 inline-block text-sm font-semibold text-neutral-600 underline-offset-4 hover:text-foreground hover:underline">Şəkli yüklə</a>
+            </section>
+          )}
+        </div>
+
+        {/* Sağ: sifariş və müştəri */}
+        <div className="space-y-6">
+          <section className="rounded-xl bg-white p-5">
+            <dl className="divide-y divide-[var(--line)]">
+              {rows.slice(1).map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4 py-2.5 text-sm">
                   <dt className="text-neutral-500">{k}</dt>
                   <dd className="text-right font-medium">{v}</dd>
@@ -71,52 +126,29 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               ))}
             </dl>
             <div className="mt-4 flex flex-wrap gap-2 print:hidden">
-              <a href={`tel:${o.customer_phone}`} className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-white">Zəng et</a>
-              <a href={`https://wa.me/${phoneDigits}`} target="_blank" rel="noopener noreferrer" className="rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white">WhatsApp</a>
+              <a href={`tel:${o.customer_phone}`} className="rounded-md bg-[#1b1d1f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-black">Zəng et</a>
+              <a href={`https://wa.me/${phoneDigits}`} target="_blank" rel="noopener noreferrer" className="rounded-md bg-white px-4 py-2.5 text-sm font-semibold ring-1 ring-inset ring-[var(--line)] hover:bg-[var(--surface)]">WhatsApp-da yaz</a>
             </div>
-          </div>
+          </section>
 
-          <form action={updateOrder} className="space-y-3 rounded-3xl bg-white p-6 print:hidden">
+          <form action={updateOrder} className="space-y-3 rounded-xl bg-white p-5 print:hidden">
             <input type="hidden" name="id" value={o.id} />
-            <h2 className="font-extrabold">Status</h2>
-            <select name="status" defaultValue={o.status} className="w-full rounded-2xl bg-surface px-4 py-3 font-semibold outline-none">
+            <h2 className="text-lg font-bold">Status və qeyd</h2>
+            <select name="status" defaultValue={o.status} className="w-full px-3 py-2.5 font-medium outline-none">
               {Object.entries(STATUS).map(([k, v]) => (
                 <option key={k} value={k}>{v.label}</option>
               ))}
             </select>
-            <textarea name="admin_note" defaultValue={o.admin_note ?? ""} rows={3} placeholder="Daxili qeyd (müştəri görmür)" className="w-full rounded-2xl bg-surface px-4 py-3 outline-none" />
-            <button className="rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-dark">Yadda saxla</button>
+            <textarea name="admin_note" defaultValue={o.admin_note ?? ""} rows={3} placeholder="Daxili qeyd (müştəri görmür)" className="w-full px-3 py-2.5 outline-none" />
+            <button className="rounded-md bg-[#1b1d1f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-black">Dəyişiklikləri saxla</button>
+          </form>
+
+          <form action={deleteOrder} className="print:hidden">
+            <input type="hidden" name="id" value={o.id} />
+            <ConfirmButton message="Sifariş və şəkilləri silinsin?" className="text-sm font-semibold text-neutral-500 underline-offset-4 hover:text-[#c42b0d] hover:underline">Sifarişi sil</ConfirmButton>
           </form>
         </div>
-
-        <div className="space-y-4">
-          <div className="rounded-3xl bg-white p-6">
-            <h2 className="mb-3 font-extrabold">Nümunə (mockup)</h2>
-            {mockupUrl ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={mockupUrl} alt="Mockup" className="w-full rounded-2xl bg-surface" />
-                <a href={mockupUrl} download className="mt-3 inline-block text-sm font-semibold text-brand">Yüklə</a>
-              </>
-            ) : (
-              <p className="text-sm text-neutral-500">Müştəri loqo yükləməyib.</p>
-            )}
-          </div>
-          {logoUrls.filter(Boolean).map((u, i, all) => (
-            <div key={i} className="rounded-3xl bg-white p-6">
-              <h2 className="mb-3 font-extrabold">Orijinal loqo{all.length > 1 ? ` ${i + 1}` : ""}</h2>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={u!} alt={`Loqo ${i + 1}`} className="max-h-56 rounded-2xl bg-surface object-contain p-4" />
-              <a href={u!} download className="mt-3 inline-block text-sm font-semibold text-brand">Yüklə</a>
-            </div>
-          ))}
-        </div>
       </div>
-
-      <form action={deleteOrder} className="print:hidden">
-        <input type="hidden" name="id" value={o.id} />
-        <ConfirmButton message="Sifariş və şəkilləri silinsin?" className="text-sm font-semibold text-neutral-400 hover:text-accent">Sifarişi sil</ConfirmButton>
-      </form>
     </div>
   );
 }

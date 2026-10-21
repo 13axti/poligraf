@@ -13,7 +13,7 @@ interface Cat {
   sort_order: number;
 }
 
-const field = "w-full rounded-2xl border-2 border-transparent bg-surface px-4 py-2.5 text-sm font-semibold outline-none focus:border-brand";
+const field = "w-full px-3 py-2 text-sm font-medium outline-none";
 
 export function CategoryForm({ category }: { category?: Cat }) {
   const [error, setError] = useState("");
@@ -28,12 +28,12 @@ export function CategoryForm({ category }: { category?: Cat }) {
           if (res?.error) setError(res.error);
         })
       }
-      className={`grid items-start gap-3 rounded-3xl p-4 sm:grid-cols-[88px_1fr_1fr_90px_auto] ${category ? "bg-white" : "border-2 border-dashed border-neutral-300"}`}
+      className={`grid items-center gap-x-3 gap-y-2 px-4 py-3 sm:grid-cols-[44px_1.1fr_1fr_1.4fr_64px_auto] ${category ? "" : "rounded-xl bg-white"}`}
     >
       <input type="hidden" name="id" value={category?.id ?? ""} />
       <input type="hidden" name="image_url" value={category?.image ?? ""} />
-      <label className="relative grid h-[88px] w-[88px] cursor-pointer place-items-center overflow-hidden rounded-2xl bg-surface text-xs font-semibold text-neutral-500">
-        {preview ? <Image src={preview} alt="" fill sizes="88px" className="object-cover" unoptimized={preview.startsWith("blob:")} /> : "Şəkil"}
+      <label className="relative grid h-11 w-11 cursor-pointer place-items-center overflow-hidden rounded-md bg-[var(--surface)] text-[11px] font-semibold text-neutral-500">
+        {preview ? <Image src={preview} alt="" fill sizes="44px" className="object-cover" unoptimized={preview.startsWith("blob:")} /> : "Şəkil"}
         <input
           type="file"
           name="image"
@@ -45,14 +45,12 @@ export function CategoryForm({ category }: { category?: Cat }) {
           }}
         />
       </label>
-      <div className="space-y-2">
-        <input name="name" defaultValue={category?.name} placeholder="Ad" required className={field} />
-        <input name="slug" defaultValue={category?.slug} placeholder="keçid (boş = avtomatik)" className={field} />
-      </div>
-      <textarea name="description" defaultValue={category?.description ?? ""} placeholder="Təsvir" rows={3} className={field} />
+      <input name="name" defaultValue={category?.name} placeholder="Ad" required className={field} />
+      <input name="slug" defaultValue={category?.slug} placeholder={category ? "keçid" : "keçid (boşdursa avtomatik)"} className={field} />
+      <input name="description" defaultValue={category?.description ?? ""} placeholder="Qısa təsvir (istəyə görə)" className={`${field} max-sm:hidden`} />
       <input name="sort_order" type="number" defaultValue={category?.sort_order ?? 0} aria-label="Sıra" className={field} />
-      <div className="flex flex-col gap-2">
-        <button disabled={pending} className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand disabled:opacity-60">
+      <div className="flex items-center gap-3">
+        <button disabled={pending} className="rounded-md bg-[#1b1d1f] px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60">
           {category ? "Saxla" : "Əlavə et"}
         </button>
         {category && (
@@ -64,13 +62,13 @@ export function CategoryForm({ category }: { category?: Cat }) {
               fd.set("id", category.id);
               start(() => deleteCategory(fd));
             }}
-            className="text-xs font-semibold text-neutral-400 hover:text-accent"
+            className="text-sm font-semibold text-neutral-500 hover:text-[#c42b0d]"
           >
             Sil
           </button>
         )}
       </div>
-      {error && <p className="text-sm font-semibold text-accent sm:col-span-5">{error}</p>}
+      {error && <p className="text-sm font-semibold text-accent sm:col-span-6">{error}</p>}
     </form>
   );
 }

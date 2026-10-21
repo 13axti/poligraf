@@ -61,7 +61,7 @@ export function PriceCalculator({
                 className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                   v.id === variantId
                     ? "bg-foreground text-white"
-                    : "bg-white hover:bg-foreground/10"
+                    : "bg-card hover:bg-foreground/10"
                 }`}
               >
                 {v.name}
@@ -84,7 +84,7 @@ export function PriceCalculator({
             min={product.minOrderQty ?? 1}
             value={quantity}
             onChange={(e) => setQuantity(Number(e.target.value))}
-            className="w-full rounded-2xl border-2 border-transparent bg-white px-4 py-3 font-semibold outline-none transition focus:border-brand"
+            className="w-full rounded-2xl border-2 border-transparent bg-card px-4 py-3 font-semibold outline-none transition focus:border-brand"
           />
           {product.priceTiers && (
             <div className="mt-2 flex flex-wrap gap-1.5 text-xs text-neutral-500">
@@ -92,7 +92,7 @@ export function PriceCalculator({
                 <button
                   key={t.minQty}
                   onClick={() => setQuantity(t.minQty)}
-                  className="rounded-full bg-white px-3 py-1.5 font-medium transition hover:bg-brand hover:text-white"
+                  className="rounded-full bg-card px-3 py-1.5 font-medium transition hover:bg-brand hover:text-white"
                 >
                   {t.minQty}+ → {AZN(t.unitPrice)}
                 </button>
@@ -114,7 +114,7 @@ export function PriceCalculator({
               min={product.minWidthCm ?? 1}
               value={widthCm}
               onChange={(e) => setWidthCm(Number(e.target.value))}
-              className="w-full rounded-2xl border-2 border-transparent bg-white px-4 py-3 font-semibold outline-none transition focus:border-brand"
+              className="w-full rounded-2xl border-2 border-transparent bg-card px-4 py-3 font-semibold outline-none transition focus:border-brand"
             />
           </div>
           <div>
@@ -126,16 +126,16 @@ export function PriceCalculator({
               min={product.minHeightCm ?? 1}
               value={heightCm}
               onChange={(e) => setHeightCm(Number(e.target.value))}
-              className="w-full rounded-2xl border-2 border-transparent bg-white px-4 py-3 font-semibold outline-none transition focus:border-brand"
+              className="w-full rounded-2xl border-2 border-transparent bg-card px-4 py-3 font-semibold outline-none transition focus:border-brand"
             />
           </div>
         </div>
       )}
 
       {/* Nəticə */}
-      <div className="mt-6 rounded-3xl bg-foreground p-5 text-white">
+      <div className="mt-6 rounded-3xl bg-gradient-to-br from-[#241609] to-[#150e07] p-5 text-white ring-1 ring-brand/25">
         <div className="text-sm text-white/70">{result.breakdown}</div>
-        <div className="mt-1 text-4xl font-extrabold tracking-tight">
+        <div className="mt-1 text-4xl font-extrabold tracking-tight text-[#ffb27a]">
           {result.total > 0 ? AZN(result.total) : "—"}
         </div>
       </div>

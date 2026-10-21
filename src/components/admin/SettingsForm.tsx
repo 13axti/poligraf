@@ -9,7 +9,7 @@ type Client = { key: string; name: string; logo?: string; preview?: string };
 
 const field =
   "w-full rounded-2xl border-2 border-transparent bg-surface px-4 py-2.5 text-sm font-semibold outline-none transition focus:border-brand";
-const label = "mb-1 block text-xs font-bold uppercase tracking-wide text-neutral-500";
+const label = "mb-1 block text-sm font-semibold text-neutral-600";
 const card = "rounded-3xl bg-white p-5 sm:p-6";
 const uid = () => Math.random().toString(36).slice(2, 9);
 
@@ -66,7 +66,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
       )}
 
       <section className={card}>
-        <h2 className="mb-4 font-extrabold">Əlaqə məlumatı</h2>
+        <h2 className="mb-4 font-bold">Əlaqə məlumatı</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {text("name", "Şirkət adı")}
           {text("phone", "Telefon", "+994 50 000 00 00")}
@@ -77,7 +77,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
       </section>
 
       <section className={card}>
-        <h2 className="mb-1 font-extrabold">Sosial şəbəkələr</h2>
+        <h2 className="mb-1 font-bold">Sosial şəbəkələr</h2>
         <p className="mb-4 text-xs text-neutral-500">Boş buraxsanız, ikon saytda görünməz.</p>
         <div className="grid gap-3 sm:grid-cols-2">
           {socials.map((so, i) => (
@@ -95,7 +95,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
       </section>
 
       <section className={card}>
-        <h2 className="mb-1 font-extrabold">Çalışdığımız şirkətlər</h2>
+        <h2 className="mb-1 font-bold">Çalışdığımız şirkətlər</h2>
         <p className="mb-4 text-xs text-neutral-500">
           Ana səhifədəki "Bizə güvənən şirkətlər" zolağı. Şəffaf fonlu PNG və ya SVG loqo yükləyin. Yalnız real müştərilərinizi əlavə edin.
         </p>

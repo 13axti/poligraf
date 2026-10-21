@@ -14,7 +14,7 @@ export default async function SettingsPage() {
   };
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-extrabold tracking-tight">Sayt ayarları</h1>
+      <h1 className="text-3xl font-bold">Sayt ayarları</h1>
       <p className="text-sm text-neutral-500">Burada yazdığınız məlumat saytın başlığında, altlığında və ana səhifədəki müştəri zolağında görünür.</p>
       <SettingsForm settings={settings} />
     </div>

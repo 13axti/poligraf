@@ -11,11 +11,13 @@ export function OrderDialog({
   product,
   selection,
   mockup,
+  aiImage,
   onClose,
 }: {
   product: Product;
   selection: CalcSelection;
   mockup: MockupExport | null;
+  aiImage?: string | null;
   onClose: () => void;
 }) {
   const [name, setName] = useState("");
@@ -41,6 +43,7 @@ export function OrderDialog({
         note,
         mockupDataUrl: mockup?.mockup,
         logoDataUrls: mockup?.logos,
+        aiDataUrl: aiImage ?? undefined,
       });
       if (res.ok) setDoneId(res.id);
       else setError(res.error);
@@ -56,13 +59,13 @@ export function OrderDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-center bg-foreground/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
-        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-[2rem] bg-white p-6 sm:p-8"
+        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-[2rem] bg-card p-6 sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         {doneId ? (
@@ -93,7 +96,7 @@ export function OrderDialog({
             <div className="mt-4 flex items-center gap-4 rounded-3xl bg-surface p-3">
               {mockup && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={mockup.mockup} alt="Nümunə" className="h-20 w-20 rounded-2xl bg-white object-cover" />
+                <img src={mockup.mockup} alt="Nümunə" className="h-20 w-20 rounded-2xl bg-card object-cover" />
               )}
               <div className="min-w-0 text-sm">
                 <p className="truncate font-bold">{product.name}</p>

@@ -6,7 +6,9 @@ import { getSettings } from "@/lib/settings";
 import { phoneHref } from "@/lib/site-config";
 import { Reveal, SplitHeading } from "@/components/Reveal";
 import { HomeHero } from "@/components/HomeHero";
-import { StickySteps } from "@/components/StickySteps";
+// T-shirt kampaniyası (dizayn göndər, gəliri böl) müvəqqəti söndürülüb. Sonra qaytarmaq üçün:
+// import { Campaign } from "@/components/Campaign";
+// import { Suspense } from "react";
 import { Perks } from "@/components/Perks";
 
 export default async function HomePage() {
@@ -63,7 +65,7 @@ export default async function HomePage() {
                   <Image src={c.image} alt={c.name} fill sizes="(max-width:640px) 50vw, 33vw"
                     className="object-cover transition duration-500 group-hover:scale-105" />
                 )}
-                <span className="absolute bottom-4 left-4 rounded-full bg-white px-4 py-2 text-sm font-bold">
+                <span className="absolute bottom-4 left-4 rounded-full bg-card px-4 py-2 text-sm font-bold">
                   {c.name}
                 </span>
               </Link>
@@ -71,11 +73,6 @@ export default async function HomePage() {
             ))}
           </div>
         </Reveal>
-      </section>
-
-      {/* NECƏ İŞLƏYİR — sticky */}
-      <section id="nece" className="scroll-mt-16 pb-12">
-        <StickySteps />
       </section>
 
       {/* POPULYAR */}
@@ -119,6 +116,9 @@ export default async function HomePage() {
         </div>
       </section>
       )}
+
+      {/* T-SHIRT KAMPANİYASI: müvəqqəti söndürülüb. Qaytarmaq üçün yuxarıdakı import-ları açın və bunu əlavə edin:
+          <Suspense fallback={<div id="kampaniya" className="min-h-96" />}><Campaign /></Suspense> */}
     </>
   );
 }

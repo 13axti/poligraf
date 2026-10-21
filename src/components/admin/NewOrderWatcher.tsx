@@ -59,8 +59,8 @@ export function NewOrderWatcher() {
       }}
       className="fixed bottom-5 right-5 z-50 max-w-xs rounded-3xl bg-accent p-5 text-left text-white shadow-2xl"
     >
-      <p className="text-xs font-bold uppercase tracking-widest text-white/80">Yeni sifariş</p>
-      <p className="mt-1 font-extrabold">{toast.product_name}</p>
+      <p className="text-xs font-bold text-white/80">Yeni sifariş</p>
+      <p className="mt-1 font-bold">{toast.product_name}</p>
       <p className="text-sm text-white/90">
         {toast.customer_name} · {Number(toast.computed_price).toFixed(2)} ₼
       </p>

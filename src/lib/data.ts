@@ -15,18 +15,20 @@ function fallback<T>(what: string, message: string, mockValue: () => T): T {
 }
 
 /**
- * Development-də bazada hələ məhsul yoxdursa, sayt boş qalmasın deyə mock kataloq göstərilir.
+ * Development-də baza tamam boşdursa (nə məhsul, nə kateqoriya), sayt boş qalmasın deyə mock kataloq göstərilir.
  * Production-da bu işləmir: orada boş baza = boş kataloq.
  */
 async function shouldUseMock(): Promise<boolean> {
   if (!supabaseConfigured) return true;
   if (process.env.NODE_ENV === "production") return false;
-  const { count, error } = await createPublicClient()
-    .from("products")
-    .select("*", { count: "exact", head: true })
-    .eq("active", true);
-  if (error || !count) {
-    console.warn("[data] bazada aktiv məhsul yoxdur, mock kataloq göstərilir (yalnız development). Seed: npx tsx --env-file=.env.local scripts/seed.ts");
+  const sb = createPublicClient();
+  const [products, categories] = await Promise.all([
+    sb.from("products").select("*", { count: "exact", head: true }).eq("active", true),
+    sb.from("categories").select("*", { count: "exact", head: true }),
+  ]);
+  // Bazada kateqoriya və ya məhsul varsa real data göstərilir (məhsul yoxdursa siyahılar boş olur)
+  if (products.error || categories.error || (!products.count && !categories.count)) {
+    console.warn("[data] bazada nə məhsul, nə kateqoriya var, mock kataloq göstərilir (yalnız development). Seed: npx tsx --env-file=.env.local scripts/seed.ts");
     return true;
   }
   return false;

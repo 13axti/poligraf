@@ -10,7 +10,7 @@ type Draft = ProductMockup & { fileKey?: string; preview?: string };
 
 const field =
   "w-full rounded-2xl border-2 border-transparent bg-surface px-4 py-2.5 text-sm font-semibold outline-none transition focus:border-brand";
-const label = "mb-1 block text-xs font-bold uppercase tracking-wide text-neutral-500";
+const label = "mb-1 block text-sm font-semibold text-neutral-600";
 const card = "rounded-3xl bg-white p-5 sm:p-6";
 const uid = () => Math.random().toString(36).slice(2, 9);
 
@@ -124,7 +124,7 @@ export function ProductForm({
 
       {/* Əsas */}
       <section className={card}>
-        <h2 className="mb-4 font-extrabold">Əsas məlumat</h2>
+        <h2 className="mb-4 font-bold">Əsas məlumat</h2>
         <div className="grid gap-4 sm:grid-cols-[160px_1fr]">
           <div>
             <span className={label}>Əsas şəkil</span>
@@ -198,14 +198,14 @@ export function ProductForm({
 
       {/* Qiymət */}
       <section className={card}>
-        <h2 className="mb-4 font-extrabold">Qiymət</h2>
+        <h2 className="mb-4 font-bold">Qiymət</h2>
         <div className="mb-4 flex gap-2">
           {([["per_unit", "Say ilə (ədəd)"], ["per_sqm", "Ölçü ilə (m²)"]] as const).map(([v, l]) => (
             <button
               key={v}
               type="button"
               onClick={() => setModel(v)}
-              className={`rounded-full px-5 py-2 text-sm font-semibold ${model === v ? "bg-foreground text-white" : "bg-surface"}`}
+              className={`rounded-md px-5 py-2 text-sm font-semibold ${model === v ? "bg-foreground text-white" : "bg-surface"}`}
             >
               {l}
             </button>
@@ -250,7 +250,7 @@ export function ProductForm({
 
       {/* Variantlar */}
       <section className={card}>
-        <h2 className="mb-1 font-extrabold">Variantlar</h2>
+        <h2 className="mb-1 font-bold">Variantlar</h2>
         <p className="mb-4 text-xs text-neutral-500">Rəng, material və s. Əlavə qiymət ədəd (və ya m²) başınadır, 0 yazsanız fərq yoxdur.</p>
         <div className="space-y-2">
           {variants.map((v, i) => (
@@ -267,7 +267,7 @@ export function ProductForm({
 
       {/* Mockup */}
       <section className={card}>
-        <h2 className="mb-1 font-extrabold">Mockup şəkilləri (loqo yoxlama)</h2>
+        <h2 className="mb-1 font-bold">Mockup şəkilləri (loqo yoxlama)</h2>
         <p className="mb-4 text-xs text-neutral-500">
           Şəkil yükləyin və loqonun düşəcəyi yeri şəkildə klik edərək seçin. Müştəri sonra loqosunu bu şəkildə görəcək.
         </p>

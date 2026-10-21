@@ -300,3 +300,76 @@ export async function duplicateProduct(formData: FormData) {
   updateTag("catalog");
   redirect(created ? `/admin/products/${created.id}` : "/admin/products");
 }
+
+/* ---------------- Qiymətlər: sürətli redaktə ---------------- */
+
+export async function saveProductPrice(formData: FormData): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+  const id = String(formData.get("id"));
+  const model = formData.get("model") === "per_sqm" ? "per_sqm" : "per_unit";
+  const num = (k: string) => {
+    const v = Number(formData.get(k));
+    return Number.isFinite(v) && v >= 0 ? v : 0;
+  };
+
+  let patch: Record<string, unknown>;
+  if (model === "per_sqm") {
+    if (num("sqm") <= 0) return { error: "1 m² qiymətini yazın" };
+    patch = {
+      pricing_model: model,
+      price_per_sqm: num("sqm"),
+      min_width_cm: num("minW") || null,
+      min_height_cm: num("minH") || null,
+    };
+  } else {
+    let tiers: { minQty: number; unitPrice: number }[] = [];
+    try {
+      tiers = JSON.parse(String(formData.get("tiers"))) as typeof tiers;
+    } catch {
+      return { error: "Qiymət pillələri oxunmadı" };
+    }
+    tiers = tiers
+      .filter((t) => t.minQty > 0 && t.unitPrice > 0)
+      .sort((a, b) => a.minQty - b.minQty);
+    if (!tiers.length) return { error: "Ən azı bir qiymət pilləsi yazın" };
+    patch = { pricing_model: model, price_tiers: tiers, min_order_qty: Math.max(num("minQty"), 1) };
+  }
+
+  const { error } = await supabase.from("products").update(patch).eq("id", id);
+  if (error) return { error: error.message };
+  updateTag("catalog");
+  return { ok: true };
+}
+
+/* ---------------- T-shirt kampaniyası: dizaynlar ---------------- */
+
+export async function setDesignApproved(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  await supabase
+    .from("designs")
+    .update({ approved: formData.get("approved") === "true" })
+    .eq("id", String(formData.get("id")));
+  updateTag("designs");
+  redirect("/admin/designs");
+}
+
+export async function saveDesignStats(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const n = (k: string) => Math.max(0, Math.floor(Number(formData.get(k)) || 0));
+  await supabase
+    .from("designs")
+    .update({ views: n("views"), sales: n("sales"), admin_note: String(formData.get("admin_note") ?? "").slice(0, 500) })
+    .eq("id", String(formData.get("id")));
+  updateTag("designs");
+  redirect("/admin/designs");
+}
+
+export async function deleteDesign(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = String(formData.get("id"));
+  const { data: files } = await supabase.storage.from("designs").list(id);
+  if (files?.length) await supabase.storage.from("designs").remove(files.map((f) => `${id}/${f.name}`));
+  await supabase.from("designs").delete().eq("id", id);
+  updateTag("designs");
+  redirect("/admin/designs");
+}

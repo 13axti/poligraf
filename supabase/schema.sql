@@ -124,3 +124,54 @@ exception
   when duplicate_object then null;
   when undefined_object then null;
 end $$;
+
+-- ============ T-SHIRT KAMPANİYASI: istifadəçi dizaynları ============
+-- Dizayn əvvəl approved=false düşür; admin təsdiqləyəndə (approved=true) saytda görünür.
+create table if not exists public.designs (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  title text not null,
+  designer_name text not null,
+  designer_phone text not null,
+  kind text not null default 'artwork' check (kind in ('shirt', 'artwork')), -- shirt: hazır t-shirt şəkli, artwork: yalnız dizayn
+  image_path text not null,  -- designs bucket-də yol
+  approved boolean not null default false,
+  views int not null default 0,
+  sales int not null default 0,
+  admin_note text
+);
+create index if not exists designs_approved_idx on public.designs(approved, created_at desc);
+alter table public.designs enable row level security;
+
+drop policy if exists "designs read approved" on public.designs;
+create policy "designs read approved" on public.designs for select to anon using (approved);
+drop policy if exists "designs insert" on public.designs;
+create policy "designs insert" on public.designs for insert to anon
+  with check (approved = false and views = 0 and sales = 0 and char_length(designer_name) between 1 and 100 and char_length(title) between 1 and 80);
+drop policy if exists "designs admin" on public.designs;
+create policy "designs admin" on public.designs for all to authenticated using (true) with check (true);
+
+-- Sifarişi dizaynla əlaqələndirmək üçün
+alter table public.orders add column if not exists design_id uuid references public.designs(id) on delete set null;
+
+-- Baxış və satış sayğacları: anon birbaşa yaza bilmir, yalnız bu funksiyalarla +1 edə bilir
+create or replace function public.design_view(d uuid) returns void
+  language sql security definer set search_path = public as
+  $$ update public.designs set views = views + 1 where id = d and approved; $$;
+create or replace function public.design_sale(d uuid) returns void
+  language sql security definer set search_path = public as
+  $$ update public.designs set sales = sales + 1 where id = d and approved; $$;
+grant execute on function public.design_view(uuid) to anon, authenticated;
+grant execute on function public.design_sale(uuid) to anon, authenticated;
+
+insert into storage.buckets (id, name, public) values ('designs', 'designs', true)
+  on conflict (id) do nothing;
+drop policy if exists "designs files read" on storage.objects;
+create policy "designs files read" on storage.objects for select to anon, authenticated
+  using (bucket_id = 'designs');
+drop policy if exists "designs files upload" on storage.objects;
+create policy "designs files upload" on storage.objects for insert to anon, authenticated
+  with check (bucket_id = 'designs');
+drop policy if exists "designs files admin" on storage.objects;
+create policy "designs files admin" on storage.objects for all to authenticated
+  using (bucket_id = 'designs') with check (bucket_id = 'designs');

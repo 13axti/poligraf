@@ -37,12 +37,12 @@ const perks = [
 
 export function Perks() {
   return (
-    <section className="bg-brand px-4 pb-14 pt-4 text-white">
+    <section className="px-4 pb-14 pt-4 text-white">
       <div className="mx-auto grid max-w-7xl gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
         {perks.map((p, i) => (
           <Reveal key={p.t} delay={i * 90} className="h-full">
-            <div className="group flex h-full items-start gap-4 rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur transition duration-300 hover:-translate-y-1 hover:bg-white hover:text-foreground">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-brand transition duration-300 group-hover:bg-brand group-hover:text-white">
+            <div className="group flex h-full items-start gap-4 rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-brand/40 hover:bg-white/10">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand/15 text-brand transition duration-300 group-hover:bg-brand group-hover:text-black">
                 <svg
                   viewBox="0 0 24 24"
                   className="h-6 w-6 fill-none stroke-current"
@@ -56,7 +56,7 @@ export function Perks() {
               </span>
               <div>
                 <h3 className="font-bold leading-tight">{p.t}</h3>
-                <p className="mt-1 text-sm text-white/75 transition duration-300 group-hover:text-neutral-600">
+                <p className="mt-1 text-sm text-white/75 transition duration-300 group-hover:text-white/90">
                   {p.d}
                 </p>
               </div>

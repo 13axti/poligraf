@@ -16,7 +16,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
 
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-extrabold tracking-tight">{row.name}</h1>
+      <h1 className="text-3xl font-bold">{row.name}</h1>
       <ProductForm categories={cats ?? []} product={{ ...mapProduct(row), active: row.active }} />
       <form action={deleteProduct}>
         <input type="hidden" name="id" value={row.id} />
