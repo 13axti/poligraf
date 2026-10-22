@@ -26,7 +26,7 @@ export function SocialIcons({
           target="_blank"
           rel="noopener noreferrer"
           aria-label={s.label}
-          className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white hover:text-foreground"
+          className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white transition hover:bg-card hover:text-black"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current">
             <path d={paths[s.id]} />
