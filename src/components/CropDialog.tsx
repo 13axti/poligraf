@@ -93,8 +93,8 @@ export function CropDialog({
   const px = { w: Math.round(crop.w * nw), h: Math.round(crop.h * nh) };
 
   return (
-    <div className="fixed inset-0 z-[60] grid place-items-center bg-black/80 p-3 backdrop-blur-sm" onClick={onClose}>
-      <div role="dialog" aria-modal="true" className="w-full max-w-2xl rounded-[2rem] bg-card p-5 sm:p-7" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[60] grid place-items-center bg-foreground/70 p-3 backdrop-blur-sm" onClick={onClose}>
+      <div role="dialog" aria-modal="true" className="w-full max-w-2xl rounded-[2rem] bg-white p-5 sm:p-7" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-extrabold tracking-tight">Loqonu kəs</h2>
           <button onClick={onClose} aria-label="Bağla" className="text-2xl leading-none text-neutral-400 hover:text-foreground">
@@ -125,7 +125,7 @@ export function CropDialog({
                   onPointerDown={(e) => down(h.id, e)}
                   onPointerMove={move}
                   onPointerUp={() => (drag.current = null)}
-                  className={`absolute h-4 w-4 rounded-full border-2 border-brand bg-card shadow ${h.cls}`}
+                  className={`absolute h-4 w-4 rounded-full border-2 border-brand bg-white shadow ${h.cls}`}
                   style={{ cursor: h.cursor }}
                 />
               ))}

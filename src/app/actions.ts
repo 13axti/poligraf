@@ -3,6 +3,8 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { after } from "next/server";
+import { notifyNewOrder } from "@/lib/notify";
 import { getProductBySlug } from "@/lib/data";
 import { calculatePrice } from "@/lib/pricing";
 import { createPublicClient, supabaseConfigured } from "@/lib/supabase/public";
@@ -100,6 +102,20 @@ export async function submitOrder(input: OrderPayload): Promise<OrderResult> {
       logo_path: logoPath,
     });
     if (error) return { ok: false, error: "Sifariş göndərilmədi, yenidən cəhd edin" };
+    // Telegram bildirişi cavabı gecikdirməsin deyə cavabdan sonra göndərilir
+    after(() =>
+      notifyNewOrder({
+        id,
+        product: product.name,
+        variant: variant?.name,
+        size: product.pricingModel === "per_sqm" ? `${input.widthCm}×${input.heightCm} sm` : `${input.quantity} ədəd`,
+        price: price.total,
+        name,
+        phone: phone!,
+        note,
+        hasLogo: logos.length > 0,
+      }),
+    );
     return { ok: true, id };
   }
 

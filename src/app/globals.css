@@ -6,14 +6,17 @@
   --surface: #efefef;
   --card: #ffffff;
   --strong: #0d0d0f;
+  --brand: #3d4dff;
+  --brand-dark: #2c39d6;
+  --accent: #ff4a2b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--strong);
-  --color-brand: #ff5a1f;
-  --color-brand-dark: #e04810;
-  --color-accent: #e5341d;
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-accent: var(--accent);
   --color-surface: var(--surface);
   --color-card: var(--card);
   --font-sans: var(--font-geist-sans);
@@ -36,43 +39,6 @@ body {
 }
 .animate-marquee { animation: marquee 30s linear infinite; }
 
-/* Ictimai sayt: qara + narıncı tema (admin panel açıq qalır) */
-.site-dark {
-  --background: #161616;
-  --strong: #ff5a1f;
-  --surface: #1f1f1f;
-  --card: #1d1d1d;
-  --color-neutral-400: #7a7a7a;
-  --color-neutral-500: #a1a1a1;
-  --color-neutral-600: #b8b8b8;
-  --color-neutral-700: #d4d4d4;
-  background:
-    radial-gradient(70rem 36rem at 72% -4%, rgba(255, 90, 31, 0.22), transparent 62%),
-    radial-gradient(60rem 30rem at 105% 100%, rgba(255, 90, 31, 0.2), transparent 60%),
-    radial-gradient(40rem 24rem at -5% 55%, rgba(255, 90, 31, 0.08), transparent 60%),
-    #161616;
-  color: #f5f5f5;
-  color-scheme: dark;
-}
-body:has(.site-dark) { background: #161616; }
-.site-dark .bg-foreground.text-white { color: #0a0a0a; }
-.site-dark input,
-.site-dark select,
-.site-dark textarea { color: #f5f5f5; }
-
-/* Hero: arxa plan ellipsləri sağa-sola hərəkət edir */
-/* Sol və sağdan eyni anda yola çıxıb ortada toqquşur, sonra yenidən kənarlara qayıdır */
-@keyframes drift-a { 0%, 100% { transform: translateX(-10rem) scale(0.9); } 50% { transform: translateX(calc(50vw - 18rem)) scale(1.25); } }
-@keyframes drift-b { 0%, 100% { transform: translateX(10rem) scale(0.9); } 50% { transform: translateX(calc(-50vw + 16rem)) scale(1.25); } }
-@keyframes drift-c { 0%, 100% { transform: translateX(-30%); } 50% { transform: translateX(55%); } }
-.blob-a, .blob-b { animation-duration: 9s; animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); animation-iteration-count: infinite; }
-.blob-a { animation-name: drift-a; }
-.blob-b { animation-name: drift-b; }
-.blob-c { animation: drift-c 20s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) {
-  .blob-a, .blob-b, .blob-c { animation: none; }
-}
-
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
@@ -80,6 +46,9 @@ html { scroll-behavior: smooth; }
    Kağız-boz zəmin, tutqun mürəkkəb mətn, narıncı yalnız yeni/əsas əməliyyat üçün.
    Statuslar çap mürəkkəblərinin rəngləri (cyan, sarı, qara) ilə fərqlənir. */
 .admin-ui {
+  --brand: #ff5a1f;
+  --brand-dark: #e04810;
+  --accent: #c42b0d;
   --background: #eceef0;
   --foreground: #1b1d1f;
   --strong: #1b1d1f;

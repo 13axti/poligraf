@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ConfirmButton } from "@/components/admin/ConfirmButton";
 import { requireAdmin } from "@/lib/admin-auth";
 import { STATUS } from "@/lib/order-status";
+import { statusMessage, waNumber } from "@/lib/phone";
 import { PrintButton } from "@/components/admin/PrintButton";
 import { deleteOrder, setOrderStatus, updateOrder } from "../../../actions";
 
@@ -27,7 +28,6 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const aiFile = (files ?? []).find((f) => /^ai\./i.test(f.name));
   const [mockupUrl, logoUrls, aiUrl] = await Promise.all([sign(o.mockup_path), Promise.all(logoPaths.map(sign)), aiFile ? sign(`${o.id}/${aiFile.name}`) : Promise.resolve(null)]);
 
-  const phoneDigits = String(o.customer_phone).replace(/[^\d]/g, "");
   const size =
     o.pricing_model === "per_sqm" ? `${o.width_cm} × ${o.height_cm} sm` : `${o.quantity} ədəd`;
 
@@ -43,6 +43,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   ];
 
   const st = STATUS[o.status] ?? STATUS.new;
+  const wa = statusMessage(o.status, String(o.customer_name), String(o.product_name));
   const proof = (url: string, alt: string) => (
     <div className="crop">
       <i />
@@ -127,7 +128,15 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             </dl>
             <div className="mt-4 flex flex-wrap gap-2 print:hidden">
               <a href={`tel:${o.customer_phone}`} className="rounded-md bg-[#1b1d1f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-black">Zəng et</a>
-              <a href={`https://wa.me/${phoneDigits}`} target="_blank" rel="noopener noreferrer" className="rounded-md bg-white px-4 py-2.5 text-sm font-semibold ring-1 ring-inset ring-[var(--line)] hover:bg-[var(--surface)]">WhatsApp-da yaz</a>
+              <a
+                href={`https://wa.me/${waNumber(String(o.customer_phone))}?text=${encodeURIComponent(wa.text)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Mətn hazır yazılır, göndərməzdən əvvəl dəyişə bilərsiniz"
+                className="rounded-md bg-white px-4 py-2.5 text-sm font-semibold ring-1 ring-inset ring-[var(--line)] hover:bg-[var(--surface)]"
+              >
+                {wa.label}
+              </a>
             </div>
           </section>
 

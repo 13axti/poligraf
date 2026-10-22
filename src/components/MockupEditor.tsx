@@ -33,7 +33,7 @@ interface Layer {
 }
 
 const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="120" viewBox="0 0 400 120">
-      <rect x="4" y="20" width="80" height="80" rx="20" fill="#ff7a1a"/>
+      <rect x="4" y="20" width="80" height="80" rx="20" fill="#3d4dff"/>
       <text x="44" y="78" font-family="Arial" font-weight="900" font-size="52" fill="#fff" text-anchor="middle">L</text>
       <text x="100" y="80" font-family="Arial" font-weight="900" font-size="60" fill="#ff4a2b">LOGO</text>
     </svg>`;
@@ -365,7 +365,7 @@ export function MockupEditor({
 
   const spots = [{ dx: 0, dy: 0 }, ...(mockup.clones ?? [])];
   const cropLayer = layers.find((l) => l.id === cropId) ?? null;
-  const btn = "rounded-full bg-card px-4 py-2 text-sm font-semibold transition hover:bg-foreground hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-card disabled:hover:text-foreground";
+  const btn = "rounded-full bg-white px-4 py-2 text-sm font-semibold transition hover:bg-foreground hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-foreground";
 
   return (
     <div>
@@ -376,7 +376,7 @@ export function MockupEditor({
           tabIndex={0}
           onKeyDown={onKeyDown}
           onPointerDown={() => setSel(null)}
-          className="relative mx-auto w-full max-w-xl touch-none select-none overflow-hidden rounded-[2rem] bg-card outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          className="relative mx-auto w-full max-w-xl touch-none select-none overflow-hidden rounded-[2rem] bg-white outline-none focus-visible:ring-2 focus-visible:ring-brand"
           style={{ aspectRatio: `${mockup.width} / ${mockup.height}`, maxHeight: "70vh" }}
         >
           <Image src={mockup.image} alt={mockup.name} fill sizes="(max-width: 1024px) 100vw, 55vw" className="pointer-events-none object-cover" priority />
@@ -416,7 +416,7 @@ export function MockupEditor({
                             onPointerDown={(e) => startScale(e, l)}
                             onPointerMove={onMove}
                             onPointerUp={onUp}
-                            className={`absolute h-4 w-4 cursor-nwse-resize rounded-full border-2 border-brand bg-card shadow ${pos}`}
+                            className={`absolute h-4 w-4 cursor-nwse-resize rounded-full border-2 border-brand bg-white shadow ${pos}`}
                           />
                         ))}
                         <span className="pointer-events-none absolute -top-7 left-1/2 h-7 w-px -translate-x-1/2 bg-brand" />
@@ -425,7 +425,7 @@ export function MockupEditor({
                           onPointerMove={onMove}
                           onPointerUp={onUp}
                           title="Döndər"
-                          className="absolute -top-11 left-1/2 grid h-6 w-6 -translate-x-1/2 cursor-grab place-items-center rounded-full border-2 border-brand bg-card text-[11px] font-black text-brand shadow active:cursor-grabbing"
+                          className="absolute -top-11 left-1/2 grid h-6 w-6 -translate-x-1/2 cursor-grab place-items-center rounded-full border-2 border-brand bg-white text-[11px] font-black text-brand shadow active:cursor-grabbing"
                         >
                           ↻
                         </span>
@@ -443,7 +443,7 @@ export function MockupEditor({
             <button
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => fileRef.current?.click()}
-              className="absolute inset-x-4 bottom-4 rounded-full bg-black/75 px-4 py-3 text-center text-sm font-semibold text-brand ring-1 ring-brand/40 backdrop-blur transition hover:bg-brand hover:text-black"
+              className="absolute inset-x-4 bottom-4 rounded-full bg-foreground/90 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-brand"
             >
               + Loqonu yüklə və məhsul üzərində gör
             </button>
@@ -458,7 +458,7 @@ export function MockupEditor({
                 key={m.id}
                 onClick={() => selectMockup(i)}
                 aria-label={m.name}
-                className={`relative h-16 w-16 overflow-hidden rounded-2xl bg-card transition ${i === active ? "ring-2 ring-brand" : "opacity-70 hover:opacity-100"}`}
+                className={`relative h-16 w-16 overflow-hidden rounded-2xl bg-white transition ${i === active ? "ring-2 ring-brand" : "opacity-70 hover:opacity-100"}`}
               >
                 <Image src={m.image} alt={m.name} fill sizes="64px" className="object-cover" />
               </button>
@@ -474,7 +474,7 @@ export function MockupEditor({
         {/* Qatlar */}
         <div className="flex flex-wrap items-center gap-2">
           {layers.map((l, i) => (
-            <div key={l.id} className={`flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 text-sm font-semibold transition ${sel === l.id ? "bg-foreground text-white" : "bg-card"}`}>
+            <div key={l.id} className={`flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 text-sm font-semibold transition ${sel === l.id ? "bg-foreground text-white" : "bg-white"}`}>
               <button onClick={() => setSel(l.id)} className="flex items-center gap-2">
                 <span className="relative grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-surface ring-1 ring-black/10">
                   <img src={l.src} alt="" className="h-full w-full object-contain p-0.5" />
@@ -501,7 +501,7 @@ export function MockupEditor({
 
         {/* Seçilmiş qat üçün alətlər */}
         {selected ? (
-          <div className="space-y-4 rounded-3xl bg-card p-4">
+          <div className="space-y-4 rounded-3xl bg-white p-4">
             <div className="flex flex-wrap gap-2">
               <button onClick={() => setCropId(selected.id)} className={btn}>✂ Kəs</button>
               <button onClick={() => commit(selected.id, { flip: !selected.flip })} className={btn}>⇋ Güzgü</button>

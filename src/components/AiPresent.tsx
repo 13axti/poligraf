@@ -61,7 +61,7 @@ export function AiPresent({
         type="button"
         onClick={generate}
         disabled={busy || prompt.trim().length < 3}
-        className="mt-3 w-full rounded-full bg-brand px-6 py-3 text-sm font-bold text-black transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-3 w-full rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {busy ? "AI hazırlayır… (20-40 san)" : value ? "Yenidən hazırla" : "AI ilə təqdim et"}
       </button>

@@ -13,13 +13,6 @@ import { SocialIcons } from "@/components/SocialIcons";
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <MotionProvider>
-      <div className="site-dark relative isolate flex min-h-screen flex-1 flex-col">
-      {/* Bütün səhifənin arxa fonunda sağa-sola süzən ellipslər */}
-      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="blob-a absolute left-0 top-[28%] h-[26rem] w-[36rem] rounded-full bg-brand/50 blur-[110px]" />
-        <div className="blob-b absolute right-0 top-[28%] h-[26rem] w-[32rem] rounded-full bg-[#e4e4ea]/30 blur-[110px]" />
-        <div className="blob-c absolute bottom-[-6%] left-[25%] h-[20rem] w-[30rem] rounded-full bg-[#ff8a4a]/30 blur-[110px]" />
-      </div>
       <ScrollProgress />
       <Suspense fallback={<HeaderShell />}>
         <Header />
@@ -31,19 +24,18 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <DevPreviewLink href="/coming-soon" className="bottom-5 right-5">
         Tezliklə səhifəsinə bax →
       </DevPreviewLink>
-      </div>
     </MotionProvider>
   );
 }
 
 function HeaderShell() {
-  return <header className="sticky top-0 z-40 h-[65px] bg-[#161616]/70 backdrop-blur-lg" />;
+  return <header className="sticky top-0 z-40 h-[65px] bg-white/85 backdrop-blur-lg" />;
 }
 
 async function Header() {
   const [site, categories] = await Promise.all([getSettings(), getCategories()]);
   return (
-    <header className="sticky top-0 z-40 bg-[#161616]/70 backdrop-blur-lg">
+    <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-lg">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
         <Link href="/" className="flex items-center gap-2 text-xl font-extrabold tracking-tight">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-sm text-white">
@@ -51,13 +43,12 @@ async function Header() {
           </span>
           {site.name}
         </Link>
-        <nav className="hidden items-center gap-1 rounded-full border border-brand/30 bg-white/[0.04] p-1 text-sm font-medium md:flex">
-          <Link href="/" className="rounded-full px-4 py-2 transition hover:bg-brand hover:text-white">Ana səhifə</Link>
+        <nav className="hidden items-center gap-6 text-sm font-medium md:flex lg:gap-8">
+          <Link href="/" className="hover:text-brand">Ana səhifə</Link>
           <CatalogMenu categories={categories.map((c) => ({ slug: c.slug, name: c.name }))} />
-          <Link href="/qiymetler" className="rounded-full px-4 py-2 transition hover:bg-brand hover:text-white">Qiymətlər</Link>
-          {/* Kampaniya linki müvəqqəti söndürülüb */}
-          <Link href="/#musteriler" className="rounded-full px-4 py-2 transition hover:bg-brand hover:text-white">Müştərilər</Link>
-          <Link href="/#elaqe" className="rounded-full px-4 py-2 transition hover:bg-brand hover:text-white">Əlaqə</Link>
+          <Link href="/qiymetler" className="hover:text-brand">Qiymətlər</Link>
+          <Link href="/#musteriler" className="hover:text-brand">Müştərilər</Link>
+          <Link href="/#elaqe" className="hover:text-brand">Əlaqə</Link>
         </nav>
         <div className="flex items-center gap-3">
           <a href={phoneHref(site.phone)} className="hidden text-sm font-semibold lg:block">
@@ -79,8 +70,8 @@ async function Header() {
 async function Footer() {
   const site = await getSettings();
   return (
-    <footer id="elaqe" className="scroll-mt-20 px-4 pt-4">
-      <div className="mx-auto max-w-7xl rounded-t-[2.5rem] bg-black px-6 py-14 text-white sm:px-12">
+    <footer id="elaqe" className="scroll-mt-20 bg-accent px-4 pt-4">
+      <div className="mx-auto max-w-7xl rounded-t-[2.5rem] bg-foreground px-6 py-14 text-white sm:px-12">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <p className="text-3xl font-extrabold tracking-tight sm:text-4xl">
@@ -90,7 +81,7 @@ async function Footer() {
             </p>
             <a
               href={phoneHref(site.phone)}
-              className="mt-6 inline-block rounded-full bg-brand px-6 py-3 font-semibold text-black transition hover:bg-white"
+              className="mt-6 inline-block rounded-full bg-white px-6 py-3 font-semibold text-foreground transition hover:bg-accent hover:text-white"
             >
               {site.phone}
             </a>

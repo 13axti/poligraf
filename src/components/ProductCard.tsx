@@ -24,7 +24,7 @@ export function ProductCard({ product }: { product: Product }) {
       href={`/mehsul/${product.slug}`}
       className="group flex flex-col overflow-hidden rounded-[1.75rem] bg-surface p-2 transition duration-300 hover:-translate-y-1 hover:shadow-xl"
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-[1.4rem] bg-card">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-[1.4rem] bg-white">
         <Image
           src={product.image}
           alt={product.name}
@@ -52,7 +52,7 @@ export function ProductCard({ product }: { product: Product }) {
             </span>
           </p>
           {minQty && (
-            <span className="rounded-full bg-card px-2 py-1 text-[11px] text-neutral-600">
+            <span className="rounded-full bg-white px-2 py-1 text-[11px] text-neutral-600">
               min {minQty} əd.
             </span>
           )}

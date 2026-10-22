@@ -12,7 +12,7 @@ export default async function QiymetlerPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <p className="text-sm font-semibold uppercase tracking-widest text-brand">Qiymətlər</p>
+      <p className="text-sm font-semibold text-brand">Qiymətlər</p>
       <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">Başlanğıc qiymətlər</h1>
       <p className="mt-2 text-neutral-600">
         Sayı artdıqca ədəd qiyməti ucuzlaşır. Dəqiq məbləği məhsul səhifəsində sayı və ya ölçünü yazaraq dərhal görə bilərsiniz.
@@ -24,13 +24,13 @@ export default async function QiymetlerPage() {
           if (!list.length) return null;
           return (
             <section key={c.id}>
-              <h2 className="mb-3 text-sm font-extrabold uppercase tracking-widest text-neutral-500">{c.name}</h2>
-              <ul className="divide-y divide-white/10 overflow-hidden rounded-3xl bg-surface">
+              <h2 className="mb-3 text-lg font-bold">{c.name}</h2>
+              <ul className="divide-y divide-neutral-200 overflow-hidden rounded-3xl bg-surface">
                 {list.map((p) => {
                   const price = startingPrice(p);
                   return (
                     <li key={p.id}>
-                      <Link href={`/mehsul/${p.slug}`} className="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-white/5">
+                      <Link href={`/mehsul/${p.slug}`} className="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-neutral-100">
                         <span className="min-w-0">
                           <span className="block truncate font-semibold">{p.name}</span>
                           {p.minOrderQty && <span className="text-xs text-neutral-500">min {p.minOrderQty} ədəd</span>}
