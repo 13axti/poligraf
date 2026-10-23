@@ -1,9 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// 1) "Tezliklə" rejimi: Vercel Production-da avtomatik aktivdir (COMING_SOON=false yazılana qədər),
-//    bütün ictimai səhifələr /coming-soon-a yönləndirilir. Lokalda və Preview-da sayt normal işləyir
-//    (orada yalnız COMING_SOON=true yazılsa aktiv olur).
+// 1) "Tezliklə" rejimi: yalnız COMING_SOON=true yazılanda aktivdir (bütün ictimai səhifələr /coming-soon-a gedir).
+//    Defolt: sayt hamıya açıqdır.
 //    Sahib saytı görmək üçün: /?preview=<COMING_SOON_KEY> açır (7 günlük cookie qoyulur).
 //    /admin həmişə açıqdır, ona görə giriş edib məhsul əlavə etmək olur.
 // 2) Admin sessiyasını yeniləyir və giriş etməyənləri /admin/login-ə göndərir.
@@ -11,10 +10,8 @@ import { NextResponse, type NextRequest } from "next/server";
 const COOKIE = "cs_preview";
 
 function comingSoon() {
-  const flag = process.env.COMING_SOON;
-  if (flag === "true") return true;
-  if (flag === "false") return false;
-  return process.env.VERCEL_ENV === "production";
+  // Sayt açıqdır. "Tezliklə" rejimini yenidən yandırmaq üçün Vercel-də COMING_SOON=true yazın
+  return process.env.COMING_SOON === "true";
 }
 
 export async function proxy(request: NextRequest) {
