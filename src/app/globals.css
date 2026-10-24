@@ -42,6 +42,12 @@ body {
   --strong: #ff5a1f;
   --surface: #1f1f1f;
   --card: #1d1d1d;
+  --ink: #f5f5f5;
+  --ink-soft: rgba(245, 245, 245, 0.75);
+  --header-bg: rgba(22, 22, 22, 0.7);
+  --panel: #1b1b1b;
+  --hair: rgba(255, 255, 255, 0.1);
+  --tint: rgba(255, 255, 255, 0.05);
   --color-neutral-400: #7a7a7a;
   --color-neutral-500: #a1a1a1;
   --color-neutral-600: #b8b8b8;
@@ -58,7 +64,40 @@ body:has(.site-dark) { background: #161616; }
 .site-dark .bg-foreground.text-white { color: #0a0a0a; }
 .site-dark input,
 .site-dark select,
-.site-dark textarea { color: #f5f5f5; }
+.site-dark textarea { color: var(--ink); }
+
+/* ====== Açıq tema: ağ + narıncı ====== */
+[data-theme="light"] .site-dark {
+  --background: #ffffff;
+  --strong: #ff5a1f;
+  --surface: #f4f2f0;
+  --card: #ffffff;
+  --ink: #1a1a1a;
+  --ink-soft: rgba(26, 26, 26, 0.7);
+  --header-bg: rgba(255, 255, 255, 0.82);
+  --panel: #ffffff;
+  --hair: rgba(0, 0, 0, 0.1);
+  --tint: rgba(0, 0, 0, 0.04);
+  --color-neutral-400: #9a9a9a;
+  --color-neutral-500: #6b6b6b;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #3b3b3b;
+  background:
+    radial-gradient(70rem 36rem at 72% -4%, rgba(255, 90, 31, 0.12), transparent 62%),
+    radial-gradient(60rem 30rem at 105% 100%, rgba(255, 90, 31, 0.1), transparent 60%),
+    #ffffff;
+  color: var(--ink);
+  color-scheme: light;
+}
+[data-theme="light"] body:has(.site-dark) { background: #ffffff; }
+[data-theme="light"] .site-dark .bg-foreground.text-white { color: #ffffff; }
+[data-theme="light"] .site-dark .blob-a { opacity: 0.3; }
+[data-theme="light"] .site-dark .blob-b { opacity: 0; }
+[data-theme="light"] .site-dark .blob-c { opacity: 0.25; }
+/* Hero kartı və footer hər iki temada tünd qalır (Lemur şəkli üçün) */
+.hero-card { background: rgba(0, 0, 0, 0.25); }
+[data-theme="light"] .hero-card { background: #111111; }
+[data-theme="light"] .site-dark .shadow-black\/30 { --tw-shadow-color: rgba(0, 0, 0, 0.12); }
 
 /* Hero: arxa plan ellipsləri sağa-sola hərəkət edir */
 /* Sol və sağdan eyni anda yola çıxıb ortada toqquşur, sonra yenidən kənarlara qayıdır */

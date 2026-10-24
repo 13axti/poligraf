@@ -7,6 +7,7 @@ import { DevPreviewLink } from "@/components/DevPreviewLink";
 import { MotionProvider } from "@/components/MotionProvider";
 import { CatalogMenu } from "@/components/CatalogMenu";
 import { getCategories } from "@/lib/data";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { MobileMenu } from "@/components/MobileMenu";
 import { SocialIcons } from "@/components/SocialIcons";
 
@@ -37,13 +38,13 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
 }
 
 function HeaderShell() {
-  return <header className="sticky top-0 z-40 h-[65px] bg-[#161616]/70 backdrop-blur-lg" />;
+  return <header className="sticky top-0 z-40 h-[65px] bg-[var(--header-bg)] backdrop-blur-lg" />;
 }
 
 async function Header() {
   const [site, categories] = await Promise.all([getSettings(), getCategories()]);
   return (
-    <header className="sticky top-0 z-40 bg-[#161616]/70 backdrop-blur-lg">
+    <header className="sticky top-0 z-40 bg-[var(--header-bg)] backdrop-blur-lg">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
         <Link href="/" className="flex items-center gap-2 text-xl font-extrabold tracking-tight">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-sm text-white">
@@ -51,7 +52,7 @@ async function Header() {
           </span>
           {site.name}
         </Link>
-        <nav className="hidden items-center gap-1 rounded-full border border-brand/30 bg-white/[0.04] p-1 text-sm font-medium md:flex">
+        <nav className="hidden items-center gap-1 rounded-full border border-brand/30 bg-[var(--tint)] p-1 text-sm font-medium md:flex">
           <Link href="/" className="rounded-full px-4 py-2 transition hover:bg-brand hover:text-white">Ana səhifə</Link>
           <CatalogMenu categories={categories.map((c) => ({ slug: c.slug, name: c.name }))} />
           <Link href="/qiymetler" className="rounded-full px-4 py-2 transition hover:bg-brand hover:text-white">Qiymətlər</Link>
@@ -63,6 +64,7 @@ async function Header() {
           <a href={phoneHref(site.phone)} className="hidden text-sm font-semibold lg:block">
             {site.phone}
           </a>
+          <ThemeToggle />
           <Link
             href="/kataloq"
             className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand"

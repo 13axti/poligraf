@@ -25,12 +25,12 @@ export default async function QiymetlerPage() {
           return (
             <section key={c.id}>
               <h2 className="mb-3 text-sm font-extrabold uppercase tracking-widest text-neutral-500">{c.name}</h2>
-              <ul className="divide-y divide-white/10 overflow-hidden rounded-3xl bg-surface">
+              <ul className="divide-y divide-[var(--hair)] overflow-hidden rounded-3xl bg-surface">
                 {list.map((p) => {
                   const price = startingPrice(p);
                   return (
                     <li key={p.id}>
-                      <Link href={`/mehsul/${p.slug}`} className="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-white/5">
+                      <Link href={`/mehsul/${p.slug}`} className="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-[var(--tint)]">
                         <span className="min-w-0">
                           <span className="block truncate font-semibold">{p.name}</span>
                           {p.minOrderQty && <span className="text-xs text-neutral-500">min {p.minOrderQty} ədəd</span>}

@@ -23,6 +23,7 @@ export interface OrderPayload {
   mockupDataUrl?: string;
   logoDataUrls?: string[]; // ən çox 2 loqo
   aiDataUrl?: string; // AI təqdimat şəkli
+  texts?: string[]; // mockup üzərindəki yazılar (ad, nömrə və s.)
 }
 
 const MAX_FILE = 6 * 1024 * 1024;
@@ -59,9 +60,10 @@ export async function submitOrder(input: OrderPayload): Promise<OrderResult> {
   if (price.total <= 0) return { ok: false, error: price.breakdown };
 
   const mockup = parseDataUrl(input.mockupDataUrl);
-  const logos = (input.logoDataUrls ?? []).slice(0, 2).map(parseDataUrl).filter((x): x is NonNullable<ReturnType<typeof parseDataUrl>> => !!x);
+  const logos = (input.logoDataUrls ?? []).slice(0, 12).map(parseDataUrl).filter((x): x is NonNullable<ReturnType<typeof parseDataUrl>> => !!x);
   const ai = parseDataUrl(input.aiDataUrl);
-  const note = input.note?.trim().slice(0, 1000) ?? "";
+  const texts = (input.texts ?? []).map((t) => String(t).replace(/\s+/g, " ").trim().slice(0, 120)).filter(Boolean).slice(0, 20);
+  const note = [input.note?.trim().slice(0, 1000), texts.length ? `Mockup üzərindəki yazılar: ${texts.map((t) => `«${t}»`).join(", ")}` : ""].filter(Boolean).join("\n");
   const id = randomUUID();
 
   // ---------- Supabase ----------

@@ -8,15 +8,22 @@ import { CropDialog, FULL_CROP, type Crop } from "./CropDialog";
 
 export interface MockupExport {
   mockup: string; // JPEG dataURL (sifarişdə göstərilən nəticə)
-  logos: string[]; // orijinal loqo faylları (dataURL), ən çox 2
+  logos: string[]; // orijinal loqo faylları (dataURL), mətn qatları daxil deyil
+  texts: string[]; // mockup üzərindəki yazılar (ad, nömrə və s.)
 }
 
-const MAX_LAYERS = 2;
+const MAX_LAYERS = 40; // praktiki olaraq limitsiz; yalnız səhnə donmasın deyə təhlükəsizlik həddi
 const MAX_FILE = 3 * 1024 * 1024;
 
-/** Mockup üzərindəki bir loqo qatı */
+/** Mockup üzərindəki bir qat: loqo şəkli və ya yazı (yazı da şəkil kimi çəkilir, ona görə eyni alətlər işləyir) */
 interface Layer {
   id: string;
+  kind: "image" | "text";
+  text?: string;
+  font?: string;
+  bold?: boolean;
+  italic?: boolean;
+  color?: string;
   name: string;
   src: string; // orijinal şəkil (dataURL)
   nw: number; // orijinal ölçü
@@ -43,6 +50,12 @@ const SAMPLE_LOGO = "data:image/svg+xml;base64," + btoa(SAMPLE_SVG);
 const uid = () => Math.random().toString(36).slice(2, 9);
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const aspectOf = (l: Layer) => (l.nw * l.crop.w) / (l.nh * l.crop.h);
+/** Qatın standart yeri: loqolar öz aralarında, yazılar öz aralarında sayılır */
+function spot(m: ProductMockup, ls: Layer[], l: Layer) {
+  const same = ls.filter((x) => x.kind === l.kind);
+  const i = Math.max(0, same.findIndex((x) => x.id === l.id));
+  return l.kind === "text" ? placeText(m, i) : place(m, i, aspectOf(l));
+}
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -67,6 +80,57 @@ async function makeWhite(src: string): Promise<string> {
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, w, h);
   return c.toDataURL("image/png");
+}
+
+const FONTS: { id: string; label: string; css: string }[] = [
+  { id: "sans", label: "Sadə", css: "Arial, Helvetica, sans-serif" },
+  { id: "serif", label: "Klassik", css: "Georgia, 'Times New Roman', serif" },
+  { id: "display", label: "Qalın", css: "Impact, 'Arial Black', sans-serif" },
+  { id: "mono", label: "Maşın", css: "'Courier New', monospace" },
+];
+const COLORS = ["#111111", "#ffffff", "#ff5a1f", "#e11d48", "#2563eb", "#16a34a", "#f5b301"];
+
+/** Yazını şəffaf fonlu şəkil kimi çəkir */
+function renderText(o: { text: string; font: string; bold: boolean; italic: boolean; color: string }) {
+  const css = FONTS.find((f) => f.id === o.font)?.css ?? FONTS[0].css;
+  const size = 140;
+  const lines = (o.text || " ").split("\n").slice(0, 6);
+  const font = `${o.italic ? "italic " : ""}${o.bold ? "bold " : ""}${size}px ${css}`;
+  const c = document.createElement("canvas");
+  const ctx = c.getContext("2d")!;
+  ctx.font = font;
+  const wmax = Math.max(40, ...lines.map((t) => ctx.measureText(t || " ").width));
+  const lh = size * 1.2;
+  const pad = 16;
+  c.width = Math.ceil(wmax + pad * 2);
+  c.height = Math.ceil(lh * lines.length + pad * 2);
+  ctx.font = font;
+  ctx.fillStyle = o.color;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  lines.forEach((t, i) => ctx.fillText(t, c.width / 2, pad + lh * i + lh / 2));
+  return { src: c.toDataURL("image/png"), nw: c.width, nh: c.height };
+}
+
+/** Böyük loqo fayllarını göndərməzdən əvvəl kiçildir (sorğu ölçüsü limitə sığsın) */
+async function shrink(src: string): Promise<string> {
+  if (src.length < 700_000 || src.startsWith("data:image/svg")) return src;
+  const img = await loadImage(src);
+  const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+  const c = document.createElement("canvas");
+  c.width = Math.round(img.naturalWidth * k);
+  c.height = Math.round(img.naturalHeight * k);
+  c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL("image/webp", 0.9);
+}
+
+/** Qat mockup-a "çap olunur" (multiply) yoxsa olduğu kimi qoyulur (ağ loqo və yazı) */
+const blendOf = (l: Layer) => (l.kind === "text" || l.white ? "normal" : "multiply");
+
+/** Yazı qatının başlanğıc yeri: standart yerin altında, hər yeni yazı bir az aşağıda */
+function placeText(m: ProductMockup, n: number) {
+  const p = m.placement;
+  return { cx: p.cx, cy: clamp(p.cy + p.h * 0.45 + n * 0.06, 0.05, 0.95), w: clamp(p.w * 0.85, 0.12, 0.8), rot: p.rotation };
 }
 
 /** Mockup-ın standart yerinə görə qatın başlanğıc yeri */
@@ -169,7 +233,7 @@ export function MockupEditor({
   /* ---------- ağ variant hazırla ---------- */
   useEffect(() => {
     layers.forEach((l) => {
-      if (l.white && !whites[l.id] && !whiteJobs.current.has(l.id)) {
+      if (l.kind === "image" && l.white && !whites[l.id] && !whiteJobs.current.has(l.id)) {
         whiteJobs.current.add(l.id);
         makeWhite(l.src).then((u) => setWhites((w) => ({ ...w, [l.id]: u })));
       }
@@ -182,9 +246,10 @@ export function MockupEditor({
     const img = await loadImage(src);
     const nw = img.naturalWidth || 400;
     const nh = img.naturalHeight || 120;
-    const idx = layersRef.current.length;
+    const idx = layersRef.current.filter((x) => x.kind === "image").length;
     const l: Layer = {
       id: uid(),
+      kind: "image",
       name,
       src,
       nw,
@@ -199,6 +264,40 @@ export function MockupEditor({
     snapshot();
     setLayers((ls) => [...ls, l]);
     setSel(l.id);
+  }
+
+  function addText(text: string) {
+    if (layersRef.current.length >= MAX_LAYERS) return;
+    const dark = !!mockup.darkProduct;
+    const base = { text, font: "sans", bold: true, italic: false, color: dark ? "#ffffff" : "#111111" };
+    const r = renderText(base);
+    const n = layersRef.current.filter((x) => x.kind === "text").length;
+    const l: Layer = {
+      id: uid(),
+      kind: "text",
+      name: text.split("\n")[0].slice(0, 18) || "Mətn",
+      ...base,
+      src: r.src,
+      nw: r.nw,
+      nh: r.nh,
+      crop: FULL_CROP,
+      ...placeText(mockup, n),
+      flip: false,
+      opacity: 1,
+      white: false,
+      whiteTouched: true,
+    };
+    snapshot();
+    setLayers((ls) => [...ls, l]);
+    setSel(l.id);
+  }
+
+  /** Yazını və ya üslubunu dəyişir: şəkil yenidən çəkilir, hərf ölçüsü eyni qalır */
+  function editText(l: Layer, p: Partial<Pick<Layer, "text" | "font" | "bold" | "italic" | "color">>) {
+    const next = { text: l.text ?? "", font: l.font ?? "sans", bold: !!l.bold, italic: !!l.italic, color: l.color ?? "#111111", ...p };
+    const r = renderText(next);
+    const k = r.nw / r.nh / (l.nw / l.nh);
+    patch(l.id, { ...p, src: r.src, nw: r.nw, nh: r.nh, w: clamp(l.w * k, 0.03, 1.6), name: next.text.split("\n")[0].slice(0, 18) || "Mətn" });
   }
 
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -222,14 +321,24 @@ export function MockupEditor({
   function resetAll() {
     if (!layers.length) return;
     snapshot();
-    setLayers((ls) => ls.map((l, i) => ({ ...l, crop: FULL_CROP, flip: false, opacity: 1, white: !!mockup.darkProduct, whiteTouched: false, ...place(mockup, i, l.nw / l.nh) })));
+    setLayers((ls) =>
+      ls.map((l) => ({
+        ...l,
+        crop: FULL_CROP,
+        flip: false,
+        opacity: 1,
+        white: l.kind === "text" ? false : !!mockup.darkProduct,
+        whiteTouched: l.kind === "text",
+        ...spot(mockup, ls, l),
+      })),
+    );
   }
 
   function selectMockup(i: number) {
     const m = mockups[i];
     setActive(i);
     // Yeni mockup-da qatlar onun standart yerinə qoyulur; kəsmə, güzgü və şəffaflıq qalır
-    setLayers((ls) => ls.map((l, idx) => ({ ...l, ...place(m, idx, aspectOf(l)), white: l.whiteTouched ? l.white : !!m.darkProduct })));
+    setLayers((ls) => ls.map((l) => ({ ...l, ...spot(m, ls, l), white: l.kind === "text" || l.whiteTouched ? l.white : !!m.darkProduct })));
   }
 
   /* ---------- sürüşdürmə, ölçü, dönmə ---------- */
@@ -326,7 +435,7 @@ export function MockupEditor({
       const dh = dw / aspectOf(l);
       for (const s of spots) {
         ctx.save();
-        ctx.globalCompositeOperation = l.white ? "source-over" : "multiply";
+        ctx.globalCompositeOperation = blendOf(l) === "normal" ? "source-over" : "multiply";
         ctx.globalAlpha = l.opacity;
         ctx.translate((l.cx + s.dx) * W, (l.cy + s.dy) * H);
         ctx.rotate((l.rot * Math.PI) / 180);
@@ -356,7 +465,9 @@ export function MockupEditor({
       const ls = layersRef.current;
       const c = await renderRef.current(1000);
       if (!c || !ls.length) return null;
-      return { mockup: c.toDataURL("image/jpeg", 0.88), logos: ls.map((l) => l.src) };
+      const logos = await Promise.all(ls.filter((l) => l.kind === "image").map((l) => shrink(l.src)));
+      const texts = ls.filter((l) => l.kind === "text").map((l) => (l.text ?? "").trim()).filter(Boolean);
+      return { mockup: c.toDataURL("image/jpeg", 0.88), logos, texts };
     };
     return () => {
       exportRef.current = null;
@@ -395,7 +506,7 @@ export function MockupEditor({
                 {/* görünən loqo (blend rejimi ilə mockup-a "çap olunur") */}
                 <div
                   className="pointer-events-none absolute"
-                  style={{ ...geo(s.dx, s.dy), opacity: l.opacity, mixBlendMode: l.white ? "normal" : "multiply" }}
+                  style={{ ...geo(s.dx, s.dy), opacity: l.opacity, mixBlendMode: blendOf(l) }}
                 >
                   <LayerImage l={l} src={src} />
                 </div>
@@ -473,13 +584,13 @@ export function MockupEditor({
 
         {/* Qatlar */}
         <div className="flex flex-wrap items-center gap-2">
-          {layers.map((l, i) => (
+          {layers.map((l) => (
             <div key={l.id} className={`flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 text-sm font-semibold transition ${sel === l.id ? "bg-foreground text-white" : "bg-card"}`}>
               <button onClick={() => setSel(l.id)} className="flex items-center gap-2">
                 <span className="relative grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-surface ring-1 ring-black/10">
                   <img src={l.src} alt="" className="h-full w-full object-contain p-0.5" />
                 </span>
-                Loqo {i + 1}
+                {l.kind === "text" ? `Yazı: ${l.name}` : `Loqo ${layers.filter((x) => x.kind === "image").indexOf(l) + 1}`}
               </button>
               <button onClick={() => removeLayer(l.id)} aria-label="Sil" className={`text-base leading-none ${sel === l.id ? "text-white/60 hover:text-white" : "text-neutral-400 hover:text-accent"}`}>
                 ×
@@ -489,11 +600,16 @@ export function MockupEditor({
           {layers.length < MAX_LAYERS && (
             <>
               <button onClick={() => fileRef.current?.click()} className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark">
-                {layers.length ? `+ ${layers.length + 1}-ci loqo` : "Loqonu yüklə"}
+                {layers.some((l) => l.kind === "image") ? "+ Loqo əlavə et" : "Loqonu yüklə"}
               </button>
-              <button onClick={() => addLayer(SAMPLE_LOGO, "Nümunə")} className={btn}>
-                Nümunə loqo
-              </button>
+              <button onClick={() => addText("Ad Soyad")} className={btn}>+ Ad soyad</button>
+              <button onClick={() => addText("+994 50 000 00 00")} className={btn}>+ Nömrə</button>
+              <button onClick={() => addText("Mətniniz")} className={btn}>+ Mətn</button>
+              {!layers.length && (
+                <button onClick={() => addLayer(SAMPLE_LOGO, "Nümunə")} className={btn}>
+                  Nümunə loqo
+                </button>
+              )}
             </>
           )}
         </div>
@@ -503,22 +619,66 @@ export function MockupEditor({
         {selected ? (
           <div className="space-y-4 rounded-3xl bg-card p-4">
             <div className="flex flex-wrap gap-2">
-              <button onClick={() => setCropId(selected.id)} className={btn}>✂ Kəs</button>
+              {selected.kind === "image" && <button onClick={() => setCropId(selected.id)} className={btn}>✂ Kəs</button>}
               <button onClick={() => commit(selected.id, { flip: !selected.flip })} className={btn}>⇋ Güzgü</button>
+              {selected.kind === "image" && (
+                <button
+                  onClick={() => commit(selected.id, { white: !selected.white, whiteTouched: true })}
+                  className={`${btn} ${selected.white ? "!bg-foreground !text-white" : ""}`}
+                >
+                  ◐ Ağ rəng
+                </button>
+              )}
               <button
-                onClick={() => commit(selected.id, { white: !selected.white, whiteTouched: true })}
-                className={`${btn} ${selected.white ? "!bg-foreground !text-white" : ""}`}
-              >
-                ◐ Ağ rəng
-              </button>
-              <button
-                onClick={() => commit(selected.id, { ...place(mockup, layers.indexOf(selected), aspectOf(selected)) })}
+                onClick={() => commit(selected.id, { ...spot(mockup, layers, selected) })}
                 className={btn}
               >
                 ⌖ Yerinə qoy
               </button>
               <button onClick={() => removeLayer(selected.id)} className={`${btn} hover:!bg-accent`}>🗑 Sil</button>
             </div>
+            {selected.kind === "text" && (
+              <div className="space-y-3">
+                <textarea
+                  value={selected.text}
+                  rows={2}
+                  maxLength={120}
+                  onFocus={snapshot}
+                  onChange={(e) => editText(selected, { text: e.target.value })}
+                  placeholder="Yazını bura yazın (yeni sətir üçün Enter)"
+                  className="w-full resize-none rounded-2xl border-2 border-transparent bg-surface px-4 py-3 font-semibold outline-none focus:border-brand"
+                />
+                <div className="flex flex-wrap items-center gap-2">
+                  {FONTS.map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => { snapshot(); editText(selected, { font: f.id }); }}
+                      style={{ fontFamily: f.css }}
+                      className={`${btn} ${selected.font === f.id ? "!bg-foreground !text-white" : ""}`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                  <button onClick={() => { snapshot(); editText(selected, { bold: !selected.bold }); }} className={`${btn} font-black ${selected.bold ? "!bg-foreground !text-white" : ""}`}>B</button>
+                  <button onClick={() => { snapshot(); editText(selected, { italic: !selected.italic }); }} className={`${btn} italic ${selected.italic ? "!bg-foreground !text-white" : ""}`}>I</button>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {COLORS.map((c) => (
+                    <button
+                      key={c}
+                      aria-label={`Rəng ${c}`}
+                      onClick={() => { snapshot(); editText(selected, { color: c }); }}
+                      className={`h-8 w-8 rounded-full ring-offset-2 ring-offset-card ${selected.color === c ? "ring-2 ring-brand" : "ring-1 ring-black/15"}`}
+                      style={{ background: c }}
+                    />
+                  ))}
+                  <label className="ml-1 flex items-center gap-2 text-xs font-semibold text-neutral-500">
+                    Başqa rəng
+                    <input type="color" value={selected.color ?? "#111111"} onChange={(e) => editText(selected, { color: e.target.value })} className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0" />
+                  </label>
+                </div>
+              </div>
+            )}
             <div className="grid gap-4 sm:grid-cols-3">
               <label className="text-xs font-bold uppercase tracking-wide text-neutral-500">
                 Ölçü
@@ -535,7 +695,7 @@ export function MockupEditor({
             </div>
           </div>
         ) : (
-          layers.length > 0 && <p className="text-sm text-neutral-500">Redaktə etmək üçün loqonun üzərinə klikləyin.</p>
+          layers.length > 0 && <p className="text-sm text-neutral-500">Redaktə etmək üçün loqonun və ya yazının üzərinə klikləyin.</p>
         )}
 
         {/* Ümumi */}
@@ -551,7 +711,7 @@ export function MockupEditor({
         )}
 
         <p className="text-xs leading-relaxed text-neutral-500">
-          Sürüşdürmək üçün loqonu dartın, künc dairələri ölçünü, yuxarıdakı ↻ dönməni dəyişir. Ox düymələri dəqiq yerləşdirmə, Cmd/Ctrl+Z geri alma üçündür. Bu, təxmini göstəricidir, yekun çap dizayner təsdiqindən sonra hazırlanır.
+          Loqo və yazıları istədiyiniz qədər əlavə edib sürüşdürmək üçün dartın, künc dairələri ölçünü, yuxarıdakı ↻ dönməni dəyişir. Ox düymələri dəqiq yerləşdirmə, Cmd/Ctrl+Z geri alma üçündür. Bu, təxmini göstəricidir, yekun çap dizayner təsdiqindən sonra hazırlanır.
         </p>
       </div>
 

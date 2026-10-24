@@ -43,6 +43,7 @@ export function OrderDialog({
         note,
         mockupDataUrl: mockup?.mockup,
         logoDataUrls: mockup?.logos,
+        texts: mockup?.texts,
         aiDataUrl: aiImage ?? undefined,
       });
       if (res.ok) setDoneId(res.id);

@@ -60,7 +60,7 @@ export function HomeHero({
       <div className="relative mx-auto max-w-7xl">
         <motion.div
           style={{ scale: cardScale }}
-          className="relative grid origin-top items-center gap-8 overflow-hidden rounded-[2.5rem] bg-black/25 px-6 py-12 ring-1 ring-white/10 text-white sm:px-14 lg:min-h-[34rem] lg:grid-cols-2 lg:py-16"
+          className="relative grid origin-top items-center gap-8 overflow-hidden rounded-[2.5rem] hero-card px-6 py-12 ring-1 ring-white/10 text-white sm:px-14 lg:min-h-[34rem] lg:grid-cols-2 lg:py-16"
         >
           {/* Lemur: böyük ekranda sağda; şəklin fonu da qaradır, kənar görünmür */}
           <div className="pointer-events-none absolute inset-y-0 right-0 z-0 hidden w-[62%] lg:block">

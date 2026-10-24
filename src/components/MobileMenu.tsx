@@ -29,17 +29,17 @@ export function MobileMenu({ phone, phoneHref }: { phone: string; phoneHref: str
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? "Menyunu bağla" : "Menyunu aç"}
         aria-expanded={open}
-        className="grid h-10 w-10 place-items-center rounded-full border border-brand/40 bg-white/5"
+        className="grid h-10 w-10 place-items-center rounded-full border border-[var(--hair)] bg-[var(--tint)]"
       >
         <span className="relative block h-3.5 w-5">
-          <span className={`absolute left-0 h-0.5 w-5 rounded bg-white transition ${open ? "top-1.5 rotate-45" : "top-0"}`} />
-          <span className={`absolute left-0 top-1.5 h-0.5 w-5 rounded bg-white transition ${open ? "opacity-0" : ""}`} />
-          <span className={`absolute left-0 h-0.5 w-5 rounded bg-white transition ${open ? "top-1.5 -rotate-45" : "top-3"}`} />
+          <span className={`absolute left-0 h-0.5 w-5 rounded bg-[var(--ink)] transition ${open ? "top-1.5 rotate-45" : "top-0"}`} />
+          <span className={`absolute left-0 top-1.5 h-0.5 w-5 rounded bg-[var(--ink)] transition ${open ? "opacity-0" : ""}`} />
+          <span className={`absolute left-0 h-0.5 w-5 rounded bg-[var(--ink)] transition ${open ? "top-1.5 -rotate-45" : "top-3"}`} />
         </span>
       </button>
 
       {open && (
-        <div className="fixed inset-x-0 top-[73px] z-40 h-[calc(100dvh-73px)] overflow-y-auto bg-[#161616]/95 px-4 pb-8 pt-4 backdrop-blur-xl">
+        <div className="fixed inset-x-0 top-[73px] z-40 h-[calc(100dvh-73px)] overflow-y-auto bg-[var(--panel)]/95 px-4 pb-8 pt-4 backdrop-blur-xl">
           <nav className="mx-auto flex max-w-md flex-col gap-2">
             {links.map((l, i) => (
               <Link
@@ -49,7 +49,7 @@ export function MobileMenu({ phone, phoneHref }: { phone: string; phoneHref: str
                 className={
                   i < 2
                     ? "rounded-2xl bg-brand px-5 py-4 text-lg font-extrabold text-black"
-                    : "rounded-2xl border border-white/10 bg-white/5 px-5 py-3.5 font-semibold"
+                    : "rounded-2xl border border-[var(--hair)] bg-[var(--tint)] px-5 py-3.5 font-semibold"
                 }
               >
                 {l.label}
