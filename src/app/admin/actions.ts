@@ -373,3 +373,32 @@ export async function deleteDesign(formData: FormData) {
   updateTag("designs");
   redirect("/admin/designs");
 }
+
+/* ---------------- Xüsusi istəklər ---------------- */
+
+export async function updateRequest(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = String(formData.get("id"));
+  const status = String(formData.get("status"));
+  if (!["new", "answered", "closed"].includes(status)) return;
+  await supabase
+    .from("requests")
+    .update({ status, admin_note: String(formData.get("admin_note") ?? "").slice(0, 1000) })
+    .eq("id", id);
+  redirect(`/admin/requests/${id}`);
+}
+
+export async function setRequestStatus(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = String(formData.get("id"));
+  const status = String(formData.get("status"));
+  if (!["new", "answered", "closed"].includes(status)) return;
+  await supabase.from("requests").update({ status }).eq("id", id);
+  redirect(`/admin/requests/${id}`);
+}
+
+export async function deleteRequest(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  await supabase.from("requests").delete().eq("id", String(formData.get("id")));
+  redirect("/admin/requests");
+}

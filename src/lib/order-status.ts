@@ -6,3 +6,9 @@ export const STATUS: Record<string, { label: string; cls: string; dot: string }>
   done: { label: "Təhvil verildi", cls: "bg-[#1b1d1f] text-white", dot: "#1b1d1f" },
   cancelled: { label: "Ləğv edildi", cls: "bg-[#d6dadd] text-[#5b6368]", dot: "#b4babe" },
 };
+
+export const REQUEST_STATUS: Record<string, { label: string; dot: string }> = {
+  new: { label: "Gözləyir", dot: "#ff5a1f" },
+  answered: { label: "Cavab verildi", dot: "#0e9fbc" },
+  closed: { label: "Bağlandı", dot: "#b4babe" },
+};

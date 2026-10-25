@@ -10,6 +10,10 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     .from("orders")
     .select("*", { count: "exact", head: true })
     .eq("status", "new");
+  const { count: requestCount } = await supabase
+    .from("requests")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "new");
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
@@ -21,7 +25,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
             <p className="text-xs text-neutral-500">Sifariş masası</p>
           </div>
         </div>
-        <AdminNav newCount={newCount ?? 0} />
+        <AdminNav newCount={newCount ?? 0} requestCount={requestCount ?? 0} />
         <div className="hidden border-t border-[var(--line)] p-4 md:mt-auto md:block">
           <p className="truncate text-xs text-neutral-500">{user.email}</p>
           <form action={logout}>

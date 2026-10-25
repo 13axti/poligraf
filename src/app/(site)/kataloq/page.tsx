@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getCategories, getAllProducts } from "@/lib/data";
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryTabs } from "@/components/CategoryTabs";
@@ -29,6 +30,16 @@ export default async function KataloqPage() {
         {products.map((p) => (
           <ProductCard key={p.id} product={p} />
         ))}
+      </div>
+
+      <div className="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-[2rem] bg-surface p-6 sm:p-8">
+        <div>
+          <p className="text-xl font-bold">Axtardığınızı tapmadınız?</p>
+          <p className="mt-1 text-neutral-600">Nə lazım olduğunu yazın, 1 saat ərzində cavab verək.</p>
+        </div>
+        <Link href="/sifaris#xususi" className="rounded-full bg-foreground px-6 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5">
+          Xüsusi istək göndər
+        </Link>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin-auth";
 import { STATUS } from "@/lib/order-status";
+import { ago } from "@/lib/ago";
 import { OrderRow, signThumbs } from "@/components/admin/OrderRow";
 
 const TZ = "Asia/Baku";
@@ -12,7 +13,7 @@ export default async function Dashboard() {
   const { supabase } = await requireAdmin();
   const since = new Date(Date.now() - 90 * 86400_000).toISOString();
 
-  const [{ data: rows }, products, queue] = await Promise.all([
+  const [{ data: rows }, products, queue, reqs] = await Promise.all([
     supabase.from("orders").select("created_at, status, product_name, computed_price").gte("created_at", since).limit(5000),
     supabase.from("products").select("*", { count: "exact", head: true }),
     supabase
@@ -21,7 +22,9 @@ export default async function Dashboard() {
       .in("status", ["new", "in_progress", "ready"])
       .order("created_at", { ascending: false })
       .limit(8),
+    supabase.from("requests").select("id, created_at, customer_name, message").eq("status", "new").order("created_at", { ascending: false }).limit(5),
   ]);
+  const newRequests = reqs.data ?? [];
   const orders = rows ?? [];
   const active = orders.filter((o) => o.status !== "cancelled");
 
@@ -84,6 +87,28 @@ export default async function Dashboard() {
           </div>
         ))}
       </dl>
+
+      {/* 1 saat ərzində cavab vəd edilən xüsusi istəklər */}
+      {newRequests.length > 0 && (
+        <section>
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 className="text-xl font-bold">Cavab gözləyən sorğular</h2>
+            <Link href="/admin/requests" className="text-sm font-semibold text-neutral-600 underline-offset-4 hover:text-foreground hover:underline">Hamısı</Link>
+          </div>
+          <div className="divide-y divide-[var(--line)] overflow-hidden rounded-xl bg-white">
+            {newRequests.map((r) => (
+              <Link key={r.id} href={`/admin/requests/${r.id}`} className="relative flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-[var(--surface)]/50">
+                <span className="absolute inset-y-0 left-0 w-[3px] bg-[#ff5a1f]" />
+                <span className="min-w-0">
+                  <span className="block truncate font-semibold">{r.message}</span>
+                  <span className="block truncate text-sm text-neutral-500">{r.customer_name}</span>
+                </span>
+                <span className={`shrink-0 text-sm ${Date.now() - new Date(r.created_at).getTime() > 3600_000 ? "font-bold text-[#c42b0d]" : "text-neutral-500"}`}>{ago(r.created_at)}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Əsas iş: gözləyən sifarişlər */}
       <section>

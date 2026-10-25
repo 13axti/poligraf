@@ -8,6 +8,7 @@ const groups: { title?: string; items: { href: string; label: string; icon: Reac
     items: [
       { href: "/admin", label: "Ümumi baxış", icon: <path d="M3 12l9-8 9 8M5 10v10h5v-6h4v6h5V10" /> },
       { href: "/admin/orders", label: "Sifarişlər", icon: <path d="M6 3h12l2 4v14H4V7l2-4zM4 7h16M9 11h6" /> },
+      { href: "/admin/requests", label: "Sorğular", icon: <path d="M4 5h16v11H8l-4 4V5zM8 9h8M8 12h5" /> },
     ],
   },
   {
@@ -23,7 +24,7 @@ const groups: { title?: string; items: { href: string; label: string; icon: Reac
   },
 ];
 
-export function AdminNav({ newCount }: { newCount: number }) {
+export function AdminNav({ newCount, requestCount = 0 }: { newCount: number; requestCount?: number }) {
   const path = usePathname();
   const active = (href: string) => (href === "/admin" ? path === "/admin" : path.startsWith(href));
 
@@ -50,6 +51,9 @@ export function AdminNav({ newCount }: { newCount: number }) {
                 {n.label}
                 {n.href === "/admin/orders" && newCount > 0 && (
                   <span className="num ml-auto rounded bg-[#ff5a1f] px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{newCount}</span>
+                )}
+                {n.href === "/admin/requests" && requestCount > 0 && (
+                  <span className="num ml-auto rounded bg-[#ff5a1f] px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{requestCount}</span>
                 )}
               </Link>
             );

@@ -66,7 +66,7 @@ async function Header() {
           </a>
           <ThemeToggle />
           <Link
-            href="/kataloq"
+            href="/sifaris"
             className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand"
           >
             Sifariş ver

@@ -175,3 +175,30 @@ create policy "designs files upload" on storage.objects for insert to anon, auth
 drop policy if exists "designs files admin" on storage.objects;
 create policy "designs files admin" on storage.objects for all to authenticated
   using (bucket_id = 'designs') with check (bucket_id = 'designs');
+
+-- ============ XÜSUSİ İSTƏKLƏR: müştəri kataloqda olmayan və ya ümumi sorğu yazır ============
+create table if not exists public.requests (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  customer_name text not null,
+  customer_phone text not null,
+  message text not null,
+  status text not null default 'new' check (status in ('new', 'answered', 'closed')),
+  admin_note text
+);
+create index if not exists requests_created_idx on public.requests(created_at desc);
+alter table public.requests enable row level security;
+
+drop policy if exists "requests insert" on public.requests;
+create policy "requests insert" on public.requests for insert to anon, authenticated
+  with check (status = 'new' and char_length(customer_name) between 1 and 100 and char_length(message) between 3 and 2000);
+drop policy if exists "requests admin" on public.requests;
+create policy "requests admin" on public.requests for all to authenticated using (true) with check (true);
+
+do $$
+begin
+  alter publication supabase_realtime add table public.requests;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end $$;

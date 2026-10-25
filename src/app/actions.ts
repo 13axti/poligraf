@@ -4,7 +4,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { after } from "next/server";
-import { notifyNewOrder } from "@/lib/notify";
+import { notifyNewOrder, notifyNewRequest } from "@/lib/notify";
 import { getProductBySlug } from "@/lib/data";
 import { calculatePrice } from "@/lib/pricing";
 import { createPublicClient, supabaseConfigured } from "@/lib/supabase/public";
@@ -135,4 +135,44 @@ export async function submitOrder(input: OrderPayload): Promise<OrderResult> {
     )
   );
   return { ok: true, id };
+}
+
+/* ---------------- Xüsusi istək (kataloqdan kənar sorğu) ---------------- */
+
+const reqHits = new Map<string, number[]>();
+
+export async function submitRequest(input: {
+  name: string;
+  phone: string;
+  message: string;
+  website?: string; // bot tələsi: insan doldurmur
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (input.website) return { ok: true }; // botlara sakitcə "uğurlu" deyirik
+  const name = input.name?.trim();
+  const phone = input.phone?.trim();
+  const message = input.message?.trim();
+  if (!name || name.length > 100) return { ok: false, error: "Adınızı yazın" };
+  if (!/^[+\d\s()-]{7,20}$/.test(phone ?? "")) return { ok: false, error: "Telefon nömrəsi düzgün deyil" };
+  if (!message || message.length < 3) return { ok: false, error: "İstəyinizi yazın" };
+  if (message.length > 2000) return { ok: false, error: "İstək 2000 simvoldan uzun olmasın" };
+  if (!supabaseConfigured) return { ok: false, error: "Sorğu hazırda qəbul olunmur, zəng edin" };
+
+  const { headers } = await import("next/headers");
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const now = Date.now();
+  const list = (reqHits.get(ip) ?? []).filter((t) => now - t < 10 * 60_000);
+  if (list.length >= 5) return { ok: false, error: "Çox sorğu göndərdiniz, bir az sonra yenidən yazın" };
+  list.push(now);
+  reqHits.set(ip, list);
+
+  const id = randomUUID();
+  const { error } = await createPublicClient()
+    .from("requests")
+    .insert({ id, customer_name: name, customer_phone: phone, message });
+  if (error) {
+    console.error("[request]", error.message);
+    return { ok: false, error: "Sorğu göndərilmədi, yenidən cəhd edin və ya zəng edin" };
+  }
+  after(() => notifyNewRequest({ id, name, phone: phone!, message }));
+  return { ok: true };
 }
