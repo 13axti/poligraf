@@ -4,9 +4,8 @@ import sharp from "sharp";
 export async function brandImage(input: Buffer): Promise<{ data: Buffer; type: string }> {
   const img = sharp(input);
   const { width: W = 0, height: H = 0, format } = await img.metadata();
-  const pad = W * 0.012;
-  const left = Math.round(W * 0.737 - pad), top = Math.round(H * 0.87 - pad);
-  const w = Math.min(W - left, Math.round(W * 0.223 + pad * 2)), h = Math.min(H - top, Math.round(H * 0.106 + pad * 2));
+  const left = Math.round(W * 0.712), top = Math.round(H * 0.836);
+  const w = Math.round(W * 0.262), h = Math.round(H * 0.15);
   const r = Math.round(h / 2);
   const mask = Buffer.from(`<svg width="${w}" height="${h}"><rect width="${w}" height="${h}" rx="${r}" fill="#fff"/></svg>`);
   const fs = Math.round(h * 0.34);
