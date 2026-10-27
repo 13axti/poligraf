@@ -1,6 +1,6 @@
 /**
  * moongroup.az məhsul şəkillərini (icazə ilə) götürür: CSV-dəki Link səhifəsindən əsas şəkil (og:image),
- * Supabase "products" bucket-inə yüklənir və məhsulun image sahəsinə yazılır. Şəkli olan məhsullara toxunulmur,
+ * sağ aşağıdakı moongroup nişanının üstünə "Lemur Group" qoyulur (scripts/brand-image.ts), Supabase "products" bucket-inə yüklənir və məhsulun image sahəsinə yazılır. Şəkli olan məhsullara toxunulmur,
  * ona görə dayandırıb yenidən işə salmaq olar. robots.txt Crawl-delay (10 san) gözlənilir.
  *
  *   npx tsx --env-file=.env.local scripts/import-images.ts data/moongroup-all/*.csv [--limit 5] [--activate] [--dry]
@@ -10,6 +10,7 @@ import { createClient } from "@supabase/supabase-js";
 import WS from "next/dist/compiled/ws";
 import { readFileSync } from "node:fs";
 import { slugify } from "../src/lib/slug";
+import { brandImage } from "./brand-image";
 
 const args = process.argv.slice(2);
 const dry = args.includes("--dry");
@@ -64,10 +65,10 @@ function parseCsv(text: string): Record<string, string>[] {
       if (dry) { console.log("•", slug, "<-", src); done++; await sleep(DELAY); continue; }
       const res = await fetch(src, { headers: UA });
       if (!res.ok) throw new Error(`şəkil ${res.status}`);
-      const type = (res.headers.get("content-type") ?? "image/jpeg").split(";")[0];
+      const { data, type } = await brandImage(Buffer.from(await res.arrayBuffer())); // moongroup nişanının üstünə Lemur Group
       const ext = type.split("/")[1].replace("jpeg", "jpg");
       const path = `moongroup/${slug}.${ext}`;
-      const { error: ue } = await sb.storage.from("products").upload(path, await res.arrayBuffer(), { contentType: type, cacheControl: "31536000", upsert: true });
+      const { error: ue } = await sb.storage.from("products").upload(path, data, { contentType: type, cacheControl: "31536000", upsert: true });
       if (ue) throw ue;
       const url = sb.storage.from("products").getPublicUrl(path).data.publicUrl;
       const { error } = await sb.from("products").update({ image: url, ...(activate ? { active: true } : {}) }).eq("id", todo.get(slug)!);
