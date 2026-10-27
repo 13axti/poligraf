@@ -10,7 +10,7 @@ import { readFileSync } from "node:fs";
 import { slugify } from "../src/lib/slug";
 
 const dry = process.argv.includes("--dry");
-const file = process.argv.slice(2).find((a) => a.endsWith(".csv")) ?? "data/moongroup-referans.csv";
+const files = process.argv.slice(2).filter((a) => a.endsWith(".csv"));
 
 function parseCsv(text: string): Record<string, string>[] {
   const rows: string[][] = [];
@@ -36,6 +36,9 @@ const CAT: Record<string, { slug: string; label: string }> = {
   "/metbee/bloknot-deri-uzlu/": { slug: "bloknotlar-deri-uzlu", label: "Dəri üzlü bloknot" },
   "/metbee/bloknotlar-karton-uzlu/": { slug: "bloknotlar-karton-uzlu", label: "Karton üzlü bloknot" },
   "/metbee/vizit-kart/": { slug: "vizitkartlar", label: "Vizit kart" },
+  "/promo/qelem-metal/": { slug: "qelemler-metal", label: "Metal qələm" },
+  "/promo/qelem-plastik/": { slug: "qelemler-plastik", label: "Plastik qələm" },
+  "/promo/qelem-qutusu/": { slug: "qelem-qutulari", label: "Qələm qutusu" },
 };
 const specs = (s: string) =>
   s ? Object.fromEntries(s.split(" | ").filter((kv) => kv.includes(":")).map((kv) => [kv.split(":")[0].trim(), kv.slice(kv.indexOf(":") + 1).trim()])) : {};
@@ -53,7 +56,7 @@ function describe(label: string, sp: Record<string, string>) {
 }
 
 (async () => {
-  const rows = parseCsv(readFileSync(file, "utf8"));
+  const rows = files.flatMap((f) => parseCsv(readFileSync(f, "utf8")));
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!, key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   const sb = createClient(url, key, { auth: { persistSession: false }, realtime: { transport: WS as never } });
   const { data: cats } = await sb.from("categories").select("id, slug");
@@ -71,8 +74,10 @@ function describe(label: string, sp: Record<string, string>) {
   rows.forEach((r, i) => {
     const tiers = parseTiers(r["Qiymət pillələri"]);
     if (!tiers.length) return skipped.push(r["Ad"]);
-    const cat = CAT[r["Kateqoriya"]];
-    if (!cat) return skipped.push(`${r["Ad"]} (kateqoriya xəritəsi yoxdur)`);
+    // Əvvəl əl ilə xəritə, yoxsa moongroup kateqoriya adından bizim slug (adlar eynidir)
+    const byName = r["Kateqoriya adı"] ? { slug: slugify(r["Kateqoriya adı"]), label: r["Kateqoriya adı"].replace(/lar$|lər$/i, "") } : undefined;
+    const cat = CAT[r["Kateqoriya"]] ?? (byName && catId.has(byName.slug) ? byName : undefined);
+    if (!cat) return skipped.push(`${r["Ad"]} (${r["Kateqoriya adı"] ?? r["Kateqoriya"]}: uyğun kateqoriya yoxdur)`);
     tiers.sort((a, b) => a.minQty - b.minQty);
 
     // İkitərəfli çap qiyməti: bütün pillələrdə eyni fərq varsa, variant kimi yazılır
