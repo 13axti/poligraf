@@ -6,14 +6,11 @@ import { AdminNav } from "@/components/admin/AdminNav";
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const { user, supabase } = await requireAdmin();
-  const { count: newCount } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "new");
-  const { count: requestCount } = await supabase
-    .from("requests")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "new");
+  // İki sayğacı paralel soruşuruq (ardıcıl deyil)
+  const [{ count: newCount }, { count: requestCount }] = await Promise.all([
+    supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", "new"),
+    supabase.from("requests").select("*", { count: "exact", head: true }).eq("status", "new"),
+  ]);
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">

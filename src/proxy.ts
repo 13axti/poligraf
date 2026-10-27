@@ -48,13 +48,15 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const { data } = await supabase.auth.getUser();
+  // getClaims sessiyanı yeniləyir və JWT-ni yerində yoxlayır (hər klikdə Auth serverinə getmir)
+  const { data } = await supabase.auth.getClaims();
+  const signedIn = !!data?.claims?.sub;
   const isLogin = request.nextUrl.pathname === "/admin/login";
 
-  if (!data.user && !isLogin) {
+  if (!signedIn && !isLogin) {
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }
-  if (data.user && isLogin) {
+  if (signedIn && isLogin) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
   return response;

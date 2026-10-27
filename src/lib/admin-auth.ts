@@ -10,7 +10,9 @@ export async function requireAdmin() {
   await connection();
   if (!supabaseConfigured) redirect("/admin/login");
   const supabase = await createServerSupabase();
-  const { data } = await supabase.auth.getUser();
-  if (!data.user) redirect("/admin/login");
-  return { supabase, user: data.user };
+  // getClaims JWT imzasını yerində yoxlayır (Auth serverinə hər dəfə sorğu getmir), ona görə sürətlidir və təhlükəsizdir
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (!claims?.sub) redirect("/admin/login");
+  return { supabase, user: { id: claims.sub, email: (claims.email as string | undefined) ?? "" } };
 }
