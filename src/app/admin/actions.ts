@@ -285,7 +285,9 @@ export async function toggleProductFlag(formData: FormData) {
     .update({ [field]: formData.get("value") === "true" })
     .eq("id", String(formData.get("id")));
   updateTag("catalog");
-  redirect("/admin/products");
+  // Filtr və səhifə yerində qalsın
+  const back = String(formData.get("back") ?? "");
+  redirect(back.startsWith("/admin/products") ? back : "/admin/products");
 }
 
 export async function duplicateProduct(formData: FormData) {

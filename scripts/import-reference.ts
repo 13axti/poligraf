@@ -39,6 +39,7 @@ const CAT: Record<string, { slug: string; label: string }> = {
   "/promo/qelem-metal/": { slug: "qelemler-metal", label: "Metal qələm" },
   "/promo/qelem-plastik/": { slug: "qelemler-plastik", label: "Plastik qələm" },
   "/promo/qelem-qutusu/": { slug: "qelem-qutulari", label: "Qələm qutusu" },
+  "/metbee/qeyd-kagizi/": { slug: "qeyd-kagizlari", label: "Qeyd kağızı" },
 };
 const specs = (s: string) =>
   s ? Object.fromEntries(s.split(" | ").filter((kv) => kv.includes(":")).map((kv) => [kv.split(":")[0].trim(), kv.slice(kv.indexOf(":") + 1).trim()])) : {};
