@@ -171,3 +171,8 @@ html { scroll-behavior: smooth; }
 .crop::after { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
 .crop > i::before { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
 .crop > i::after { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+
+/* Loqo videosu: ağ fon SVG filteri ilə şəffaflaşır (LogoVideo.tsx-dəki #lemur-key-*). Tünd temada əvvəl rənglər çevrilir. */
+.logo-video video, .logo-video img { filter: invert(1) hue-rotate(180deg) url(#lemur-key-dark); }
+[data-theme="light"] .logo-video video, [data-theme="light"] .logo-video img { filter: url(#lemur-key-light); }
+
