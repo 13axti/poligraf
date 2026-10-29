@@ -9,6 +9,7 @@ const groups: { title?: string; items: { href: string; label: string; icon: Reac
       { href: "/admin", label: "Ümumi baxış", icon: <path d="M3 12l9-8 9 8M5 10v10h5v-6h4v6h5V10" /> },
       { href: "/admin/orders", label: "Sifarişlər", icon: <path d="M6 3h12l2 4v14H4V7l2-4zM4 7h16M9 11h6" /> },
       { href: "/admin/requests", label: "Sorğular", icon: <path d="M4 5h16v11H8l-4 4V5zM8 9h8M8 12h5" /> },
+      { href: "/admin/presentations", label: "Təqdimatlar", icon: <path d="M3 4h18v12H3V4zM12 16v4M8 20h8M7 12l3-3 3 2 4-4" /> },
     ],
   },
   {

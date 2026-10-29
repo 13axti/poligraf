@@ -202,3 +202,30 @@ exception
   when duplicate_object then null;
   when undefined_object then null;
 end $$;
+
+-- ============ TƏQDİMATLAR: admin kataloqdan hədiyyə/təklif təqdimatı yığır, müştəriyə link göndərilir ============
+create table if not exists public.presentations (
+  id uuid primary key default gen_random_uuid(),
+  token text unique not null,           -- müştəriyə gedən linkdəki gizli kod
+  title text not null,
+  client text not null default '',
+  people int not null default 0,
+  data jsonb not null default '{}',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.presentations enable row level security;
+
+drop policy if exists "presentations admin" on public.presentations;
+create policy "presentations admin" on public.presentations for all to authenticated using (true) with check (true);
+
+-- Müştəri yalnız tokeni bilirsə oxuya bilir (cədvəl anon üçün açıq deyil)
+create or replace function public.get_presentation(p_token text)
+returns table (title text, client text, people int, data jsonb, created_at timestamptz)
+language sql stable security definer set search_path = public as $$
+  select p.title, p.client, p.people, p.data, p.created_at from public.presentations p where p.token = p_token limit 1;
+$$;
+revoke all on function public.get_presentation(text) from public;
+grant execute on function public.get_presentation(text) to anon, authenticated;
+
+notify pgrst, 'reload schema';

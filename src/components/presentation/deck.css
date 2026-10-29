@@ -1,0 +1,42 @@
+/* Təqdimat slaydları: hər slayd 1280×720, ekrana görə kiçilir, çapda tam ölçüdə PDF olur */
+.dk-root { background: #0d0d0d; min-height: 100vh; padding: 16px 0 48px; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+.dk-bar { max-width: 1280px; margin: 0 auto 14px; padding: 0 16px; display: flex; gap: 10px; align-items: center; justify-content: space-between; color: #cfc9c2; font-size: 14px; }
+.dk-bar button { background: #ff5a1f; color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 700; cursor: pointer; }
+.dk-wrap { margin: 0 auto 16px; overflow: hidden; border-radius: 6px; }
+.dk-slide { width: 1280px; height: 720px; position: relative; overflow: hidden; background: #141414; color: #fff; transform-origin: 0 0; }
+.dk-slide * { box-sizing: border-box; margin: 0; }
+.dk-brand { position: absolute; left: 50px; top: 30px; font-size: 14px; font-weight: 800; letter-spacing: 4px; color: #ff5a1f; }
+.dk-h1 { position: absolute; left: 50px; top: 52px; font-size: 38px; font-weight: 800; letter-spacing: -0.5px; }
+.dk-sub { position: absolute; left: 50px; top: 102px; font-size: 15px; color: #a8a39d; }
+.dk-pg { position: absolute; right: 50px; top: 34px; font-size: 13px; color: #7d7872; }
+.dk-card { position: absolute; top: 135px; width: 280px; height: 550px; background: #1f1f1f; border: 1px solid #2e2e2e; border-radius: 18px; overflow: hidden; }
+.dk-card img.ph { width: 280px; height: 250px; object-fit: cover; object-position: 50% 100%; display: block; background: #2a2a2a; }
+.dk-b { padding: 14px 16px; }
+.dk-nm { font-size: 18px; font-weight: 700; line-height: 1.2; }
+.dk-chips { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.dk-chip { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #d7d2cc; }
+.dk-chip i { width: 16px; height: 16px; border-radius: 50%; border: 1px solid #555; display: block; }
+.dk-sp { margin-top: 10px; font-size: 12px; line-height: 1.5; color: #a8a39d; }
+.dk-price { position: absolute; left: 16px; right: 16px; bottom: 16px; display: grid; grid-template-columns: 56px 1fr 1.2fr; gap: 8px; }
+.dk-price div > span { display: block; font-size: 11px; color: #8f8a84; margin-bottom: 4px; }
+.dk-price div > b { display: block; background: #fff; color: #111; border-radius: 6px; padding: 7px 8px; font-size: 15px; text-align: center; border: 1px solid #cf5a1f; }
+.dk-tag { position: absolute; right: 12px; top: 12px; background: #ff5a1f; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+.dk-note { position: absolute; font-size: 14px; color: #a8a39d; }
+.dk-set { position: absolute; top: 150px; width: 380px; height: 520px; background: #1f1f1f; border: 1px solid #2e2e2e; border-radius: 18px; padding: 18px 20px; }
+.dk-set.hl { border-color: #ff5a1f; }
+.dk-row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; font-size: 14px; color: #e8e3dd; border-bottom: 1px solid #2c2c2c; }
+.dk-row b { white-space: nowrap; }
+.dk-tot { margin-top: 14px; display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; color: #cfc9c2; }
+.dk-tot b { font-size: 26px; color: #fff; }
+.dk-tile { position: absolute; top: 150px; width: 280px; height: 440px; background: #1f1f1f; border: 1px solid #2e2e2e; border-radius: 18px; overflow: hidden; }
+.dk-tile img { width: 280px; height: 300px; object-fit: cover; display: block; background: #2a2a2a; }
+.dk-table { position: absolute; left: 50px; right: 50px; top: 140px; }
+.dk-table .dk-row { font-size: 16px; padding: 12px 4px; }
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  html, body { background: #fff !important; }
+  .dk-root { background: #fff; padding: 0; min-height: 0; }
+  .dk-bar { display: none; }
+  .dk-wrap { width: 1280px !important; height: 720px !important; margin: 0; border-radius: 0; break-after: page; page-break-after: always; }
+  .dk-slide { transform: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
