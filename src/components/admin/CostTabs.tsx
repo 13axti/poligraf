@@ -5,13 +5,14 @@ import { usePathname } from "next/navigation";
 
 const TABS = [
   { href: "/admin/costs", label: "Məhsullar və qiymətlər" },
+  { href: "/admin/costs/import", label: "Excel-dən yüklə" },
   { href: "/admin/costs/quote", label: "Təklif hesabla" },
   { href: "/admin/costs/suppliers", label: "Təchizatçılar" },
 ];
 
 export function CostTabs() {
   const path = usePathname();
-  const on = (h: string) => (h === "/admin/costs" ? path === h || /^\/admin\/costs\/(?!quote|suppliers)/.test(path) : path.startsWith(h));
+  const on = (h: string) => (h === "/admin/costs" ? path === h || /^\/admin\/costs\/(?!quote|suppliers|import)/.test(path) : path.startsWith(h));
   return (
     <div className="flex gap-1 overflow-x-auto rounded-lg bg-[var(--surface)] p-1">
       {TABS.map((t) => (
