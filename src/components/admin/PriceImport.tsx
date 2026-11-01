@@ -3,7 +3,9 @@
 import { useMemo, useState, useTransition } from "react";
 import { importCostPrices } from "@/app/admin/cost-actions";
 import { money } from "@/lib/costs";
-import { detect, detectSupplier, extractRows, mentionsVat, normName, ROLE_LABEL, type ColMap, type ImportRow, type Role } from "@/lib/price-import";
+import { detect, detectSupplier, extractRows, mentionsVat, normName, ROLE_LABEL, TEMPLATE_EXAMPLE, TEMPLATE_HEADERS, type ColMap, type ImportRow, type Role } from "@/lib/price-import";
+import { buildXlsx } from "@/lib/sheet-write";
+import { tierLabel } from "@/lib/costs";
 import { parseCsv, parseXlsx, type Sheet } from "@/lib/sheet-parse";
 import { DecimalInput } from "./DecimalInput";
 
@@ -51,7 +53,7 @@ export function PriceImport({ existing, suppliers }: { existing: Existing[]; sup
       const best = scored.reduce((a, b) => (b.w > a.w ? b : a));
       setFile(f.name); setSheets(list); setSi(best.i); setHeader(best.d.header); setCols(best.d.cols);
       setSupplier(detectSupplier(list[best.i].rows, f.name, best.d.header));
-      setVat(mentionsVat(list[best.i].rows));
+      setVat(mentionsVat(list[best.i].rows, best.d.header));
       build(list[best.i], best.d.header, best.d.cols);
     } catch {
       setErr("Fayl oxunmadı. .xlsx və ya .csv seçin (köhnə .xls formatını Excel-də .xlsx kimi saxlayın).");
@@ -84,16 +86,27 @@ export function PriceImport({ existing, suppliers }: { existing: Existing[]; sup
   const headRow = sheet?.rows[header] ?? [];
   const width = Math.max(headRow.length, cols.length);
 
+  function downloadTemplate() {
+    const data = buildXlsx("Qiymətlər", [TEMPLATE_HEADERS, TEMPLATE_EXAMPLE], TEMPLATE_HEADERS.map((h, i) => (i === 2 || i === 4 ? 34 : i === 0 || i === 5 ? 24 : Math.max(9, h.length + 2))));
+    const url = URL.createObjectURL(new Blob([data as BlobPart], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = "Lemur-qiymet-idxal-sablonu.xlsx"; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   function submit() {
     setErr(""); setDone("");
     start(async () => {
       const r = await importCostPrices({
         supplier, vat, validUntil: validUntil || null, source: file, category,
-        rows: chosen.map((x) => ({ productId: x.productId, name: x.name, code: x.code, spec: x.spec, unit: x.unit, supplier: x.supplier, vat: x.vat, tiers: x.tiers })),
+        rows: chosen.map((x) => ({
+          productId: x.productId, name: x.name, code: x.code, category: x.category, description: x.description, material: x.material, size: x.size,
+          color: x.color, unit: x.unit, supplier: x.supplier, vat: x.vat, leadDays: x.leadDays, validUntil: x.validUntil, note: x.note, tiers: x.tiers,
+        })),
       });
       if (r.error) setErr(r.error);
       else {
-        setDone(`Hazırdır: ${r.prices} qiymət yazıldı, ${r.products} yeni məhsul, ${r.suppliers} yeni təchizatçı.`);
+        setDone(`Hazırdır: ${r.offers} təklif yazıldı, ${r.products} yeni məhsul (kodu avtomatik), ${r.suppliers} yeni təchizatçı.`);
         setRows([]); setSheets([]); setFile("");
       }
     });
@@ -106,7 +119,10 @@ export function PriceImport({ existing, suppliers }: { existing: Existing[]; sup
           <span className="mb-2 block font-bold">Təchizatçının Excel faylı</span>
           <input type="file" accept=".xlsx,.csv" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} className="block text-sm" />
         </label>
-        <p className="mt-2 text-xs text-neutral-500">Sütunlar (məhsul adı, kod, qiymət, say pillələri) və şirkət adı avtomatik tanınır. Tanınmayanı aşağıda əl ilə düzəldin.</p>
+        <div className="mt-3 flex flex-wrap items-center gap-3 rounded-lg bg-[var(--surface)] p-3 text-sm">
+          <button type="button" onClick={downloadTemplate} className="rounded-md bg-[#1b1d1f] px-3 py-1.5 font-semibold text-white">Standart şablonu yüklə (.xlsx)</button>
+          <span className="text-neutral-600">Təchizatçının qiymətlərini bu şablona köçürüb yükləyin, hər şey avtomatik tanınır. Başqa formatlar da qəbul olunur, sütunları yoxlamaq lazım ola bilər.</span>
+        </div>
         {err && <p className="mt-3 text-sm font-semibold text-accent">{err}</p>}
         {done && <p className="mt-3 text-sm font-semibold text-[#1f7a3a]">{done}</p>}
       </section>
@@ -160,7 +176,7 @@ export function PriceImport({ existing, suppliers }: { existing: Existing[]; sup
             <div className="overflow-x-auto">
               <table className="w-full min-w-[56rem] text-sm">
                 <thead className="text-left text-xs text-neutral-500">
-                  <tr><th className="w-8 py-2" /><th className="pr-2">Məhsul adı</th><th className="w-24 pr-2">Kod</th><th className="pr-2">Spesifikasiya</th><th className="w-20 pr-2">Vahid</th><th className="pr-2">Qiymətlər (saydan: ₼)</th><th className="pr-2">Bazada</th></tr>
+                  <tr><th className="w-8 py-2" /><th className="w-64 pr-2">Məhsul adı</th><th className="w-24 pr-2">Kod</th><th className="pr-2">Təsvir / material</th><th className="w-20 pr-2">Vahid</th><th className="pr-2">Qiymətlər (saydan: ₼)</th><th className="pr-2">Bazada</th></tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--line)] align-top">
                   {rows.map((r) => {
@@ -169,20 +185,23 @@ export function PriceImport({ existing, suppliers }: { existing: Existing[]; sup
                       <tr key={r.key} className={`${!r.include ? "opacity-40" : ""} ${bad ? "bg-[#c42b0d]/5" : ""}`}>
                         <td className="py-2"><input type="checkbox" checked={r.include} onChange={(e) => patch(r.key, { include: e.target.checked })} /></td>
                         <td className="py-1.5 pr-2"><input className={`${inp} ${bad ? "border-[#c42b0d]" : ""}`} value={r.name} placeholder="Məhsul adını yazın" onChange={(e) => patch(r.key, { name: e.target.value, productId: r.productId && e.target.value !== r.name ? null : r.productId })} /></td>
-                        <td className="py-1.5 pr-2"><input className={inp} value={r.code} placeholder={r.productId ? "" : "avtomatik"} onChange={(e) => patch(r.key, { code: e.target.value })} /></td>
-                        <td className="py-1.5 pr-2"><input className={inp} value={r.spec} onChange={(e) => patch(r.key, { spec: e.target.value })} /></td>
+                        <td className="py-1.5 pr-2 font-mono text-xs text-neutral-600">{r.productId ? (existing.find((x) => x.id === r.productId)?.code ?? "") : "yeni kod"}</td>
+                        <td className="py-1.5 pr-2">
+                          <input className={inp} value={r.description} placeholder="Təsvir" onChange={(e) => patch(r.key, { description: e.target.value })} />
+                          <span className="mt-1 block truncate text-xs text-neutral-500">{[r.category, r.material, r.size, r.color].filter(Boolean).join(" · ")}</span>
+                        </td>
                         <td className="py-1.5 pr-2"><input className={inp} value={r.unit} onChange={(e) => patch(r.key, { unit: e.target.value })} /></td>
                         <td className="py-1.5 pr-2">
                           <div className="flex flex-wrap gap-1">
                             {r.tiers.map((t, ti) => (
                               <span key={ti} className="flex items-center gap-1 rounded bg-[var(--surface)] px-1.5 py-1 text-xs">
-                                {t.minQty}+:
+                                {tierLabel(t.minQty)}:
                                 <DecimalInput className="w-16 rounded border border-[var(--line)] bg-white px-1 py-0.5 text-xs" value={t.price}
                                   onChange={(v) => patch(r.key, { tiers: r.tiers.map((x, xi) => (xi === ti ? { ...x, price: v ?? 0 } : x)) })} />
                               </span>
                             ))}
                           </div>
-                          {r.supplier && <span className="mt-1 block text-xs text-neutral-500">{r.supplier}</span>}
+                          <span className="mt-1 block text-xs text-neutral-500">{[r.supplier, r.leadDays != null && `${r.leadDays} gün`, r.vat && "ƏDV daxil", r.validUntil && `→ ${r.validUntil}`].filter(Boolean).join(" · ")}</span>
                         </td>
                         <td className="py-1.5 pr-2 text-xs">
                           {r.productId ? (
@@ -205,11 +224,11 @@ export function PriceImport({ existing, suppliers }: { existing: Existing[]; sup
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <button type="button" onClick={submit} disabled={pending || !chosen.length || missingName > 0 || missingSupplier}
                 className="rounded-md bg-[#ff5a1f] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#e04810] disabled:opacity-50">
-                {pending ? "Yazılır…" : `${chosen.reduce((s, r) => s + r.tiers.length, 0)} qiyməti bazaya yaz`}
+                {pending ? "Yazılır…" : `${chosen.length} məhsulun qiymətini bazaya yaz`}
               </button>
               {missingName > 0 && <span className="text-sm text-accent">{missingName} sətirdə məhsul adı boşdur.</span>}
               {missingSupplier && <span className="text-sm text-accent">Təchizatçının adını yazın.</span>}
-              {chosen.length > 0 && <span className="text-xs text-neutral-500">Ən ucuz nümunə: {money(Math.min(...chosen.flatMap((r) => r.tiers.map((t) => t.price))), 3)} ₼</span>}
+              {chosen.length > 0 && <span className="text-xs text-neutral-500">Ən ucuz qiymət: {money(Math.min(...chosen.flatMap((r) => r.tiers.map((t) => t.price))), 3)} ₼</span>}
             </div>
           </section>
         </>

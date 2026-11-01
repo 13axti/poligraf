@@ -2,44 +2,66 @@
 
 export const VAT = 0.18;
 
-export interface CostPrice {
+/** Sabit say pillələri. 2001 = "2000+" (2000-dən çox) */
+export const TIERS = [10, 50, 100, 200, 500, 1000, 2000, 2001] as const;
+export type TierKey = (typeof TIERS)[number];
+export const tierLabel = (t: number) => (t === 2001 ? "2000+" : String(t));
+export const MIN_QTY = 10;
+
+/** Say hansı pilləyə düşür: 10–49 → 10, 50–99 → 50, …, 2000 → 2000, 2001+ → 2000+ */
+export function tierOf(qty: number): TierKey {
+  let t: TierKey = TIERS[0];
+  for (const k of TIERS) if (qty >= k) t = k;
+  return t;
+}
+
+export interface CostOffer {
   id: string;
   productId: string;
   supplierId: string;
   supplier: string;
-  minQty: number;
-  unitPrice: number;
+  tiers: Partial<Record<string, number>>; // "10" → 0.6, "2001" → ...
+  leadDays: number | null;
   vatIncluded: boolean;
   validUntil: string | null; // YYYY-MM-DD
   note: string;
-  createdAt: string;
+  updatedAt: string;
 }
 
-/** ƏDV-siz vahid qiymət (müqayisə ƏDV-siz aparılır) */
-export const netPrice = (p: CostPrice) => (p.vatIncluded ? p.unitPrice / (1 + VAT) : p.unitPrice);
+export const expired = (o: CostOffer, today: string) => Boolean(o.validUntil && o.validUntil < today);
+const net = (o: CostOffer, v: number) => (o.vatIncluded ? v / (1 + VAT) : v);
 
-export const expired = (p: CostPrice, today: string) => Boolean(p.validUntil && p.validUntil < today);
+/** Təklifin verilən say üçün qiyməti: sayın pilləsi və ya ondan aşağı ən yaxın doldurulmuş pillə. Heç biri yoxdursa ən aşağı doldurulmuş pillə (belowMin). */
+export function offerPrice(o: CostOffer, qty: number): { price: number; net: number; tier: number; belowMin: boolean } | null {
+  const filled = TIERS.filter((t) => typeof o.tiers[String(t)] === "number" && Number.isFinite(o.tiers[String(t)]));
+  if (!filled.length) return null;
+  const top = tierOf(qty);
+  const ok = filled.filter((t) => t <= top);
+  const tier = ok.length ? ok[ok.length - 1] : filled[0];
+  const price = o.tiers[String(tier)]!;
+  return { price, net: net(o, price), tier, belowMin: !ok.length };
+}
 
-export interface Offer { price: CostPrice; net: number; belowMin: boolean }
+export interface Offer { offer: CostOffer; price: number; net: number; tier: number; belowMin: boolean }
 
-/**
- * Verilən say üçün hər təchizatçının tətbiq olunan qiyməti (sayın düşdüyü ən yüksək pillə, eyni pillədə ən yenisi),
- * sonra ƏDV-siz qiymətə görə ucuzdan bahaya sıralanır. Vaxtı keçmiş qiymətlər nəzərə alınmır.
- * Heç bir pillə sayı əhatə etmirsə, ən aşağı pillə götürülür və belowMin=true olur.
- */
-export function offersFor(prices: CostPrice[], qty: number, today: string): Offer[] {
-  const valid = prices.filter((p) => !expired(p, today));
-  const bySupplier = new Map<string, CostPrice[]>();
-  for (const p of valid) bySupplier.set(p.supplierId, [...(bySupplier.get(p.supplierId) ?? []), p]);
-  const out: Offer[] = [];
-  for (const list of bySupplier.values()) {
-    const ok = list.filter((p) => p.minQty <= qty);
-    const pool = ok.length ? ok : list.filter((p) => p.minQty === Math.min(...list.map((x) => x.minQty)));
-    const top = Math.max(...pool.map((p) => p.minQty));
-    const pick = pool.filter((p) => p.minQty === top).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
-    out.push({ price: pick, net: netPrice(pick), belowMin: !ok.length });
-  }
-  return out.sort((a, b) => a.net - b.net);
+/** Bu say üçün bütün təchizatçılar, ƏDV-siz qiymətə görə ucuzdan bahaya. Vaxtı keçmiş təkliflər sayılmır. */
+export function offersFor(offers: CostOffer[], qty: number, today: string): Offer[] {
+  return offers
+    .filter((o) => !expired(o, today))
+    .map((o) => { const p = offerPrice(o, qty); return p ? { offer: o, ...p } : null; })
+    .filter((x): x is Offer => Boolean(x))
+    .sort((a, b) => Number(a.belowMin) - Number(b.belowMin) || a.net - b.net);
+}
+
+/** Hər pillədə ən ucuz ƏDV-siz maya (yalnız həmin pilləni dolduran təchizatçılar arasında) */
+export function cheapestByTier(offers: CostOffer[], today: string) {
+  return TIERS.map((t) => {
+    const c = offers
+      .filter((o) => !expired(o, today) && typeof o.tiers[String(t)] === "number")
+      .map((o) => ({ offer: o, net: net(o, o.tiers[String(t)]!) }))
+      .sort((a, b) => a.net - b.net)[0];
+    return { tier: t, best: c ?? null };
+  });
 }
 
 export interface QuoteParams { margin: number; waste: number; delivery: number; design: number; vat: boolean }

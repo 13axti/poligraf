@@ -1,9 +1,9 @@
 /** Təchizatçı Excel-indən qiymət sətirləri çıxarmaq: sütunları tanımaq, rəqəmləri oxumaq, şirkət adını tapmaq. */
 
-export type Role = "skip" | "name" | "code" | "spec" | "unit" | "qty" | "price" | "tier" | "supplier" | "vat";
+export type Role = "skip" | "name" | "code" | "spec" | "unit" | "qty" | "price" | "tier" | "supplier" | "vat" | "category" | "desc" | "material" | "size" | "color" | "lead" | "valid" | "note";
 export interface ColMap { role: Role; minQty?: number }
 export const ROLE_LABEL: Record<Role, string> = {
-  skip: "Götürmə", supplier: "Təchizatçı (hər sətirdə)", vat: "ƏDV daxil? (bəli/xeyr)", name: "Məhsul adı", code: "Kod", spec: "Spesifikasiya", unit: "Vahid", qty: "Say (neçə ədəddən)", price: "Vahid qiymət", tier: "Qiymət: X ədəd",
+  skip: "Götürmə", supplier: "Təchizatçı (hər sətirdə)", vat: "ƏDV daxil? (bəli/xeyr)", category: "Kateqoriya", desc: "Təsvir", material: "Material", size: "Ölçü", color: "Rənglər", lead: "Hazırlanma (gün)", valid: "Etibarlıdır (tarix)", note: "Qeyd", name: "Məhsul adı", code: "Kod", spec: "Spesifikasiya", unit: "Vahid", qty: "Say (neçə ədəddən)", price: "Vahid qiymət", tier: "Qiymət: X ədəd",
 };
 
 const low = (s: string) => s.toLocaleLowerCase("az").replace(/\s+/g, " ").trim();
@@ -28,15 +28,24 @@ export function parseNum(raw: string): number | null {
 
 /** Başlıqdakı say pilləsi: "100 əd.", "Qiymət — 500 ədəd", "1000 pcs", "до 300 шт" */
 export function tierQty(header: string): number | null {
-  const m = /(\d[\d\s.]*)\s*(əd|ədəd|eded|ed\b|pcs|pc\b|шт|ədəd\.|əd\.)/i.exec(header);
+  const m = /(\d[\d\s.]*)\s*(\+)?\s*(əd|ədəd|eded|ed\b|pcs|pc\b|шт|ədəd\.|əd\.)/i.exec(header);
   if (!m) return null;
   const n = Number(m[1].replace(/[\s.]/g, ""));
-  return n > 0 ? n : null;
+  return n > 0 ? n + (m[2] ? 1 : 0) : null;
 }
 
 const RX: [Role, RegExp][] = [
   ["supplier", /(təchizatçı|techizatci|supplier|vendor|поставщик)/],
   ["vat", /(ədv|edv|vat|ндс)/],
+  ["lead", /(hazırlan|hazirlan|müddət|muddet|lead|срок|gün\)?$)/],
+  ["valid", /(etibarl|valid|действ)/],
+  ["note", /^(qeyd($|[^a-zəıöüşçğ])|qeydlər|note|примечан|comment)/],
+  ["category", /^(kateqoriya|category|категор)/],
+  ["desc", /^(təsvir|tesvir|description|описание)/],
+  ["material", /^(material|материал)/],
+  ["color", /^(rəng|reng|colou?r|цвет)/],
+  ["unit", /^(vahid|ölçü vahidi|unit|ед\.?\s*изм)/],
+  ["size", /^(ölçü|olcu|size|размер)/],
   ["code", /(\bkod|\bcode\b|артикул|\bart\.|\bsku\b)/],
   ["unit", /^(vahid|ölçü vahidi|unit|ед\.?\s*изм|ед\.)$|ölçü vahidi/],
   ["qty", /^(say|miqdar|qty|quantity|tiraj|kol|кол-во|количество|min\.? ?say|minimum)/],
@@ -53,7 +62,7 @@ function dedupe(rows: string[][], header: number, cols: ColMap[]) {
     const nums = vals.filter((v) => parseNum(v) != null && !/[a-zа-яəıöüşçğ]{3,}/i.test(v)).length;
     return role === "price" || role === "qty" ? nums : vals.length - nums;
   };
-  for (const role of ["name", "price", "qty", "code", "spec", "unit", "supplier", "vat"] as Role[]) {
+  for (const role of ["name", "price", "qty", "code", "spec", "unit", "supplier", "vat", "category", "desc", "material", "size", "color", "lead", "valid", "note"] as Role[]) {
     const idx = cols.map((c, i) => (c.role === role ? i : -1)).filter((i) => i >= 0);
     if (role === "price" || role === "qty") for (const i of idx) if (!fit(i, role)) cols[i] = { role: "skip" };
     if (idx.length < 2) continue;
@@ -99,8 +108,9 @@ export function detect(rows: string[][]): { header: number; cols: ColMap[]; scor
 
 /** Şirkət adını tapmağa çalışır: "MMC/LLC/ООО" olan xana, "Təchizatçı:/Şirkət:" yanındakı dəyər, yoxdursa fayl adı */
 export function detectSupplier(rows: string[][], fileName: string, header: number): string {
-  const top = rows.slice(0, Math.max(header, 8)).flat().filter(Boolean);
-  const all = rows.slice(0, 60).flat().filter(Boolean);
+  const real = (c: string) => Boolean(c) && !/^(nümunə|numune)/i.test(c);
+  const top = rows.slice(0, Math.max(header, 8)).flat().filter(real);
+  const all = rows.slice(0, 60).flat().filter(real);
   for (const pool of [top, all]) {
     for (const cell of pool) {
       const lab = /(təchizatçı|şirkət|sirket|firma|company|supplier|поставщик|компания)\s*[:\-–]\s*(.+)/i.exec(cell);
@@ -114,8 +124,8 @@ export function detectSupplier(rows: string[][], fileName: string, header: numbe
 }
 
 /** Faylda "ƏDV daxil" ifadəsi varsa (sual kimi başlıq yox) */
-export const mentionsVat = (rows: string[][]) =>
-  rows.slice(0, 80).flat().some((c) => !/\?\s*$/.test(c ?? "") && /ədv\s*(daxil|ilə)|ндс включ|incl\.?\s*vat|vat incl/i.test(c ?? ""));
+export const mentionsVat = (rows: string[][], header = -1) =>
+  rows.slice(0, 80).filter((_, i) => i !== header).flat().some((c) => !/\?\s*$/.test(c ?? "") && /ədv\s*(daxil|ilə)|ндс включ|incl\.?\s*vat|vat incl/i.test(c ?? ""));
 const yes = (v: string) => /^(bəli|beli|hə|he|yes|да|1|true|var|daxil)/i.test(v.trim());
 
 export interface ImportRow {
@@ -128,7 +138,37 @@ export interface ImportRow {
   tiers: { minQty: number; price: number }[];
   supplier: string;      // boşdursa ümumi təchizatçı
   vat: boolean | null;   // null: ümumi seçim
+  category: string;
+  description: string;
+  material: string;
+  size: string;
+  color: string;
+  leadDays: number | null;
+  validUntil: string | null;
+  note: string;
 }
+
+/** "01.02.2027", "2027-02-01" və ya Excel tarix nömrəsi (46054) → "2027-02-01" */
+export function parseDate(v: string): string | null {
+  const t = (v ?? "").trim();
+  if (!t) return null;
+  let m = /^(\d{4})-(\d{2})-(\d{2})/.exec(t);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m = /^(\d{1,2})[./](\d{1,2})[./](\d{4})$/.exec(t);
+  if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  if (/^\d{5}(\.\d+)?$/.test(t)) return new Date(Date.UTC(1899, 11, 30) + Math.floor(Number(t)) * 86400000).toISOString().slice(0, 10);
+  return null;
+}
+
+/** Standart idxal şablonunun başlıqları (sıra vacib deyil, adlar bu cürdür) */
+export const TEMPLATE_HEADERS = [
+  "Təchizatçı", "Məhsul kodu", "Məhsul adı", "Kateqoriya", "Təsvir", "Material", "Ölçü", "Rənglər", "Vahid", "Hazırlanma (gün)",
+  "10 əd.", "50 əd.", "100 əd.", "200 əd.", "500 əd.", "1000 əd.", "2000 əd.", "2000+ əd.", "ƏDV daxil", "Etibarlıdır", "Qeyd",
+];
+export const TEMPLATE_EXAMPLE = [
+  "NÜMUNƏ: Print az MMC", "", "NÜMUNƏ: T-shirt pambıq, dairəvi yaxa", "Tekstil", "Unisex, loqo çapı ilə", "100% pambıq, 180 qr/m²", "S–XXL", "ağ, qara",
+  "ədəd", "5", "6", "5,2", "4,8", "4,5", "4,2", "4", "3,9", "3,8", "xeyr", "31.12.2026", "Bu sətri silin",
+];
 
 /** Rollara görə sətirləri çıxarır. Qiyməti olmayan sətirlər (başlıq, cəmi, boş) atılır. */
 export function extractRows(rows: string[][], header: number, cols: ColMap[]): ImportRow[] {
@@ -151,9 +191,14 @@ export function extractRows(rows: string[][], header: number, cols: ColMap[]): I
     if (!tiers.length) return;
     if (/^(cəmi|cemi|yekun|total|итого|всего)/i.test(name)) return;
     const v = at(r, "vat");
+    const lead = parseNum(at(r, "lead"));
+    const sample = /^nümunə|^numune/i.test(name) || /^nümunə|^numune/i.test(at(r, "supplier"));
+    const spec = at(r, "spec");
     out.push({
-      key: `r${i}`, include: /\p{L}/u.test(name) || Boolean(at(r, "code")), name, code: at(r, "code"), spec: at(r, "spec"), unit: at(r, "unit") || "ədəd", tiers,
+      key: `r${i}`, include: !sample && (/\p{L}/u.test(name) || Boolean(at(r, "code"))), name, code: at(r, "code"), spec, unit: at(r, "unit") || "ədəd", tiers,
       supplier: at(r, "supplier"), vat: v ? yes(v) : null,
+      category: at(r, "category"), description: [at(r, "desc"), spec].filter(Boolean).join(". "), material: at(r, "material"), size: at(r, "size"),
+      color: at(r, "color"), leadDays: lead != null ? Math.round(lead) : null, validUntil: parseDate(at(r, "valid")), note: at(r, "note"),
     });
   });
   return out;

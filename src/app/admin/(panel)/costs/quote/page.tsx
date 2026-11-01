@@ -6,12 +6,12 @@ import { loadCosts } from "@/lib/costs-server";
 
 export default async function QuotePage() {
   const { supabase } = await requireAdmin();
-  const { error, products, prices } = await loadCosts(supabase);
+  const { error, products, offers } = await loadCosts(supabase);
   if (error) return <div className="space-y-4"><CostHeader /><CostTablesMissing /></div>;
   return (
     <div className="space-y-6">
       <CostHeader />
-      <QuoteBuilder products={products} prices={prices} day={today()} />
+      <QuoteBuilder products={products} offers={offers} day={today()} />
     </div>
   );
 }

@@ -6,7 +6,7 @@ export function CostHeader({ msg }: { msg?: string }) {
       <div>
         <h1 className="text-3xl font-bold">Qiymət bazası</h1>
         <p className="mt-1 text-sm text-neutral-500">
-          Təchizatçılardan aldığınız maya qiymətləri. Təklif hazırlayanda hər məhsul üçün ən ucuz qiymət avtomatik götürülür. Yalnız admin görür.
+          Təchizatçılardan aldığınız maya qiymətləri, sabit say pillələri ilə: 10, 50, 100, 200, 500, 1000, 2000, 2000+. Təklifdə hər məhsul üçün ən ucuz təchizatçı avtomatik seçilir. Yalnız admin görür.
         </p>
       </div>
       <CostTabs />

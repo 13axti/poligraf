@@ -320,3 +320,69 @@ insert into public.cost_products (code, category, name, unit, spec, min_qty) val
 on conflict (code) do nothing;
 
 notify pgrst, 'reload schema';
+
+-- ============ QİYMƏT BAZASI v2: sabit say pillələri, təchizatçı məlumatları, dəyişməz kod, sayta göndərmə ============
+alter table public.suppliers
+  add column if not exists contact_person text not null default '',
+  add column if not exists email text not null default '',
+  add column if not exists address text not null default '',
+  add column if not exists voen text not null default '',
+  add column if not exists website text not null default '',
+  add column if not exists payment_terms text not null default '',
+  add column if not exists delivery text not null default '',
+  add column if not exists lead_days int;            -- standart hazırlanma müddəti (gün)
+
+alter table public.cost_products
+  add column if not exists description text not null default '',
+  add column if not exists material text not null default '',
+  add column if not exists size text not null default '',
+  add column if not exists color text not null default '',
+  add column if not exists site_product_id uuid references public.products(id) on delete set null;
+
+-- Bir təchizatçının bir məhsul üçün təklifi: hər say pilləsinə qiymət (açar: 10, 50, 100, 200, 500, 1000, 2000, 2001 = "2000+")
+create table if not exists public.cost_offers (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid not null references public.cost_products(id) on delete cascade,
+  supplier_id uuid not null references public.suppliers(id) on delete cascade,
+  tiers jsonb not null default '{}',
+  lead_days int,                                      -- bu təchizatçının bu məhsulu hazırlama müddəti (gün)
+  vat_included boolean not null default false,
+  valid_until date,
+  note text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (product_id, supplier_id)
+);
+alter table public.cost_offers enable row level security;
+drop policy if exists "cost_offers admin" on public.cost_offers;
+create policy "cost_offers admin" on public.cost_offers for all to authenticated using (true) with check (true);
+
+-- Köhnə qiymətləri (cost_prices) yeni pillələrə köçür: hər qiymət öz sayına uyğun pilləyə düşür, eyni pillədə ən yenisi qalır
+insert into public.cost_offers (product_id, supplier_id, tiers, vat_included, valid_until, note, created_at)
+select product_id, supplier_id, jsonb_object_agg(tier, unit_price), bool_or(vat_included), max(valid_until), max(note), min(created_at)
+from (
+  select distinct on (product_id, supplier_id, tier) product_id, supplier_id, tier, unit_price, vat_included, valid_until, note, created_at
+  from (
+    select *, case
+      when min_qty > 2000 then '2001' when min_qty >= 2000 then '2000' when min_qty >= 1000 then '1000'
+      when min_qty >= 500 then '500' when min_qty >= 200 then '200' when min_qty >= 100 then '100'
+      when min_qty >= 50 then '50' else '10' end as tier
+    from public.cost_prices
+  ) p
+  order by product_id, supplier_id, tier, created_at desc
+) x
+group by product_id, supplier_id
+on conflict (product_id, supplier_id) do nothing;
+
+-- Məhsul kodu PIN kimidir: bir dəfə verilir, sonra heç vaxt dəyişmir
+create or replace function public.cost_code_lock() returns trigger language plpgsql as $$
+begin
+  if old.code is not null and new.code is distinct from old.code then
+    raise exception 'Məhsul kodu dəyişdirilə bilməz';
+  end if;
+  return new;
+end $$;
+drop trigger if exists cost_code_lock on public.cost_products;
+create trigger cost_code_lock before update on public.cost_products for each row execute function public.cost_code_lock();
+
+notify pgrst, 'reload schema';
