@@ -229,3 +229,94 @@ revoke all on function public.get_presentation(text) from public;
 grant execute on function public.get_presentation(text) to anon, authenticated;
 
 notify pgrst, 'reload schema';
+
+-- ============ QİYMƏT BAZASI: təchizatçılardan alınan maya qiymətləri (yalnız admin görür) ============
+create table if not exists public.suppliers (
+  id uuid primary key default gen_random_uuid(),
+  name text unique not null,
+  phone text not null default '',
+  note text not null default '',
+  created_at timestamptz not null default now()
+);
+create table if not exists public.cost_products (
+  id uuid primary key default gen_random_uuid(),
+  code text unique,
+  category text not null default '',
+  name text not null,
+  unit text not null default 'ədəd',
+  spec text not null default '',
+  min_qty int,
+  created_at timestamptz not null default now()
+);
+create table if not exists public.cost_prices (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid not null references public.cost_products(id) on delete cascade,
+  supplier_id uuid not null references public.suppliers(id) on delete cascade,
+  min_qty int not null default 1,          -- bu qiymət neçə ədəddən başlayır
+  unit_price numeric not null check (unit_price >= 0),
+  vat_included boolean not null default false,
+  valid_until date,
+  note text not null default '',
+  created_at timestamptz not null default now()
+);
+create index if not exists cost_prices_product_idx on public.cost_prices(product_id);
+alter table public.suppliers enable row level security;
+alter table public.cost_products enable row level security;
+alter table public.cost_prices enable row level security;
+drop policy if exists "suppliers admin" on public.suppliers;
+create policy "suppliers admin" on public.suppliers for all to authenticated using (true) with check (true);
+drop policy if exists "cost_products admin" on public.cost_products;
+create policy "cost_products admin" on public.cost_products for all to authenticated using (true) with check (true);
+drop policy if exists "cost_prices admin" on public.cost_prices;
+create policy "cost_prices admin" on public.cost_prices for all to authenticated using (true) with check (true);
+
+-- Standart məhsul kodları (Lemur-Group-Qiymet-Bazasi-v1.xlsx → "Məhsul kodları")
+insert into public.cost_products (code, category, name, unit, spec, min_qty) values
+  ('P-001', 'Poliqrafiya', 'Vizit kart', 'ədəd', '90×50 mm, 300 qr kuşe, 4+4, mat laminasiya', 100),
+  ('P-002', 'Poliqrafiya', 'Flayer A5', 'ədəd', 'A5 (148×210), 130 qr kuşe, 4+4, laminasiyasız', 500),
+  ('P-003', 'Poliqrafiya', 'Flayer A6', 'ədəd', 'A6 (105×148), 130 qr kuşe, 4+4', 1000),
+  ('P-004', 'Poliqrafiya', 'Buklet (3 qat)', 'ədəd', 'A4 açıq / A5 qapalı, 150 qr kuşe, 4+4, bigovka', 500),
+  ('P-005', 'Poliqrafiya', 'Kataloq / broşür', 'ədəd', 'A4, 16 səh, 150 qr daxili + 250 qr üz, skoba tikiş', 100),
+  ('P-006', 'Poliqrafiya', 'Blank A4 (letterhead)', 'ədəd', 'A4, 80 qr ofset kağız, 4+0', 500),
+  ('P-007', 'Poliqrafiya', 'Zərf (C5/DL)', 'ədəd', 'DL 110×220, 100 qr, 1+0 və ya 4+0 loqo çapı', 500),
+  ('P-008', 'Poliqrafiya', 'Papka (folder)', 'ədəd', 'A4 cib papka, 300 qr kuşe, mat laminasiya, ştans', 100),
+  ('P-009', 'Poliqrafiya', 'Divar təqvimi', 'ədəd', 'A3, 12+1 vərəq, 150 qr kuşe, yaylı tikiş', 50),
+  ('P-010', 'Poliqrafiya', 'Stolüstü təqvim', 'ədəd', 'Standart ev tipli, 300 qr, yaylı', 50),
+  ('P-011', 'Poliqrafiya', 'Etiket / stiker', 'ədəd', 'Rulon və ya vərəq, kağız/PP, ştanslı, 4+0', 500),
+  ('P-012', 'Poliqrafiya', 'Kağız çanta', 'ədəd', 'Orta ölçü, 170 qr kraft və ya kuşe, kəndir qulp', 100),
+  ('P-013', 'Poliqrafiya', 'Qutu / ambalaj', 'ədəd', 'Fərdi ştans, 350 qr karton, 4+0 + laminasiya', 100),
+  ('P-014', 'Poliqrafiya', 'Menyu', 'ədəd', 'A4, 350 qr, mat laminasiya, 2 üz', 50),
+  ('P-015', 'Poliqrafiya', 'Bilet / kupon (nömrələnmiş)', 'ədəd', 'Perforasiyalı, nömrələmə ilə', 500),
+  ('PR-001', 'Promo məhsullar', 'Çaşka (kupa)', 'ədəd', 'Ağ keramika 330 ml, sublimasiya, 1 üz və ya dairəvi', 50),
+  ('PR-002', 'Promo məhsullar', 'Qələm (plastik)', 'ədəd', 'Plastik, 1 rəng tampon çap, loqo', 100),
+  ('PR-003', 'Promo məhsullar', 'Qələm (metal)', 'ədəd', 'Metal korpus, lazer qravüra, qutulu', 50),
+  ('PR-004', 'Promo məhsullar', 'Bloknot A5', 'ədəd', 'A5, 80 vərəq, sərt üz, loqo çapı', 50),
+  ('PR-005', 'Promo məhsullar', 'Eko-çanta (parça)', 'ədəd', 'Kətan / qeyri-toxunma, 1 rəng şelkoqrafiya', 100),
+  ('PR-006', 'Promo məhsullar', 'Futbolka', 'ədəd', '100% pambıq, DTF və ya şelkoqrafiya, 1 üz', 50),
+  ('PR-007', 'Promo məhsullar', 'Kepka', 'ədəd', 'Klassik 6 panel, tikmə loqo', 50),
+  ('PR-008', 'Promo məhsullar', 'Açarlıq', 'ədəd', 'Metal / akril, loqo', 100),
+  ('PR-009', 'Promo məhsullar', 'USB flaş', 'ədəd', '16 GB, loqo qravüra, qutulu', 50),
+  ('PR-010', 'Promo məhsullar', 'Powerbank', 'ədəd', '10000 mAh, loqo çapı, qutulu', 25),
+  ('PR-011', 'Promo məhsullar', 'Termos / termo-stəkan', 'ədəd', '350-500 ml, paslanmayan polad, qravüra', 25),
+  ('PR-012', 'Promo məhsullar', 'Lanyard (boyunbağı)', 'ədəd', '20 mm, sublimasiya çap, karabin', 100),
+  ('PR-013', 'Promo məhsullar', 'Çətir', 'ədəd', 'Avtomat, 1-2 rəng loqo', 50),
+  ('PR-014', 'Promo məhsullar', 'Masaüstü bayraq', 'ədəd', 'Altlıqlı, 2 üz çap', 10),
+  ('PR-015', 'Promo məhsullar', 'Hədiyyə dəsti (set)', 'dəst', 'Qələm + bloknot + çanta, fərdi qutuda', 25),
+  ('R-001', 'Reklam və böyük format', 'Banner / vinil çapı', 'm²', '440 qr frontlit vinil, 1440 dpi, lyuversli', 1),
+  ('R-002', 'Reklam və böyük format', 'Mesh banner', 'm²', 'Mesh material, fasad üçün, lyuversli', 1),
+  ('R-003', 'Reklam və böyük format', 'Roll-up', 'ədəd', '85×200 sm, alüminium konstruksiya + çap + çanta', 1),
+  ('R-004', 'Reklam və böyük format', 'X-banner', 'ədəd', '60×160 sm, çap + konstruksiya', 1),
+  ('R-005', 'Reklam və böyük format', 'Press-wall', 'ədəd', '3×2,3 m karkas + banner çap, montajsız', 1),
+  ('R-006', 'Reklam və böyük format', 'One-way vision (pəncərə)', 'm²', 'Perforasiyalı plyonka, çap + yapışdırma', 1),
+  ('R-007', 'Reklam və böyük format', 'Oracal kəsim yazı', 'm²', 'Rəngli plyonka, plotter kəsimi', 1),
+  ('R-008', 'Reklam və böyük format', 'Qabarıq hərf (işıqsız)', 'ədəd/hərf', 'Akril/PVC, 50 sm hündürlük, montajsız', 1),
+  ('R-009', 'Reklam və böyük format', 'Qabarıq hərf (işıqlı)', 'ədəd/hərf', 'Akril üz + LED, 50 sm hündürlük', 1),
+  ('R-010', 'Reklam və böyük format', 'Lightbox', 'm²', 'Alüminium profil + LED + transparent çap', 1),
+  ('R-011', 'Reklam və böyük format', 'Neon (LED neon)', 'metr', 'Fleksibl LED neon, şəffaf altlıq', 1),
+  ('R-012', 'Reklam və böyük format', 'Avtomobil brendinqi', 'ədəd', 'Yan + arxa, plyonka çap + yapışdırma', 1),
+  ('R-013', 'Reklam və böyük format', 'Stend / sərgi konstruksiyası', 'm²', 'Modul stend, montaj daxil', 1),
+  ('R-014', 'Reklam və böyük format', 'Tablo / lövhə (kompozit)', 'm²', 'Alükobond + plyonka və ya UV çap', 1),
+  ('R-015', 'Reklam və böyük format', 'UV çap (sərt səth)', 'm²', 'Forex/akril/kompozit üzərinə birbaşa UV çap', 1)
+on conflict (code) do nothing;
+
+notify pgrst, 'reload schema';
