@@ -62,3 +62,15 @@ export function money(n: number, digits = 2): string {
 }
 
 export const today = () => new Date().toISOString().slice(0, 10);
+
+/**
+ * Avtomatik məhsul kodu: 4 simvol (0-9, a-z), "1000"-dən başlayır və 36-lıq sayla artır: 1009 → 100a → … → 100z → 1010.
+ * 4 simvol bitəndə (zzzz) 5 simvola keçir. Əl ilə yazılmış "P-001" kimi kodlar sayılmır.
+ */
+export const AUTO_CODE = /^[0-9a-z]{4,5}$/;
+export function nextCode(existing: (string | null)[]): string {
+  let max = parseInt("1000", 36) - 1;
+  for (const c of existing) if (c && AUTO_CODE.test(c)) max = Math.max(max, parseInt(c, 36));
+  const next = (max + 1).toString(36);
+  return next.length < 4 ? next.padStart(4, "0") : next;
+}

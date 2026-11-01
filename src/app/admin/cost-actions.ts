@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin-auth";
+import { nextCode } from "@/lib/costs";
 
 const s = (f: FormData, k: string, max = 300) => String(f.get(k) ?? "").trim().slice(0, max);
 /** "3,50" və "3.50" hər ikisi qəbul olunur */
@@ -31,6 +32,7 @@ export async function saveCostProduct(formData: FormData) {
     const { error } = await supabase.from("cost_products").update(row).eq("id", id);
     back(`/admin/costs/${id}`, error ? (error.code === "23505" ? "Bu kod artıq var" : error.message) : "Saxlanıldı");
   }
+  if (!row.code) row.code = await freshCode(supabase);
   const { data, error } = await supabase.from("cost_products").insert(row).select("id").single();
   if (error || !data) back("/admin/costs", error?.code === "23505" ? "Bu kod artıq var" : "Əlavə olunmadı");
   redirect(`/admin/costs/${data!.id}`);
@@ -40,6 +42,12 @@ export async function deleteCostProduct(formData: FormData) {
   const { supabase } = await requireAdmin();
   await supabase.from("cost_products").delete().eq("id", s(formData, "id", 60));
   redirect("/admin/costs");
+}
+
+/** Bazadakı kodlara baxıb növbəti avtomatik kodu verir */
+async function freshCode(supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"]) {
+  const { data } = await supabase.from("cost_products").select("code").not("code", "is", null).limit(20000);
+  return nextCode((data ?? []).map((x) => x.code as string));
 }
 
 /* -------- Qiymət -------- */
@@ -154,14 +162,16 @@ export async function importCostPrices(payload: ImportPayload): Promise<{ error?
   const byName = new Map((prods ?? []).map((x) => [norm(x.name), x.id as string]));
   let newProd = 0;
   const ids: string[] = [];
+  const codes = (prods ?? []).map((x) => x.code as string | null);
   for (const r of rows) {
     let id = r.productId ?? (r.code && byCode.get(norm(r.code))) ?? byName.get(norm(r.name));
     if (!id) {
+      const code = r.code.trim().slice(0, 30) || nextCode(codes);
       const { data, error } = await supabase
         .from("cost_products")
         .insert({
           name: r.name.trim().slice(0, 160),
-          code: r.code.trim().slice(0, 30) || null,
+          code,
           spec: r.spec.trim().slice(0, 500),
           unit: r.unit.trim().slice(0, 20) || "ədəd",
           category: payload.category.trim().slice(0, 80),
@@ -171,8 +181,9 @@ export async function importCostPrices(payload: ImportPayload): Promise<{ error?
       if (error || !data) return { error: `Məhsul yaradılmadı: ${r.name} (${error?.message ?? ""})` };
       id = data.id as string;
       newProd++;
+      codes.push(code);
       byName.set(norm(r.name), id);
-      if (r.code) byCode.set(norm(r.code), id);
+      byCode.set(norm(code), id);
     }
     ids.push(id);
   }

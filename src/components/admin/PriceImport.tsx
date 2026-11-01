@@ -169,7 +169,7 @@ export function PriceImport({ existing, suppliers }: { existing: Existing[]; sup
                       <tr key={r.key} className={`${!r.include ? "opacity-40" : ""} ${bad ? "bg-[#c42b0d]/5" : ""}`}>
                         <td className="py-2"><input type="checkbox" checked={r.include} onChange={(e) => patch(r.key, { include: e.target.checked })} /></td>
                         <td className="py-1.5 pr-2"><input className={`${inp} ${bad ? "border-[#c42b0d]" : ""}`} value={r.name} placeholder="Məhsul adını yazın" onChange={(e) => patch(r.key, { name: e.target.value, productId: r.productId && e.target.value !== r.name ? null : r.productId })} /></td>
-                        <td className="py-1.5 pr-2"><input className={inp} value={r.code} onChange={(e) => patch(r.key, { code: e.target.value })} /></td>
+                        <td className="py-1.5 pr-2"><input className={inp} value={r.code} placeholder={r.productId ? "" : "avtomatik"} onChange={(e) => patch(r.key, { code: e.target.value })} /></td>
                         <td className="py-1.5 pr-2"><input className={inp} value={r.spec} onChange={(e) => patch(r.key, { spec: e.target.value })} /></td>
                         <td className="py-1.5 pr-2"><input className={inp} value={r.unit} onChange={(e) => patch(r.key, { unit: e.target.value })} /></td>
                         <td className="py-1.5 pr-2">

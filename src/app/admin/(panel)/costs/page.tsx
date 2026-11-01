@@ -74,7 +74,7 @@ export default async function CostsPage({ searchParams }: { searchParams: Promis
             <h2 className="font-bold">Yeni məhsul</h2>
             <label className="block"><span className={costLabel}>Ad *</span><input name="name" required className={costInput} placeholder="T-shirt, pambıq, ağ" /></label>
             <div className="grid grid-cols-2 gap-2">
-              <label><span className={costLabel}>Kod</span><input name="code" className={costInput} placeholder="PR-030" /></label>
+              <label><span className={costLabel}>Kod</span><input name="code" className={costInput} placeholder="avtomatik" /></label>
               <label><span className={costLabel}>Vahid</span><input name="unit" defaultValue="ədəd" className={costInput} /></label>
             </div>
             <label className="block"><span className={costLabel}>Kateqoriya</span>
