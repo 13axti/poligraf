@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { clientUnit, money, offersFor, quoteTotals, VAT, type CostPrice, type QuoteParams } from "@/lib/costs";
 import type { CostProduct } from "@/lib/costs-server";
+import { DecimalInput } from "./DecimalInput";
 
 interface Line { key: string; productId: string; qty: number; supplierId: string | null; override: number | null }
 
@@ -50,7 +51,6 @@ export function QuoteBuilder({ products, prices, day }: { products: CostProduct[
   const t = quoteTotals(rows.map((r) => ({ cost: r.cost, qty: r.l.qty })), p);
   const extra = (p.delivery + p.design) * (1 + p.margin / 100) * (p.vat ? 1 + VAT : 1);
   const patch = (key: string, x: Partial<Line>) => setLines((ls) => ls.map((l) => (l.key === key ? { ...l, ...x } : l)));
-  const num = (v: string) => Number(v.replace(",", ".")) || 0;
 
   function copy() {
     const vatTxt = p.vat ? "ƏDV daxil" : "ƏDV-siz";
@@ -109,7 +109,7 @@ export function QuoteBuilder({ products, prices, day }: { products: CostProduct[
                 </select>
               </label>
               <label><span className={lbl}>Maya (əl ilə)</span>
-                <input inputMode="decimal" className={inp} value={l.override ?? ""} placeholder={chosen ? money(chosen.net, 3) : "0"} onChange={(e) => patch(l.key, { override: e.target.value === "" ? null : num(e.target.value) })} />
+                <DecimalInput className={inp} value={l.override} placeholder={chosen ? money(chosen.net, 3) : "0"} onChange={(v) => patch(l.key, { override: v })} />
               </label>
             </div>
             {!offers.length && l.override == null && <p className="mt-2 text-xs text-[#c42b0d]">Bazada bu məhsul üçün etibarlı qiymət yoxdur. Mayanı əl ilə yazın və ya bazaya qiymət əlavə edin.</p>}
@@ -128,10 +128,10 @@ export function QuoteBuilder({ products, prices, day }: { products: CostProduct[
         <section className="space-y-3 rounded-xl bg-white p-5">
           <h3 className="font-bold">Parametrlər</h3>
           <div className="grid grid-cols-2 gap-2">
-            <label><span className={lbl}>Marja, %</span><input inputMode="decimal" className={inp} value={p.margin} onChange={(e) => setP({ ...p, margin: num(e.target.value) })} /></label>
-            <label><span className={lbl}>Zay ehtiyatı, %</span><input inputMode="decimal" className={inp} value={p.waste} onChange={(e) => setP({ ...p, waste: num(e.target.value) })} /></label>
-            <label><span className={lbl}>Çatdırılma, ₼</span><input inputMode="decimal" className={inp} value={p.delivery} onChange={(e) => setP({ ...p, delivery: num(e.target.value) })} /></label>
-            <label><span className={lbl}>Dizayn, ₼</span><input inputMode="decimal" className={inp} value={p.design} onChange={(e) => setP({ ...p, design: num(e.target.value) })} /></label>
+            <label><span className={lbl}>Marja, %</span><DecimalInput className={inp} value={p.margin} onChange={(v) => setP((x) => ({ ...x, margin: v ?? 0 }))} /></label>
+            <label><span className={lbl}>Zay ehtiyatı, %</span><DecimalInput className={inp} value={p.waste} onChange={(v) => setP((x) => ({ ...x, waste: v ?? 0 }))} /></label>
+            <label><span className={lbl}>Çatdırılma, ₼</span><DecimalInput className={inp} value={p.delivery} onChange={(v) => setP((x) => ({ ...x, delivery: v ?? 0 }))} /></label>
+            <label><span className={lbl}>Dizayn, ₼</span><DecimalInput className={inp} value={p.design} onChange={(v) => setP((x) => ({ ...x, design: v ?? 0 }))} /></label>
           </div>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={p.vat} onChange={(e) => setP({ ...p, vat: e.target.checked })} /> ƏDV əlavə et (18%)</label>
         </section>

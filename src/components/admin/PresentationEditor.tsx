@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { savePresentation, uploadPresentationImage } from "@/app/admin/presentation-actions";
+import { DecimalInput } from "./DecimalInput";
 import { lineTotal, money, setTotal, tierPrice, unitPrice, type PData, type PItem, type PSet, type Tier } from "@/lib/presentations";
 
 export interface CatalogProduct {
@@ -127,7 +128,7 @@ export function PresentationEditor({
           <label><span className={lbl}>Başlıq</span><input className={inp} value={meta.title} onChange={(e) => editMeta({ title: e.target.value })} /></label>
           <label><span className={lbl}>Müştəri</span><input className={inp} value={meta.client} onChange={(e) => editMeta({ client: e.target.value })} /></label>
           <label><span className={lbl}>Nəfər sayı</span><input type="number" min={0} className={inp} value={meta.people} onChange={(e) => editMeta({ people: Number(e.target.value) || 0 })} /></label>
-          <label><span className={lbl}>Marja, %</span><input type="number" min={0} max={500} className={inp} value={data.markup} onChange={(e) => edit((d) => ({ ...d, markup: Number(e.target.value) || 0 }))} /></label>
+          <label><span className={lbl}>Marja, %</span><DecimalInput className={inp} value={data.markup} onChange={(v) => edit((d) => ({ ...d, markup: v ?? 0 }))} /></label>
         </div>
         <label className="mt-3 block"><span className={lbl}>Üz qabığında qısa mətn (istəyə görə)</span>
           <input className={inp} value={data.intro} onChange={(e) => edit((d) => ({ ...d, intro: e.target.value }))} placeholder="Bloknot, qələm, çanta və stiker" />
@@ -189,8 +190,8 @@ export function PresentationEditor({
                   </label>
                   <label><span className={lbl}>Say ({it.unit})</span><input type="number" min={1} className={inp} value={it.qty} onChange={(e) => patch(it.id, { qty: Math.max(1, Number(e.target.value) || 1) })} /></label>
                   <label><span className={lbl}>Qiymət (özün yaz)</span>
-                    <input type="number" step="0.01" min={0} className={inp} value={it.priceOverride ?? ""} placeholder={money(round(tierPrice(it.tiers, it.qty) * (1 + data.markup / 100)))}
-                      onChange={(e) => patch(it.id, { priceOverride: e.target.value === "" ? null : Number(e.target.value) })} />
+                    <DecimalInput className={inp} value={it.priceOverride} placeholder={money(round(tierPrice(it.tiers, it.qty) * (1 + data.markup / 100)))}
+                      onChange={(v) => patch(it.id, { priceOverride: v })} />
                   </label>
                   <div><span className={lbl}>Cəmi</span><p className="py-2 text-sm font-bold">{money(lineTotal(it, data.markup))} ₼</p><p className="text-xs text-neutral-500">vahid {money(unitPrice(it, data.markup))}</p></div>
                 </div>
