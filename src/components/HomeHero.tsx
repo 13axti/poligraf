@@ -8,7 +8,7 @@ import { useRef } from "react";
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /**
- * Şəbəkədəki şəkillər müvəqqətidir (Unsplash, pulsuz lisenziya): public/hero/.
+ * Şəbəkədəki şəkillər müvəqqətidir: Unsplash fotoları (pulsuz lisenziya) pastel rəngə boyanıb, üzərinə "lemur" yazılıb. public/hero/v2/.
  * Sütunlar ortaya doğru yüksəlir (V forması); h = şəklin hündürlüyü, top = sütunun yuxarıdan boşluğu (hər ikisi ~200px enə nisbətdə).
  */
 const COLS: { top: number; tiles: { src: string; alt: string; h: number }[]; show: string }[] = [
@@ -37,7 +37,7 @@ function Column({ col, i, y }: { col: (typeof COLS)[number]; i: number; y: Motio
           style={{ aspectRatio: `200 / ${t.h}` }}
         >
           <Image
-            src={`/hero/${t.src}.webp`}
+            src={`/hero/v2/${t.src}.webp`}
             alt={t.alt}
             fill
             sizes="(min-width: 1024px) 190px, (min-width: 640px) 20vw, 33vw"
@@ -82,7 +82,7 @@ export function HomeHero({
     reduce ? {} : { animate: { y: [0, -dist, 0] }, transition: { duration: 5 + d, repeat: Infinity, ease: "easeInOut" as const, delay: d } };
 
   // Başlıqdakı kiçik dairələr: seçilmiş məhsulların şəkilləri (yoxdursa şəbəkədəkilər)
-  const thumbs = (items.length ? items.map((p) => p.image) : ["/hero/mug.webp", "/hero/cap.webp", "/hero/tote.webp"]).slice(0, 3);
+  const thumbs = (items.length ? items.map((p) => p.image) : ["/hero/v2/mug.webp", "/hero/v2/cap.webp", "/hero/v2/tote.webp"]).slice(0, 3);
 
   return (
     <section ref={ref} className="relative overflow-hidden px-4 pb-10 pt-10 sm:pt-14">
