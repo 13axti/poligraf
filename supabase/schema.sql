@@ -386,3 +386,90 @@ drop trigger if exists cost_code_lock on public.cost_products;
 create trigger cost_code_lock before update on public.cost_products for each row execute function public.cost_code_lock();
 
 notify pgrst, 'reload schema';
+
+-- ============ QİYMƏT SİSTEMİ v3: kateqoriya/alt kateqoriya, valyuta, əlavə xanalar, qiymət təklifləri ============
+create table if not exists public.cost_categories (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  parent_id uuid references public.cost_categories(id) on delete cascade,  -- boşdursa əsas kateqoriya, doludursa alt kateqoriya
+  created_at timestamptz not null default now()
+);
+create unique index if not exists cost_categories_name_uq
+  on public.cost_categories (coalesce(parent_id, '00000000-0000-0000-0000-000000000000'::uuid), lower(name));
+alter table public.cost_categories enable row level security;
+drop policy if exists "cost_categories admin" on public.cost_categories;
+create policy "cost_categories admin" on public.cost_categories for all to authenticated using (true) with check (true);
+
+alter table public.cost_products
+  add column if not exists category_id uuid references public.cost_categories(id) on delete set null,
+  add column if not exists subcategory_id uuid references public.cost_categories(id) on delete set null,
+  add column if not exists width numeric,
+  add column if not exists length numeric,
+  add column if not exists thickness numeric,
+  add column if not exists size_unit text not null default 'mm',
+  add column if not exists specs text not null default '',     -- texniki xüsusiyyətlər
+  add column if not exists extra jsonb not null default '{}';  -- istifadəçinin əlavə etdiyi xanaların dəyərləri
+
+-- Köhnə mətn kateqoriyalarını cədvələ köçür
+insert into public.cost_categories (name)
+select distinct on (lower(trim(p.category))) trim(p.category) from public.cost_products p
+where trim(p.category) <> ''
+  and not exists (select 1 from public.cost_categories c where c.parent_id is null and lower(c.name) = lower(trim(p.category)));
+update public.cost_products p set category_id = c.id
+from public.cost_categories c
+where p.category_id is null and c.parent_id is null and lower(c.name) = lower(trim(p.category));
+
+alter table public.suppliers add column if not exists whatsapp text not null default '';
+
+-- Təklif: əsas alış qiyməti, valyuta, vahid, minimum sifariş, çatdırılma, qiymət tarixi (miqdar pillələri tiers-də qalır)
+alter table public.cost_offers
+  add column if not exists unit_price numeric,
+  add column if not exists currency text not null default 'AZN',
+  add column if not exists price_unit text not null default 'ədəd',
+  add column if not exists min_order int,
+  add column if not exists delivery_fee numeric not null default 0,
+  add column if not exists price_date date;
+update public.cost_offers o set
+  unit_price = coalesce(o.unit_price, (select v.value::numeric from jsonb_each_text(o.tiers) v order by v.key::int limit 1)),
+  min_order = coalesce(o.min_order, (select v.key::int from jsonb_each_text(o.tiers) v order by v.key::int limit 1)),
+  price_date = coalesce(o.price_date, o.updated_at::date)
+where o.unit_price is null or o.min_order is null or o.price_date is null;
+alter table public.cost_offers alter column price_date set default current_date;
+
+-- İstifadəçinin məhsul formasına əlavə etdiyi xanalar
+create table if not exists public.cost_fields (
+  id uuid primary key default gen_random_uuid(),
+  label text not null,
+  type text not null default 'text' check (type in ('text', 'number', 'textarea', 'select')),
+  options text[] not null default '{}',
+  required boolean not null default false,
+  sort int not null default 0,
+  created_at timestamptz not null default now()
+);
+alter table public.cost_fields enable row level security;
+drop policy if exists "cost_fields admin" on public.cost_fields;
+create policy "cost_fields admin" on public.cost_fields for all to authenticated using (true) with check (true);
+
+-- Qiymət təklifləri (müştəriyə gedən)
+create table if not exists public.quotes (
+  id uuid primary key default gen_random_uuid(),
+  number text unique not null,           -- LMR-2026-0001
+  client text not null default '',
+  contact text not null default '',
+  phone text not null default '',
+  email text not null default '',
+  quote_date date not null default current_date,
+  note text not null default '',
+  margin numeric not null default 30,
+  vat boolean not null default false,
+  lines jsonb not null default '[]',
+  source text not null default 'manual',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists quotes_date_idx on public.quotes(quote_date desc);
+alter table public.quotes enable row level security;
+drop policy if exists "quotes admin" on public.quotes;
+create policy "quotes admin" on public.quotes for all to authenticated using (true) with check (true);
+
+notify pgrst, 'reload schema';

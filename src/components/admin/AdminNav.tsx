@@ -10,7 +10,15 @@ const groups: { title?: string; items: { href: string; label: string; icon: Reac
       { href: "/admin/orders", label: "Sifarişlər", icon: <path d="M6 3h12l2 4v14H4V7l2-4zM4 7h16M9 11h6" /> },
       { href: "/admin/requests", label: "Sorğular", icon: <path d="M4 5h16v11H8l-4 4V5zM8 9h8M8 12h5" /> },
       { href: "/admin/presentations", label: "Təqdimatlar", icon: <path d="M3 4h18v12H3V4zM12 16v4M8 20h8M7 12l3-3 3 2 4-4" /> },
+
+    ],
+  },
+  {
+    title: "Qiymət",
+    items: [
       { href: "/admin/costs", label: "Qiymət bazası", icon: <path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6" /> },
+      { href: "/admin/suppliers", label: "Təchizatçılar", icon: <path d="M3 21V8l6-4v4l6-4v4l6-4v17H3zM8 17h2M14 17h2M8 13h2M14 13h2" /> },
+      { href: "/admin/quotes", label: "Qiymət təklifləri", icon: <path d="M7 3h7l5 5v13H7V3zM14 3v5h5M10 13h6M10 17h4" /> },
     ],
   },
   {
