@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import { after } from "next/server";
 import { notifyNewOrder, notifyNewRequest } from "@/lib/notify";
 import { getProductBySlug } from "@/lib/data";
-import { calculatePrice } from "@/lib/pricing";
+import { calculatePrice, resolveSelection, groupOf, DEFAULT_GROUP } from "@/lib/pricing";
 import { createPublicClient, supabaseConfigured } from "@/lib/supabase/public";
 
 export type OrderResult = { ok: true; id: string } | { ok: false; error: string };
@@ -14,6 +14,8 @@ export type OrderResult = { ok: true; id: string } | { ok: false; error: string 
 export interface OrderPayload {
   productSlug: string;
   variantId?: string;
+  variantIds?: string[]; // qruplu kalkulyator: hər qrupdan seçilən
+  calcNote?: string;     // kalkulyatordakı "Qeydlər"
   quantity?: number;
   widthCm?: number;
   heightCm?: number;
@@ -50,12 +52,18 @@ export async function submitOrder(input: OrderPayload): Promise<OrderResult> {
   if (!product) return { ok: false, error: "Məhsul tapılmadı" };
 
   // Qiyməti həmişə serverdə yenidən hesabla — müştərinin göndərdiyinə güvənmə
-  const variant = product.variants?.find((v) => v.id === input.variantId);
+  // Seçimlər: hər qrupdan biri (id-lər məhsulun öz variantlarından yoxlanır, saxta id nəzərə alınmır)
+  const ids = (input.variantIds?.length ? input.variantIds : input.variantId ? [input.variantId] : []).map(String).slice(0, 30);
+  const selected = product.variants?.length ? resolveSelection(product, ids) : [];
+  const grouped = selected.some((v) => groupOf(v) !== DEFAULT_GROUP);
+  const variant = selected.length
+    ? { name: selected.map((v) => (grouped ? `${groupOf(v)}: ${v.name}` : v.name)).join(" · ") }
+    : undefined;
   const price = calculatePrice(product, {
     quantity: input.quantity,
     widthCm: input.widthCm,
     heightCm: input.heightCm,
-    variantModifier: variant?.priceModifier ?? 0,
+    selected,
   });
   if (price.total <= 0) return { ok: false, error: price.breakdown };
 
@@ -63,7 +71,7 @@ export async function submitOrder(input: OrderPayload): Promise<OrderResult> {
   const logos = (input.logoDataUrls ?? []).slice(0, 12).map(parseDataUrl).filter((x): x is NonNullable<ReturnType<typeof parseDataUrl>> => !!x);
   const ai = parseDataUrl(input.aiDataUrl);
   const texts = (input.texts ?? []).map((t) => String(t).replace(/\s+/g, " ").trim().slice(0, 120)).filter(Boolean).slice(0, 20);
-  const note = [input.note?.trim().slice(0, 1000), texts.length ? `Mockup üzərindəki yazılar: ${texts.map((t) => `«${t}»`).join(", ")}` : ""].filter(Boolean).join("\n");
+  const note = [input.calcNote?.trim().slice(0, 1000), input.note?.trim().slice(0, 1000), price.days ? `Hazırlanma: ${price.days} iş günü` : "", texts.length ? `Mockup üzərindəki yazılar: ${texts.map((t) => `«${t}»`).join(", ")}` : ""].filter(Boolean).join("\n");
   const id = randomUUID();
 
   // ---------- Supabase ----------

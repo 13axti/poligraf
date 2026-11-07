@@ -67,7 +67,7 @@ export interface ProductPayload {
   minWidthCm?: number;
   minHeightCm?: number;
   priceTiers: { minQty: number; unitPrice: number }[];
-  variants: { id: string; name: string; priceModifier?: number }[];
+  variants: { id: string; name: string; priceModifier?: number; group?: string; multiplier?: number; fixed?: number; days?: number }[];
   mockups: (ProductMockup & { fileKey?: string })[];
   image: string;
   featured: boolean;
@@ -115,7 +115,17 @@ export async function saveProduct(formData: FormData): Promise<ActionState> {
       pricePerSqm: p.pricingModel === "per_sqm" ? p.pricePerSqm : undefined,
       minWidthCm: p.pricingModel === "per_sqm" ? p.minWidthCm : undefined,
       minHeightCm: p.pricingModel === "per_sqm" ? p.minHeightCm : undefined,
-      variants: p.variants.filter((v) => v.name.trim()),
+      variants: p.variants
+        .filter((v) => v.name.trim())
+        .slice(0, 120)
+        .map((v) => {
+          const n = (x: unknown) => (Number.isFinite(Number(x)) && Number(x) !== 0 ? Number(x) : undefined);
+          return {
+            id: String(v.id).slice(0, 40), name: v.name.trim().slice(0, 80), group: v.group?.trim().slice(0, 40) || undefined,
+            priceModifier: n(v.priceModifier), multiplier: Number(v.multiplier) > 0 && Number(v.multiplier) !== 1 ? Number(v.multiplier) : undefined,
+            fixed: n(v.fixed), days: Number(v.days) > 0 ? Math.round(Number(v.days)) : undefined,
+          };
+        }),
       mockups,
       featured: p.featured,
       active: p.active,

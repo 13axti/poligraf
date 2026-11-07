@@ -1,6 +1,27 @@
-import type { Product, PriceResult, PriceTier } from "./types";
+import type { Product, PriceResult, PriceTier, ProductVariant } from "./types";
+
+export const DEFAULT_GROUP = "Variant";
+export const groupOf = (v: ProductVariant) => v.group?.trim() || DEFAULT_GROUP;
+
+/** Variantları qruplara ayırır (sıra admində yazıldığı kimidir) */
+export function variantGroups(variants: ProductVariant[] = []) {
+  const out: { name: string; items: ProductVariant[] }[] = [];
+  for (const v of variants) {
+    const g = out.find((x) => x.name === groupOf(v));
+    if (g) g.items.push(v);
+    else out.push({ name: groupOf(v), items: [v] });
+  }
+  return out;
+}
+
+/** Hər qrupdan bir seçim: id-lər siyahısından etibarlıları götürür, qrupda seçilməyibsə birincisi */
+export function resolveSelection(product: Product, ids: string[] = []): ProductVariant[] {
+  return variantGroups(product.variants).map((g) => g.items.find((v) => ids.includes(v.id)) ?? g.items[0]);
+}
 
 const AZN = (n: number) => `${n.toFixed(2)} ₼`;
+/** Ədəd qiyməti: 1 ₼-dan ucuzdursa 3 onluq (0,415 ₼), yoxsa 2 */
+const AZNu = (n: number) => `${n.toFixed(Math.abs(n) < 1 ? 3 : 2)} ₼`;
 
 /** per_unit: sayına uyğun ən yaxşı tier-i tapır */
 function findTier(tiers: PriceTier[], qty: number): PriceTier {
@@ -20,9 +41,16 @@ export function calculatePrice(
     widthCm?: number;
     heightCm?: number;
     variantModifier?: number;
+    /** Qruplu seçimlər: hər qrupdan biri (verilərsə variantModifier əvəzinə istifadə olunur) */
+    selected?: ProductVariant[];
   }
 ): PriceResult {
-  const mod = opts.variantModifier ?? 0;
+  const sel = opts.selected;
+  const mod = sel ? sel.reduce((s, v) => s + (Number(v.priceModifier) || 0), 0) : (opts.variantModifier ?? 0);
+  const mult = sel ? sel.reduce((m, v) => m * (Number(v.multiplier) > 0 ? Number(v.multiplier) : 1), 1) : 1;
+  const extras = sel ? sel.reduce((s, v) => s + (Number(v.fixed) || 0), 0) : 0;
+  const days = sel?.map((v) => v.days).find((d) => typeof d === "number" && d > 0);
+  const extraText = extras ? ` + ${AZN(extras)}` : "";
 
   if (product.pricingModel === "per_unit") {
     const qty = Math.max(opts.quantity ?? 0, 0);
@@ -40,14 +68,16 @@ export function calculatePrice(
     }
 
     const tier = findTier(product.priceTiers, qty);
-    const unitPrice = tier.unitPrice + mod;
-    const total = unitPrice * qty;
+    const unitPrice = Math.round((tier.unitPrice * mult + mod) * 10000) / 10000;
+    const total = Math.round((unitPrice * qty + extras) * 100) / 100;
     return {
       total,
       unitPrice,
       quantity: qty,
       appliedTier: tier,
-      breakdown: `${qty} ədəd × ${AZN(unitPrice)} = ${AZN(total)}`,
+      extras,
+      days,
+      breakdown: `${qty} ədəd × ${AZNu(unitPrice)}${extraText} = ${AZN(total)}`,
     };
   }
 
@@ -69,13 +99,15 @@ export function calculatePrice(
   }
 
   const areaSqm = (w / 100) * (h / 100);
-  const rate = product.pricePerSqm + mod;
-  const total = areaSqm * rate;
+  const rate = product.pricePerSqm * mult + mod;
+  const total = Math.round((areaSqm * rate + extras) * 100) / 100;
   return {
     total,
     areaSqm,
-    breakdown: `${w}×${h} sm (${areaSqm.toFixed(2)} m²) × ${AZN(rate)}/m² = ${AZN(total)}`,
+    extras,
+    days,
+    breakdown: `${w}×${h} sm (${areaSqm.toFixed(2)} m²) × ${AZN(rate)}/m²${extraText} = ${AZN(total)}`,
   };
 }
 
-export { AZN };
+export { AZN, AZNu };

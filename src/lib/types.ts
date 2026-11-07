@@ -21,11 +21,20 @@ export interface PriceTier {
   unitPrice: number; // ədəd başına AZN
 }
 
-/** Məhsulun rəng/material variantı */
+/**
+ * Məhsulun seçimi (variant). Qrupa görə kalkulyatorda ayrıca sətir olur: "Ölçü", "Kağız", "Laminasiya", "Prioritet", "Çatdırılma"...
+ * Qrupu olmayan köhnə variantlar "Variant" qrupunda göstərilir. Qiymətə təsiri üç cürdür (hamısı istəyə bağlı):
+ *   priceModifier: ədəd (və ya m²) başına əlavə ₼; multiplier: ədəd qiymətinə vurğu (A4 = 2.4); fixed: sifarişə bir dəfə əlavə ₼ (çatdırılma, dizayn).
+ * days: hazırlanma müddəti (iş günü), adətən "Prioritet" qrupunda.
+ */
 export interface ProductVariant {
   id: string;
-  name: string; // "Ağ", "Mat laminasiya"
-  priceModifier?: number; // əlavə AZN (ədəd və ya m² başına), default 0
+  name: string; // "Ağ", "Mat laminasiya", "A5 (148 × 210 mm)"
+  priceModifier?: number;
+  group?: string;
+  multiplier?: number;
+  fixed?: number;
+  days?: number;
   image?: string;
 }
 
@@ -102,6 +111,8 @@ export interface PriceResult {
   areaSqm?: number; // m² (per_sqm)
   appliedTier?: PriceTier;
   breakdown: string; // istifadəçiyə göstərmək üçün izah
+  extras?: number; // sifarişə sabit əlavələr (çatdırılma, dizayn), AZN
+  days?: number; // hazırlanma müddəti (iş günü), seçilibsə
 }
 
 /** Sifariş — Flutter app-ə düşəcək struktur */

@@ -24,6 +24,27 @@ function readSize(file: File): Promise<{ w: number; h: number; url: string }> {
   });
 }
 
+/** Qrup adları (variantların sırası ilə) */
+const groupNames = (vs: { group?: string }[]) => Array.from(new Set(vs.map((v) => v.group?.trim() || "Variant")));
+
+/**
+ * Çap məhsulları üçün hazır qruplar (print.az-dakı kimi). Rəqəmlər neytraldır (×1, +0): öz qiymətlərinizi yazın.
+ * Qiymət pillələri birinci ölçü (standart) üçün yazılır, digər ölçülər vurğu ilə hesablanır.
+ */
+function printTemplate() {
+  const g = (group: string, names: string[], extra: Record<string, { days?: number }> = {}) =>
+    names.map((name) => ({ id: `v-${uid()}`, name, group, ...(extra[name] ?? {}) }));
+  return [
+    ...g("Ölçü", ["Standard (99 × 210 mm)", "A6 (105 × 148 mm)", "A5 (148 × 210 mm)", "A4 (210 × 297 mm)", "Kvadrat (148 × 148 mm)"]),
+    ...g("Prioritet", ["Ən sərfəli qiymət", "Ən sürətli istehsal"], { "Ən sərfəli qiymət": { days: 3 }, "Ən sürətli istehsal": { days: 1 } }),
+    ...g("Kağız", ["130 gsm", "170 gsm", "250 gsm", "300 gsm"]),
+    ...g("Çap tərəfi", ["1 tərəfli", "2 tərəfli"]),
+    ...g("Laminasiya", ["Yoxdur", "Mat", "Parlaq", "İpək (Soft Touch)"]),
+    ...g("Çatdırılma", ["Ofisdən təhvil alma", "Bakı daxili çatdırılma", "Rayonlara çatdırılma"]),
+    ...g("Dizayn", ["Dizaynım var", "Dizayn Lemur tərəfindən hazırlansın"]),
+  ];
+}
+
 export function ProductForm({
   categories,
   product,
@@ -248,21 +269,55 @@ export function ProductForm({
         )}
       </section>
 
-      {/* Variantlar */}
+      {/* Seçimlər (kalkulyator): qruplar və onların variantları */}
       <section className={card}>
-        <h2 className="mb-1 font-bold">Variantlar</h2>
-        <p className="mb-4 text-xs text-neutral-500">Rəng, material və s. Əlavə qiymət ədəd (və ya m²) başınadır, 0 yazsanız fərq yoxdur.</p>
-        <div className="space-y-2">
-          {variants.map((v, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input value={v.name} placeholder="Məs: Qara" onChange={(e) => setVariants(variants.map((x, k) => (k === i ? { ...x, name: e.target.value } : x)))} className={field} />
-              <input type="number" step="0.01" value={v.priceModifier ?? 0} onChange={(e) => setVariants(variants.map((x, k) => (k === i ? { ...x, priceModifier: Number(e.target.value) } : x)))} className={`${field} max-w-28`} aria-label="Əlavə qiymət" />
-              <span className="text-sm text-neutral-500">₼</span>
-              <button type="button" onClick={() => setVariants(variants.filter((_, k) => k !== i))} className="text-xl text-neutral-400 hover:text-accent" aria-label="Sil">×</button>
-            </div>
-          ))}
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-bold">Qiymət kalkulyatoru: seçimlər</h2>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => setVariants([...variants, ...printTemplate()])} className="rounded-md bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold">+ Çap şablonu (flayer kimi)</button>
+            <button type="button" onClick={() => setVariants([...variants, { id: `v-${uid()}`, name: "", group: `Yeni qrup ${groupNames(variants).length + 1}` }])} className="rounded-md bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold">+ Qrup</button>
+          </div>
         </div>
-        <button type="button" onClick={() => setVariants([...variants, { id: `v-${uid()}`, name: "", priceModifier: 0 }])} className="mt-3 text-sm font-semibold text-brand">+ Variant əlavə et</button>
+        <p className="mb-4 text-xs text-neutral-500">
+          Hər qrup saytda ayrıca sətir olur (Ölçü, Kağız, Laminasiya, Prioritet, Çatdırılma...), müştəri hər qrupdan birini seçir. İlk seçim standartdır.
+          Qiymət: <b>vurğu</b> ədəd qiymətinə vurulur (A4 üçün 2,4), <b>+₼/əd</b> hər ədədə əlavə olunur, <b>+₼ sifarişə</b> bir dəfə əlavə olunur (çatdırılma, dizayn), <b>gün</b> hazırlanma müddətidir.
+          Birinci qrup tirajdan əvvəl göstərilir.
+        </p>
+        <div className="space-y-4">
+          {groupNames(variants).map((g) => {
+            const items = variants.map((v, i) => ({ v, i })).filter((x) => (x.v.group?.trim() || "Variant") === g);
+            const setGroupName = (name: string) => setVariants(variants.map((v) => ((v.group?.trim() || "Variant") === g ? { ...v, group: name } : v)));
+            return (
+              <div key={g} className="rounded-xl border border-[var(--line)] p-3">
+                <div className="mb-2 flex items-center gap-2">
+                  <input defaultValue={g} onBlur={(e) => e.target.value.trim() && e.target.value !== g && setGroupName(e.target.value.trim())} className={`${field} max-w-xs font-bold`} aria-label="Qrupun adı" />
+                  <button type="button" onClick={() => setVariants(variants.filter((v) => (v.group?.trim() || "Variant") !== g))} className="ml-auto text-xs font-semibold text-neutral-500 hover:text-accent">Qrupu sil</button>
+                </div>
+                <div className="hidden grid-cols-[1fr_5.5rem_5.5rem_6.5rem_4.5rem_1.5rem] gap-2 px-1 text-[11px] font-semibold text-neutral-500 sm:grid">
+                  <span>Seçim</span><span>vurğu ×</span><span>+₼/əd</span><span>+₼ sifarişə</span><span>gün</span><span />
+                </div>
+                <div className="space-y-2">
+                  {items.map(({ v, i }) => {
+                    const set = (p: Partial<typeof v>) => setVariants(variants.map((x, k) => (k === i ? { ...x, ...p } : x)));
+                    const num = (val: string) => (val === "" ? undefined : Number(val.replace(",", ".")));
+                    return (
+                      <div key={v.id} className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_5.5rem_5.5rem_6.5rem_4.5rem_1.5rem]">
+                        <input value={v.name} placeholder="Məs: A5 (148 × 210 mm)" onChange={(e) => set({ name: e.target.value })} className={`${field} col-span-2 sm:col-span-1`} />
+                        <input inputMode="decimal" defaultValue={v.multiplier ?? ""} placeholder="1" onBlur={(e) => set({ multiplier: num(e.target.value) })} className={field} aria-label="Vurğu" />
+                        <input inputMode="decimal" defaultValue={v.priceModifier ?? ""} placeholder="0" onBlur={(e) => set({ priceModifier: num(e.target.value) })} className={field} aria-label="Ədəd başına əlavə" />
+                        <input inputMode="decimal" defaultValue={v.fixed ?? ""} placeholder="0" onBlur={(e) => set({ fixed: num(e.target.value) })} className={field} aria-label="Sifarişə əlavə" />
+                        <input inputMode="numeric" defaultValue={v.days ?? ""} placeholder="—" onBlur={(e) => set({ days: num(e.target.value) })} className={field} aria-label="Gün" />
+                        <button type="button" onClick={() => setVariants(variants.filter((_, k) => k !== i))} className="text-xl text-neutral-400 hover:text-accent" aria-label="Sil">×</button>
+                      </div>
+                    );
+                  })}
+                </div>
+                <button type="button" onClick={() => setVariants([...variants, { id: `v-${uid()}`, name: "", group: g === "Variant" ? undefined : g }])} className="mt-2 text-sm font-semibold text-brand">+ Seçim</button>
+              </div>
+            );
+          })}
+        </div>
+        {!variants.length && <p className="text-sm text-neutral-500">Seçim yoxdur. Kalkulyatorda yalnız tiraj görünəcək.</p>}
       </section>
 
       {/* Mockup */}

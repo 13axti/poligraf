@@ -35,6 +35,8 @@ export function OrderDialog({
       const res = await submitOrder({
         productSlug: product.slug,
         variantId: selection.variantId,
+        variantIds: selection.variantIds,
+        calcNote: selection.calcNote,
         quantity: selection.quantity,
         widthCm: selection.widthCm,
         heightCm: selection.heightCm,
@@ -101,7 +103,9 @@ export function OrderDialog({
               )}
               <div className="min-w-0 text-sm">
                 <p className="truncate font-bold">{product.name}</p>
+                {selection.variantName && <p className="text-xs text-neutral-600">{selection.variantName}</p>}
                 <p className="text-neutral-600">{selection.result.breakdown}</p>
+                {selection.result.days ? <p className="text-xs text-neutral-600">Hazırlanma: {selection.result.days} iş günü</p> : null}
                 <p className="text-xl font-extrabold">{AZN(selection.result.total)}</p>
               </div>
             </div>
