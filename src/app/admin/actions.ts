@@ -102,6 +102,8 @@ export async function saveProduct(formData: FormData): Promise<ActionState> {
     }
     if (!image && mockups[0]) image = mockups[0].image;
     if (!image) return { error: "Ən azı bir şəkil yükləyin" };
+    if (p.pricingModel === "per_unit" && (!p.priceTiers.length || p.priceTiers.some((t) => !(Number(t.unitPrice) > 0))))
+      return { error: "Bütün say pillələrinə qiymət yazın (0 ola bilməz)" };
 
     const row = productToRow({
       slug,

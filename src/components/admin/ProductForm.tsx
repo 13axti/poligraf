@@ -1,6 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
+import { CALC_TEMPLATES } from "@/lib/calc-templates";
 import { useRef, useState, useTransition } from "react";
 import { saveProduct, type ProductPayload } from "@/app/admin/actions";
 import { slugify } from "@/lib/slug";
@@ -27,41 +28,6 @@ function readSize(file: File): Promise<{ w: number; h: number; url: string }> {
 /** Qrup adları (variantların sırası ilə) */
 const groupNames = (vs: { group?: string }[]) => Array.from(new Set(vs.map((v) => v.group?.trim() || "Variant")));
 
-/**
- * Çap məhsulları üçün hazır qruplar (print.az-dakı kimi). Rəqəmlər neytraldır (×1, +0): öz qiymətlərinizi yazın.
- * Qiymət pillələri birinci ölçü (standart) üçün yazılır, digər ölçülər vurğu ilə hesablanır.
- */
-function printTemplate() {
-  const g = (group: string, names: string[], extra: Record<string, { days?: number }> = {}) =>
-    names.map((name) => ({ id: `v-${uid()}`, name, group, ...(extra[name] ?? {}) }));
-  return [
-    ...g("Ölçü", ["Standard (99 × 210 mm)", "A6 (105 × 148 mm)", "A5 (148 × 210 mm)", "A4 (210 × 297 mm)", "Kvadrat (148 × 148 mm)"]),
-    ...g("Prioritet", ["Ən sərfəli qiymət", "Ən sürətli istehsal"], { "Ən sərfəli qiymət": { days: 3 }, "Ən sürətli istehsal": { days: 1 } }),
-    ...g("Kağız", ["130 gsm", "170 gsm", "250 gsm", "300 gsm"]),
-    ...g("Çap tərəfi", ["1 tərəfli", "2 tərəfli"]),
-    ...g("Laminasiya", ["Yoxdur", "Mat", "Parlaq", "İpək (Soft Touch)"]),
-    ...g("Çatdırılma", ["Ofisdən təhvil alma", "Bakı daxili çatdırılma", "Rayonlara çatdırılma"]),
-    ...g("Dizayn", ["Dizaynım var", "Dizayn Lemur tərəfindən hazırlansın"]),
-  ];
-}
-
-/** Vizit kart üçün hazır qruplar (print.az-dakı kimi). Təcili hazırlanma +50% / +100% vurğu ilə gəlir, qalan rəqəmlər neytraldır. */
-function cardTemplate() {
-  const g = (group: string, names: string[], extra: Record<string, { days?: number; multiplier?: number }> = {}) =>
-    names.map((name) => ({ id: `v-${uid()}`, name, group, ...(extra[name] ?? {}) }));
-  return [
-    ...g("Kart növü", ["Ekonom (300 gsm)", "Standard (350 gsm)", "Biznes (400 gsm)", "Premium (600 gsm)", "Deluxe (700 gsm)"]),
-    ...g("Çap tərəfi", ["1 tərəfli", "2 tərəfli"]),
-    ...g("Laminasiya", ["Yoxdur", "Mat", "Parlaq", "İpək (Soft Touch)"]),
-    ...g("Künclər", ["Standart", "Yuvarlaq"]),
-    ...g("Hazırlanma müddəti", ["Standart", "Növbəti iş günü", "Eyni iş günü"], {
-      Standart: { days: 2 }, "Növbəti iş günü": { days: 1, multiplier: 1.5 }, "Eyni iş günü": { days: 0, multiplier: 2 },
-    }),
-    ...g("Çatdırılma", ["Ofisdən təhvil alma", "Bakı daxili çatdırılma", "Rayonlara çatdırılma"]),
-    ...g("Dizayn", ["Dizaynım var", "Dizayn Lemur tərəfindən hazırlansın"]),
-  ];
-}
-
 export function ProductForm({
   categories,
   product,
@@ -81,6 +47,24 @@ export function ProductForm({
   const [minH, setMinH] = useState(product?.minHeightCm ?? 50);
   const [tiers, setTiers] = useState(product?.priceTiers ?? [{ minQty: 50, unitPrice: 1 }]);
   const [variants, setVariants] = useState(product?.variants ?? []);
+  const [tplKey, setTplKey] = useState("");
+  const [tplNote, setTplNote] = useState("");
+
+  /** Şablonu tətbiq edir: seçim qruplarını əlavə edir, ölçü ilə satılırsa modeli dəyişir, tirajları pillə kimi qoyur (qiyməti 0, admin yazmalıdır) */
+  function applyTemplate(key: string) {
+    const t = CALC_TEMPLATES.find((x) => x.key === key);
+    if (!t) return;
+    const have = new Set(variants.map((v) => v.group?.trim() || "Variant"));
+    const add = t.groups.filter((g) => !have.has(g.name)).flatMap((g) => g.choices.map((c) => ({ id: `v-${uid()}`, name: c.name, group: g.name, multiplier: c.multiplier, days: c.days })));
+    setVariants([...variants, ...add]);
+    setModel(t.model);
+    if (t.model === "per_unit" && t.qty.length) {
+      setTiers(t.qty.map((q) => ({ minQty: q, unitPrice: tiers.find((x) => x.minQty === q)?.unitPrice ?? 0 })));
+      setMinQty(t.qty[0]);
+    }
+    setTplNote(`"${t.name}" şablonu əlavə olundu: ${t.groups.length} qrup${t.qty.length ? `, ${t.qty.length} tiraj pilləsi` : ""}. Qiyməti 0 olan pillələrə və seçimlərə öz qiymətlərinizi yazın.`);
+    setTplKey("");
+  }
   const [featured, setFeatured] = useState(product?.featured ?? false);
   const [active, setActive] = useState(product?.active ?? true);
   const [mockups, setMockups] = useState<Draft[]>(product?.mockups ?? []);
@@ -291,8 +275,13 @@ export function ProductForm({
         <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-bold">Qiymət kalkulyatoru: seçimlər</h2>
           <div className="flex gap-2">
-            <button type="button" onClick={() => setVariants([...variants, ...printTemplate()])} className="rounded-md bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold">+ Flayer şablonu</button>
-            <button type="button" onClick={() => setVariants([...variants, ...cardTemplate()])} className="rounded-md bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold">+ Vizit kart şablonu</button>
+            <select value={tplKey} onChange={(e) => setTplKey(e.target.value)} className="rounded-md border border-[var(--line)] bg-white px-2 py-1.5 text-xs font-semibold" aria-label="Şablon">
+              <option value="">Şablon seçin (print.az məhsulları)…</option>
+              {Array.from(new Set(CALC_TEMPLATES.map((t) => t.category))).map((c) => (
+                <optgroup key={c} label={c}>{CALC_TEMPLATES.filter((t) => t.category === c).map((t) => <option key={t.key} value={t.key}>{t.name}</option>)}</optgroup>
+              ))}
+            </select>
+            <button type="button" disabled={!tplKey} onClick={() => applyTemplate(tplKey)} className="rounded-md bg-[#1b1d1f] px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40">Əlavə et</button>
             <button type="button" onClick={() => setVariants([...variants, { id: `v-${uid()}`, name: "", group: `Yeni qrup ${groupNames(variants).length + 1}` }])} className="rounded-md bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold">+ Qrup</button>
           </div>
         </div>
@@ -336,6 +325,7 @@ export function ProductForm({
             );
           })}
         </div>
+        {tplNote && <p className="mt-3 rounded-md bg-[#ff5a1f]/10 px-3 py-2 text-sm text-[#b8400f]">{tplNote}</p>}
         {!variants.length && <p className="text-sm text-neutral-500">Seçim yoxdur. Kalkulyatorda yalnız tiraj görünəcək.</p>}
       </section>
 
