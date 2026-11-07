@@ -48,9 +48,11 @@ export function calculatePrice(
   const sel = opts.selected;
   const mod = sel ? sel.reduce((s, v) => s + (Number(v.priceModifier) || 0), 0) : (opts.variantModifier ?? 0);
   const mult = sel ? sel.reduce((m, v) => m * (Number(v.multiplier) > 0 ? Number(v.multiplier) : 1), 1) : 1;
-  const extras = sel ? sel.reduce((s, v) => s + (Number(v.fixed) || 0), 0) : 0;
-  const days = sel?.map((v) => v.days).find((d) => typeof d === "number" && d > 0);
-  const extraText = extras ? ` + ${AZN(extras)}` : "";
+  /** Sabit əlavələr; "freeFrom" varsa və məhsul məbləği ona çatırsa, həmin əlavə tutulmur */
+  const extrasFor = (goods: number) =>
+    sel ? sel.reduce((s, v) => s + (Number(v.freeFrom) > 0 && goods >= Number(v.freeFrom) ? 0 : Number(v.fixed) || 0), 0) : 0;
+  const days = sel?.map((v) => v.days).find((d) => typeof d === "number" && d >= 0);
+
 
   if (product.pricingModel === "per_unit") {
     const qty = Math.max(opts.quantity ?? 0, 0);
@@ -69,6 +71,8 @@ export function calculatePrice(
 
     const tier = findTier(product.priceTiers, qty);
     const unitPrice = Math.round((tier.unitPrice * mult + mod) * 10000) / 10000;
+    const extras = extrasFor(unitPrice * qty);
+    const extraText = extras ? ` + ${AZN(extras)}` : "";
     const total = Math.round((unitPrice * qty + extras) * 100) / 100;
     return {
       total,
@@ -100,6 +104,8 @@ export function calculatePrice(
 
   const areaSqm = (w / 100) * (h / 100);
   const rate = product.pricePerSqm * mult + mod;
+  const extras = extrasFor(areaSqm * rate);
+  const extraText = extras ? ` + ${AZN(extras)}` : "";
   const total = Math.round((areaSqm * rate + extras) * 100) / 100;
   return {
     total,
@@ -111,3 +117,9 @@ export function calculatePrice(
 }
 
 export { AZN, AZNu };
+
+/** Hazırlanma müddəti yazısı: 0 → "eyni iş günü" */
+export const daysText = (d: number) => (d === 0 ? "eyni iş günü" : `${d} iş günü`);
+
+/** Seçimin bu sifarişdə tutulan sabit məbləği (pulsuz həddə çatıbsa 0) */
+export const fixedFor = (v: ProductVariant, goods: number) => (Number(v.freeFrom) > 0 && goods >= Number(v.freeFrom) ? 0 : Number(v.fixed) || 0);

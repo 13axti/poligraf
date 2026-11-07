@@ -34,6 +34,7 @@ export interface ProductVariant {
   group?: string;
   multiplier?: number;
   fixed?: number;
+  freeFrom?: number; // sifariş (məhsul) məbləği bu qədər və ya çox olanda "fixed" tutulmur (məs. 50 ₼-dan pulsuz çatdırılma)
   days?: number;
   image?: string;
 }

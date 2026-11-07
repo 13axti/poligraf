@@ -67,7 +67,7 @@ export interface ProductPayload {
   minWidthCm?: number;
   minHeightCm?: number;
   priceTiers: { minQty: number; unitPrice: number }[];
-  variants: { id: string; name: string; priceModifier?: number; group?: string; multiplier?: number; fixed?: number; days?: number }[];
+  variants: { id: string; name: string; priceModifier?: number; group?: string; multiplier?: number; fixed?: number; freeFrom?: number; days?: number }[];
   mockups: (ProductMockup & { fileKey?: string })[];
   image: string;
   featured: boolean;
@@ -123,7 +123,7 @@ export async function saveProduct(formData: FormData): Promise<ActionState> {
           return {
             id: String(v.id).slice(0, 40), name: v.name.trim().slice(0, 80), group: v.group?.trim().slice(0, 40) || undefined,
             priceModifier: n(v.priceModifier), multiplier: Number(v.multiplier) > 0 && Number(v.multiplier) !== 1 ? Number(v.multiplier) : undefined,
-            fixed: n(v.fixed), days: Number(v.days) > 0 ? Math.round(Number(v.days)) : undefined,
+            fixed: n(v.fixed), freeFrom: Number(v.freeFrom) > 0 ? Number(v.freeFrom) : undefined, days: v.days != null && String(v.days) !== "" && Number(v.days) >= 0 ? Math.round(Number(v.days)) : undefined,
           };
         }),
       mockups,

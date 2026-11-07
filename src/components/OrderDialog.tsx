@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { submitOrder } from "@/app/actions";
-import { AZN } from "@/lib/pricing";
+import { AZN, daysText } from "@/lib/pricing";
 import type { Product } from "@/lib/types";
 import type { CalcSelection } from "./PriceCalculator";
 import type { MockupExport } from "./MockupEditor";
@@ -105,7 +105,7 @@ export function OrderDialog({
                 <p className="truncate font-bold">{product.name}</p>
                 {selection.variantName && <p className="text-xs text-neutral-600">{selection.variantName}</p>}
                 <p className="text-neutral-600">{selection.result.breakdown}</p>
-                {selection.result.days ? <p className="text-xs text-neutral-600">Hazırlanma: {selection.result.days} iş günü</p> : null}
+                {typeof selection.result.days === "number" ? <p className="text-xs text-neutral-600">Hazırlanma: {daysText(selection.result.days)}</p> : null}
                 <p className="text-xl font-extrabold">{AZN(selection.result.total)}</p>
               </div>
             </div>

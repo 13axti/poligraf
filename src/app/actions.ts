@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import { after } from "next/server";
 import { notifyNewOrder, notifyNewRequest } from "@/lib/notify";
 import { getProductBySlug } from "@/lib/data";
-import { calculatePrice, resolveSelection, groupOf, DEFAULT_GROUP } from "@/lib/pricing";
+import { calculatePrice, resolveSelection, groupOf, DEFAULT_GROUP, daysText } from "@/lib/pricing";
 import { createPublicClient, supabaseConfigured } from "@/lib/supabase/public";
 
 export type OrderResult = { ok: true; id: string } | { ok: false; error: string };
@@ -71,7 +71,7 @@ export async function submitOrder(input: OrderPayload): Promise<OrderResult> {
   const logos = (input.logoDataUrls ?? []).slice(0, 12).map(parseDataUrl).filter((x): x is NonNullable<ReturnType<typeof parseDataUrl>> => !!x);
   const ai = parseDataUrl(input.aiDataUrl);
   const texts = (input.texts ?? []).map((t) => String(t).replace(/\s+/g, " ").trim().slice(0, 120)).filter(Boolean).slice(0, 20);
-  const note = [input.calcNote?.trim().slice(0, 1000), input.note?.trim().slice(0, 1000), price.days ? `Hazırlanma: ${price.days} iş günü` : "", texts.length ? `Mockup üzərindəki yazılar: ${texts.map((t) => `«${t}»`).join(", ")}` : ""].filter(Boolean).join("\n");
+  const note = [input.calcNote?.trim().slice(0, 1000), input.note?.trim().slice(0, 1000), typeof price.days === "number" ? `Hazırlanma: ${daysText(price.days)}` : "", texts.length ? `Mockup üzərindəki yazılar: ${texts.map((t) => `«${t}»`).join(", ")}` : ""].filter(Boolean).join("\n");
   const id = randomUUID();
 
   // ---------- Supabase ----------

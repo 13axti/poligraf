@@ -45,6 +45,23 @@ function printTemplate() {
   ];
 }
 
+/** Vizit kart üçün hazır qruplar (print.az-dakı kimi). Təcili hazırlanma +50% / +100% vurğu ilə gəlir, qalan rəqəmlər neytraldır. */
+function cardTemplate() {
+  const g = (group: string, names: string[], extra: Record<string, { days?: number; multiplier?: number }> = {}) =>
+    names.map((name) => ({ id: `v-${uid()}`, name, group, ...(extra[name] ?? {}) }));
+  return [
+    ...g("Kart növü", ["Ekonom (300 gsm)", "Standard (350 gsm)", "Biznes (400 gsm)", "Premium (600 gsm)", "Deluxe (700 gsm)"]),
+    ...g("Çap tərəfi", ["1 tərəfli", "2 tərəfli"]),
+    ...g("Laminasiya", ["Yoxdur", "Mat", "Parlaq", "İpək (Soft Touch)"]),
+    ...g("Künclər", ["Standart", "Yuvarlaq"]),
+    ...g("Hazırlanma müddəti", ["Standart", "Növbəti iş günü", "Eyni iş günü"], {
+      Standart: { days: 2 }, "Növbəti iş günü": { days: 1, multiplier: 1.5 }, "Eyni iş günü": { days: 0, multiplier: 2 },
+    }),
+    ...g("Çatdırılma", ["Ofisdən təhvil alma", "Bakı daxili çatdırılma", "Rayonlara çatdırılma"]),
+    ...g("Dizayn", ["Dizaynım var", "Dizayn Lemur tərəfindən hazırlansın"]),
+  ];
+}
+
 export function ProductForm({
   categories,
   product,
@@ -274,7 +291,8 @@ export function ProductForm({
         <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-bold">Qiymət kalkulyatoru: seçimlər</h2>
           <div className="flex gap-2">
-            <button type="button" onClick={() => setVariants([...variants, ...printTemplate()])} className="rounded-md bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold">+ Çap şablonu (flayer kimi)</button>
+            <button type="button" onClick={() => setVariants([...variants, ...printTemplate()])} className="rounded-md bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold">+ Flayer şablonu</button>
+            <button type="button" onClick={() => setVariants([...variants, ...cardTemplate()])} className="rounded-md bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold">+ Vizit kart şablonu</button>
             <button type="button" onClick={() => setVariants([...variants, { id: `v-${uid()}`, name: "", group: `Yeni qrup ${groupNames(variants).length + 1}` }])} className="rounded-md bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold">+ Qrup</button>
           </div>
         </div>
@@ -293,19 +311,20 @@ export function ProductForm({
                   <input defaultValue={g} onBlur={(e) => e.target.value.trim() && e.target.value !== g && setGroupName(e.target.value.trim())} className={`${field} max-w-xs font-bold`} aria-label="Qrupun adı" />
                   <button type="button" onClick={() => setVariants(variants.filter((v) => (v.group?.trim() || "Variant") !== g))} className="ml-auto text-xs font-semibold text-neutral-500 hover:text-accent">Qrupu sil</button>
                 </div>
-                <div className="hidden grid-cols-[1fr_5.5rem_5.5rem_6.5rem_4.5rem_1.5rem] gap-2 px-1 text-[11px] font-semibold text-neutral-500 sm:grid">
-                  <span>Seçim</span><span>vurğu ×</span><span>+₼/əd</span><span>+₼ sifarişə</span><span>gün</span><span />
+                <div className="hidden grid-cols-[1fr_5rem_5rem_6rem_5.5rem_4rem_1.5rem] gap-2 px-1 text-[11px] font-semibold text-neutral-500 sm:grid">
+                  <span>Seçim</span><span>vurğu ×</span><span>+₼/əd</span><span>+₼ sifarişə</span><span>pulsuz ₼-dan</span><span>gün</span><span />
                 </div>
                 <div className="space-y-2">
                   {items.map(({ v, i }) => {
                     const set = (p: Partial<typeof v>) => setVariants(variants.map((x, k) => (k === i ? { ...x, ...p } : x)));
                     const num = (val: string) => (val === "" ? undefined : Number(val.replace(",", ".")));
                     return (
-                      <div key={v.id} className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_5.5rem_5.5rem_6.5rem_4.5rem_1.5rem]">
+                      <div key={v.id} className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_5rem_5rem_6rem_5.5rem_4rem_1.5rem]">
                         <input value={v.name} placeholder="Məs: A5 (148 × 210 mm)" onChange={(e) => set({ name: e.target.value })} className={`${field} col-span-2 sm:col-span-1`} />
                         <input inputMode="decimal" defaultValue={v.multiplier ?? ""} placeholder="1" onBlur={(e) => set({ multiplier: num(e.target.value) })} className={field} aria-label="Vurğu" />
                         <input inputMode="decimal" defaultValue={v.priceModifier ?? ""} placeholder="0" onBlur={(e) => set({ priceModifier: num(e.target.value) })} className={field} aria-label="Ədəd başına əlavə" />
                         <input inputMode="decimal" defaultValue={v.fixed ?? ""} placeholder="0" onBlur={(e) => set({ fixed: num(e.target.value) })} className={field} aria-label="Sifarişə əlavə" />
+                        <input inputMode="decimal" defaultValue={v.freeFrom ?? ""} placeholder="—" onBlur={(e) => set({ freeFrom: num(e.target.value) })} className={field} aria-label="Bu məbləğdən pulsuz" title="Sifariş bu məbləğə çatanda '+₼ sifarişə' tutulmur" />
                         <input inputMode="numeric" defaultValue={v.days ?? ""} placeholder="—" onBlur={(e) => set({ days: num(e.target.value) })} className={field} aria-label="Gün" />
                         <button type="button" onClick={() => setVariants(variants.filter((_, k) => k !== i))} className="text-xl text-neutral-400 hover:text-accent" aria-label="Sil">×</button>
                       </div>

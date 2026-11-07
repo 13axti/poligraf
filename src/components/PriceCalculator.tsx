@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Product, PriceResult } from "@/lib/types";
-import { calculatePrice, AZN, AZNu, variantGroups, DEFAULT_GROUP } from "@/lib/pricing";
+import { calculatePrice, AZN, AZNu, variantGroups, DEFAULT_GROUP, fixedFor, daysText } from "@/lib/pricing";
 
 export interface CalcSelection {
   result: PriceResult;
@@ -19,10 +19,11 @@ const chip = (on: boolean) =>
   `rounded-2xl border-2 px-3 py-2.5 text-left text-sm font-semibold transition ${on ? "border-brand bg-brand/10 text-foreground" : "border-transparent bg-card hover:border-brand/40"}`;
 
 /** Seçimin altında müştəriyə göstərilən qısa qeyd: sabit əlavə (çatdırılma, dizayn) və hazırlanma günü */
-function effect(v: { fixed?: number; days?: number }) {
+function effect(v: { fixed?: number; freeFrom?: number; days?: number }) {
   const parts: string[] = [];
   if (v.fixed) parts.push(v.fixed > 0 ? `+${AZN(v.fixed)}` : AZN(v.fixed));
-  if (v.days) parts.push(`${v.days} iş günü`);
+  if (v.fixed && v.freeFrom) parts.push(`${AZN(v.freeFrom)}-dan pulsuz`);
+  if (typeof v.days === "number") parts.push(daysText(v.days));
   return parts.join(" · ");
 }
 
@@ -60,7 +61,10 @@ export function PriceCalculator({ product, onOrder }: { product: Product; onOrde
             {tiers.map((t) => (
               <button key={t.minQty} type="button" onClick={() => { setQuantity(t.minQty); setCustom(false); }} className={chip(!custom && quantity === t.minQty)}>
                 {t.minQty.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")}
-                <span className="block text-xs font-medium text-neutral-500">{AZNu(calculatePrice(product, { quantity: t.minQty, selected }).unitPrice ?? t.unitPrice)}/əd</span>
+                <span className="block text-xs font-medium text-neutral-500">
+                  {AZNu(calculatePrice(product, { quantity: t.minQty, selected }).unitPrice ?? t.unitPrice)}/əd
+                  {tiers[0] && t.unitPrice < tiers[0].unitPrice && <b className="ml-1 text-brand">−{Math.round((1 - t.unitPrice / tiers[0].unitPrice) * 100)}%</b>}
+                </span>
               </button>
             ))}
             <button type="button" onClick={() => setCustom(true)} className={chip(custom)}>
@@ -99,8 +103,12 @@ export function PriceCalculator({ product, onOrder }: { product: Product; onOrde
         <div className="mt-1 text-4xl font-extrabold tracking-tight text-[#ffb27a]">{result.total > 0 ? AZN(result.total) : "—"}</div>
         <div className="mt-3 space-y-1 text-sm text-white/75">
           {result.unitPrice != null && result.quantity ? <p className="flex justify-between"><span>{result.quantity.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} ədəd × {AZNu(result.unitPrice)}</span><span>{AZN(result.unitPrice * result.quantity)}</span></p> : <p>{result.breakdown}</p>}
-          {selected.filter((v) => v.fixed).map((v) => <p key={v.id} className="flex justify-between"><span>{v.name}</span><span>{AZN(v.fixed!)}</span></p>)}
-          {result.days ? <p className="flex justify-between border-t border-white/10 pt-1"><span>Hazırlanma müddəti</span><span>{result.days} iş günü</span></p> : null}
+          {selected.filter((v) => v.fixed).map((v) => {
+            const goods = (result.unitPrice ?? 0) * (result.quantity ?? 0);
+            const f = fixedFor(v, goods);
+            return <p key={v.id} className="flex justify-between"><span>{v.name}</span><span>{f ? AZN(f) : "pulsuz"}</span></p>;
+          })}
+          {typeof result.days === "number" ? <p className="flex justify-between border-t border-white/10 pt-1"><span>Hazırlanma müddəti</span><span>{daysText(result.days)}</span></p> : null}
         </div>
         {result.total <= 0 && <p className="mt-2 text-sm text-[#ffb27a]">{result.breakdown}</p>}
       </div>
