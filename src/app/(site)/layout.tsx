@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { getSettings } from "@/lib/settings";
 import { LogoVideo } from "@/components/LogoVideo";
-import { phoneHref } from "@/lib/site-config";
+import { SEO_DESCRIPTION, SITE_URL, phoneHref } from "@/lib/site-config";
 import { ScrollProgress } from "@/components/ScrollProgress";
 import { DevPreviewLink } from "@/components/DevPreviewLink";
 import { MotionProvider } from "@/components/MotionProvider";
@@ -55,7 +55,7 @@ async function Header() {
           <CatalogMenu categories={categories.map((c) => ({ slug: c.slug, name: c.name }))} />
           <Link href="/qiymetler" className="rounded-full px-4 py-2 transition hover:bg-brand hover:text-white">Qiymətlər</Link>
           {/* Kampaniya linki müvəqqəti söndürülüb */}
-          <Link href="/#musteriler" className="rounded-full px-4 py-2 transition hover:bg-brand hover:text-white">Müştərilər</Link>
+          <Link href="/reklam-isleri" className="rounded-full px-4 py-2 transition hover:bg-brand hover:text-white">Reklam işləri</Link>
           <Link href="/#elaqe" className="rounded-full px-4 py-2 transition hover:bg-brand hover:text-white">Əlaqə</Link>
         </nav>
         <div className="flex items-center gap-3">
@@ -80,6 +80,22 @@ async function Footer() {
   const site = await getSettings();
   return (
     <footer id="elaqe" className="scroll-mt-20 px-4 pt-4">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            name: site.name,
+            url: SITE_URL,
+            telephone: site.phone,
+            ...(site.email ? { email: site.email } : {}),
+            address: { "@type": "PostalAddress", streetAddress: site.address, addressLocality: "Bakı", addressCountry: "AZ" },
+            description: SEO_DESCRIPTION,
+            sameAs: site.socials.map((s) => s.href).filter(Boolean),
+          }),
+        }}
+      />
       <div className="mx-auto max-w-7xl rounded-t-[2.5rem] bg-black px-6 py-14 text-white sm:px-12">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
@@ -108,7 +124,12 @@ async function Footer() {
         </div>
         <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/50 sm:flex-row sm:justify-between">
           <p>© 2026 {site.name}. Bütün hüquqlar qorunur.</p>
-          <p>Loqonu yüklə · nümunəni gör · qiyməti öyrən · sifariş ver</p>
+          <p className="flex flex-wrap gap-x-4 gap-y-1">
+            <Link href="/reklam-isleri" className="hover:text-white">Reklam işləri</Link>
+            <Link href="/kataloq" className="hover:text-white">Kataloq</Link>
+            <Link href="/qiymetler" className="hover:text-white">Qiymətlər</Link>
+            <Link href="/sifaris" className="hover:text-white">Xüsusi sorğu</Link>
+          </p>
         </div>
       </div>
     </footer>

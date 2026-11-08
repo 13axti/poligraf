@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
-import { BRAND } from "@/lib/site-config";
+import { BRAND, SEO_DESCRIPTION, SITE_URL } from "@/lib/site-config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -9,11 +9,13 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  // Domen alınanda .env.local / Vercel-də NEXT_PUBLIC_SITE_URL=https://lemurgroup.xx yazın
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: { default: `${BRAND} — Promo və poliqrafiya məhsulları`, template: `%s — ${BRAND}` },
-  description:
-    "Qələm, fincan, vizitka, banner, vinil kəsim. Loqonu yüklə, nümunəni gör, sifariş ver.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: `${BRAND} — Reklam işləri, çap və promo məhsullar Bakıda`, template: `%s — ${BRAND}` },
+  description: SEO_DESCRIPTION,
+  keywords: ["reklam işləri", "reklam Bakı", "banner çapı", "vinil çapı", "roll-up", "reklam lövhələri", "vizit kart çapı", "flayer çapı", "poliqrafiya", "promo məhsullar", "çap xidməti Bakı"],
+  alternates: { canonical: "/" },
+  openGraph: { type: "website", locale: "az_AZ", siteName: BRAND, url: SITE_URL, title: `${BRAND} — Reklam işləri, çap və promo məhsullar`, description: SEO_DESCRIPTION },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

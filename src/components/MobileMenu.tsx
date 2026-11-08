@@ -8,7 +8,7 @@ const links = [
   { href: "/qiymetler", label: "Qiymətlər" },
   // { href: "/#kampaniya", label: "T-shirt kampaniyası" }, // müvəqqəti söndürülüb
   { href: "/", label: "Ana səhifə" },
-  { href: "/#musteriler", label: "Müştərilər" },
+  { href: "/reklam-isleri", label: "Reklam işləri" },
   { href: "/#elaqe", label: "Əlaqə" },
 ];
 

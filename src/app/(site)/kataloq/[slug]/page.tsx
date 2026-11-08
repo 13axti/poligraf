@@ -19,7 +19,12 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const category = await getCategoryBySlug(slug);
-  return { title: category ? category.name : "Kateqoriya" };
+  if (!category) return { title: "Kateqoriya" };
+  return {
+    title: `${category.name} — Bakıda sifariş və qiymət`,
+    description: `${category.name}: Bakıda çap və sifariş. Seçimlərə görə qiyməti saytda dərhal hesablayın, loqonuzu məhsul üzərində görün və onlayn sifariş verin.`,
+    alternates: { canonical: `/kataloq/${category.slug}` },
+  };
 }
 
 export default async function CategoryPage({
