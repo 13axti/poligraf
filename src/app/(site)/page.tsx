@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getCategories, getFeaturedProducts } from "@/lib/data";
+import { getFeaturedProducts } from "@/lib/data";
 import { ProductCard } from "@/components/ProductCard";
 import { getSettings } from "@/lib/settings";
 import { phoneHref } from "@/lib/site-config";
@@ -11,8 +11,15 @@ import { HomeHero } from "@/components/HomeHero";
 // import { Suspense } from "react";
 import { Perks } from "@/components/Perks";
 
+/** "Rəqəmsaldan çapa" blokunun plitələri: Lemur Group-un öz brend fotoları (public/promo/) */
+const BENTO = [
+  { name: "Bannerlər", href: "/kataloq/bannerler", image: "/promo/banner-stend.webp" },
+  { name: "Bloknotlar", href: "/kataloq/bloknotlar-deri-uzlu", image: "/promo/bloknotlar.webp" },
+  { name: "Çantalar və paketlər", href: "/kataloq/cantalar", image: "/promo/paketler.webp" },
+  { name: "Təqvimlər", href: "/kataloq/teqvimler", image: "/promo/teqvim.webp" },
+];
+
 export default async function HomePage() {
-  const categories = await getCategories();
   const featured = await getFeaturedProducts();
   const site = await getSettings();
   // Zolaq boş görünməsin: ən azı 8 element olana qədər təkrarla, sonra sonsuz dövr üçün 2 dəfə
@@ -50,21 +57,19 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:grid-rows-2">
-            {categories.slice(0, 4).map((c, i) => (
+            {BENTO.map((c, i) => (
               <Reveal
-                key={c.id}
+                key={c.href}
                 variant="scale"
                 delay={i * 110}
                 className={i === 0 ? "sm:col-span-2 sm:row-span-2" : i === 3 ? "sm:col-span-2" : ""}
               >
               <Link
-                href={`/kataloq/${c.slug}`}
+                href={c.href}
                 className="group relative block h-full min-h-48 overflow-hidden rounded-[2rem] bg-surface"
               >
-                {c.image && (
-                  <Image src={c.image} alt={c.name} fill sizes="(max-width:640px) 50vw, 33vw"
-                    className="object-cover transition duration-500 group-hover:scale-105" />
-                )}
+                <Image src={c.image} alt={c.name} fill sizes="(max-width:640px) 50vw, 33vw"
+                  className="object-cover transition duration-500 group-hover:scale-105" />
                 <span className="absolute bottom-4 left-4 rounded-full bg-card px-4 py-2 text-sm font-bold">
                   {c.name}
                 </span>

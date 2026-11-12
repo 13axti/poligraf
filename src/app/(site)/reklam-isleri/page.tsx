@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { getAllProducts, getCategories } from "@/lib/data";
 import { getSettings } from "@/lib/settings";
@@ -12,16 +13,16 @@ export const metadata = {
 };
 
 /** Xidmət → saytdakı kalkulyatorlu məhsul (slug) və ya kateqoriya */
-const SERVICES: { title: string; text: string; slug?: string; cat?: string }[] = [
-  { title: "Banner çapı", text: "Fasad, tədbir və mağaza üçün istənilən ölçüdə banner. Qiymət kvadratmetrlə hesablanır.", slug: "banner-capi-kalkulyator" },
-  { title: "Setka banner", text: "Külək keçirən torlu banner: bina fasadları və hasarlar üçün.", slug: "setka-banner-capi-kalkulyator" },
-  { title: "Vinil çapı", text: "Vitrin, şüşə və divar üçün öz-özünə yapışan vinil.", slug: "vinil-capi-kalkulyator" },
-  { title: "Roll-up", text: "Sərgi və təqdimatlar üçün qatlanan stend, müxtəlif ölçülərdə.", slug: "roll-up-kalkulyator" },
-  { title: "Brandwall", text: "Tədbir və fotozonalar üçün karkaslı arxa fon, montaj ilə.", slug: "brandwall-kalkulyator" },
-  { title: "Reklam lövhələri", text: "İşıqlı və işıqsız lövhələr, məlumat lövhələri.", cat: "reklam-lovheleri" },
-  { title: "Vizit kart", text: "Ekonomdan premiuma qədər kart növləri, laminasiya və yuvarlaq künclər.", slug: "vizit-kartlar-kalkulyator" },
-  { title: "Flayer və buklet", text: "Reklam paylama materialları: müxtəlif ölçü, kağız və qatlama növləri.", slug: "flayerler-kalkulyator" },
-  { title: "Promo məhsullar", text: "Loqolu qələm, bloknot, fincan, çanta və digər korporativ hədiyyələr.", cat: "diger-promo" },
+const SERVICES: { title: string; image: string; text: string; slug?: string; cat?: string }[] = [
+  { title: "Banner çapı", image: "/promo/banner-stend.webp", text: "Fasad, tədbir və mağaza üçün istənilən ölçüdə banner. Qiymət kvadratmetrlə hesablanır.", slug: "banner-capi-kalkulyator" },
+  { title: "Setka banner", image: "/promo/setka-banner.webp", text: "Külək keçirən torlu banner: bina fasadları və hasarlar üçün.", slug: "setka-banner-capi-kalkulyator" },
+  { title: "Vinil çapı", image: "/promo/poster.webp", text: "Vitrin, şüşə və divar üçün öz-özünə yapışan vinil.", slug: "vinil-capi-kalkulyator" },
+  { title: "Roll-up", image: "/promo/roll-up.webp", text: "Sərgi və təqdimatlar üçün qatlanan stend, müxtəlif ölçülərdə.", slug: "roll-up-kalkulyator" },
+  { title: "Brandwall", image: "/promo/paketler.webp", text: "Tədbir və fotozonalar üçün karkaslı arxa fon, montaj ilə.", slug: "brandwall-kalkulyator" },
+  { title: "Reklam lövhələri", image: "/promo/yastiqlar.webp", text: "İşıqlı və işıqsız lövhələr, məlumat lövhələri.", cat: "reklam-lovheleri" },
+  { title: "Vizit kart", image: "/promo/vizit-zerf.webp", text: "Ekonomdan premiuma qədər kart növləri, laminasiya və yuvarlaq künclər.", slug: "vizit-kartlar-kalkulyator" },
+  { title: "Flayer və buklet", image: "/promo/teqvim.webp", text: "Reklam paylama materialları: müxtəlif ölçü, kağız və qatlama növləri.", slug: "flayerler-kalkulyator" },
+  { title: "Promo məhsullar", image: "/promo/bloknotlar.webp", text: "Loqolu qələm, bloknot, fincan, çanta və digər korporativ hədiyyələr.", cat: "diger-promo" },
 ];
 
 const FAQ = [
@@ -74,10 +75,15 @@ export default async function AdsPage() {
           const c = s.cat ? catBySlug.get(s.cat) : undefined;
           const href = p ? `/mehsul/${p.slug}` : c ? `/kataloq/${c.slug}` : "/kataloq";
           return (
-            <Link key={s.title} href={href} className="group rounded-3xl bg-[var(--card)] p-6 ring-1 ring-[var(--hair)] transition hover:-translate-y-0.5 hover:ring-brand">
+            <Link key={s.title} href={href} className="group overflow-hidden rounded-3xl bg-[var(--card)] ring-1 ring-[var(--hair)] transition hover:-translate-y-0.5 hover:ring-brand">
+              <div className="relative aspect-[4/3] overflow-hidden">
+                <Image src={s.image} alt={s.title} fill sizes="(max-width:640px) 100vw, 33vw" className="object-cover transition duration-500 group-hover:scale-105" />
+              </div>
+              <div className="p-6">
               <h3 className="text-xl font-bold group-hover:text-brand">{s.title}</h3>
               <p className="mt-2 text-sm text-[var(--ink-soft)]">{s.text}</p>
               <p className="mt-4 text-sm font-semibold text-brand">{p ? fromPrice(p) || "Qiyməti hesabla" : "Məhsullara bax"} →</p>
+              </div>
             </Link>
           );
         })}
