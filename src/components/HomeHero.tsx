@@ -32,7 +32,7 @@ function Column({ col, i, y }: { col: (typeof COLS)[number]; i: number; y: Motio
           key={t.src}
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.5 + Math.abs(i - 3) * 0.08 + k * 0.1, ease }}
+          transition={{ duration: 0.9, delay: 0.4 + i * 0.12 + k * 0.08, ease }}
           className="group relative overflow-hidden rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--hair)]"
           style={{ aspectRatio: `200 / ${t.h}` }}
         >
