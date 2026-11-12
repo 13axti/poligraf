@@ -91,7 +91,7 @@ export function DesignUploadForm() {
       </div>
 
       <label className="flex items-start gap-3 text-sm text-neutral-600">
-        <input name="consent" type="checkbox" required className="mt-1 h-4 w-4 accent-[#ff5a1f]" />
+        <input name="consent" type="checkbox" required className="mt-1 h-4 w-4 accent-[#0066ff]" />
         <span>Dizaynımın saytda nümayiş olunmasına və kampaniya şərtlərinə razıyam.</span>
       </label>
 

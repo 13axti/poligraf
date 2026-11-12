@@ -98,9 +98,9 @@ export function PriceCalculator({ product, onOrder }: { product: Product; onOrde
       </label>
 
       {/* Yekun */}
-      <div className="mt-6 rounded-3xl bg-gradient-to-br from-[#241609] to-[#150e07] p-5 text-white ring-1 ring-brand/25">
+      <div className="mt-6 rounded-3xl bg-gradient-to-br from-[#0a1630] to-[#060d1f] p-5 text-white ring-1 ring-brand/25">
         <p className="text-xs font-bold uppercase tracking-widest text-white/50">Yekun məbləğ</p>
-        <div className="mt-1 text-4xl font-extrabold tracking-tight text-[#ffb27a]">{result.total > 0 ? AZN(result.total) : "—"}</div>
+        <div className="mt-1 text-4xl font-extrabold tracking-tight text-[#8ab8ff]">{result.total > 0 ? AZN(result.total) : "—"}</div>
         <div className="mt-3 space-y-1 text-sm text-white/75">
           {result.unitPrice != null && result.quantity ? <p className="flex justify-between"><span>{result.quantity.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} ədəd × {AZNu(result.unitPrice)}</span><span>{AZN(result.unitPrice * result.quantity)}</span></p> : <p>{result.breakdown}</p>}
           {selected.filter((v) => v.fixed).map((v) => {
@@ -110,7 +110,7 @@ export function PriceCalculator({ product, onOrder }: { product: Product; onOrde
           })}
           {typeof result.days === "number" ? <p className="flex justify-between border-t border-white/10 pt-1"><span>Hazırlanma müddəti</span><span>{daysText(result.days)}</span></p> : null}
         </div>
-        {result.total <= 0 && <p className="mt-2 text-sm text-[#ffb27a]">{result.breakdown}</p>}
+        {result.total <= 0 && <p className="mt-2 text-sm text-[#8ab8ff]">{result.breakdown}</p>}
       </div>
 
       <button

@@ -30,7 +30,7 @@ export default async function RequestPage({ params }: { params: Promise<{ id: st
           <form action={setRequestStatus} className="ml-auto">
             <input type="hidden" name="id" value={r.id} />
             <input type="hidden" name="status" value="answered" />
-            <button className="rounded-md bg-[#ff5a1f] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#e04810]">Cavab verildi</button>
+            <button className="rounded-md bg-[#0066ff] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#0052cc]">Cavab verildi</button>
           </form>
         )}
       </div>

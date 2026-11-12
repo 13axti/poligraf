@@ -54,16 +54,16 @@ export function AdminNav({ newCount, requestCount = 0 }: { newCount: number; req
                   on ? "bg-[var(--surface)] text-foreground" : "text-neutral-600 hover:bg-[var(--surface)]/60 hover:text-foreground"
                 }`}
               >
-                {on && <span className="absolute inset-y-1.5 left-0 hidden w-[3px] rounded-full bg-[#ff5a1f] md:block" />}
+                {on && <span className="absolute inset-y-1.5 left-0 hidden w-[3px] rounded-full bg-[#0066ff] md:block" />}
                 <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0 fill-none stroke-current" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   {n.icon}
                 </svg>
                 {n.label}
                 {n.href === "/admin/orders" && newCount > 0 && (
-                  <span className="num ml-auto rounded bg-[#ff5a1f] px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{newCount}</span>
+                  <span className="num ml-auto rounded bg-[#0066ff] px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{newCount}</span>
                 )}
                 {n.href === "/admin/requests" && requestCount > 0 && (
-                  <span className="num ml-auto rounded bg-[#ff5a1f] px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{requestCount}</span>
+                  <span className="num ml-auto rounded bg-[#0066ff] px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{requestCount}</span>
                 )}
               </Link>
             );

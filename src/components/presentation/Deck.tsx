@@ -52,15 +52,15 @@ export function Deck({ title, client, people, createdAt, data }: DeckInput) {
 
   // 1) Üz qabığı
   slides.push(
-    <div key="cover" style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 78% 55%, #3a1608 0%, #141414 60%)" }}>
+    <div key="cover" style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 78% 55%, #0a1a3a 0%, #141414 60%)" }}>
       <div className="dk-brand" style={{ top: 48, fontSize: 16 }}>{BRAND.toUpperCase()}</div>
       <img src="/coming-soon/lemur-alpha.webp" alt="" style={{ position: "absolute", right: 40, bottom: 0, height: 560 }} />
       <div style={{ position: "absolute", left: 50, top: 190, width: 680 }}>
-        <div style={{ fontSize: 15, letterSpacing: 4, color: "#ff5a1f", fontWeight: 700 }}>
+        <div style={{ fontSize: 15, letterSpacing: 4, color: "#0066ff", fontWeight: 700 }}>
           TƏKLİF · {date.toUpperCase()}{client ? ` · ${client.toUpperCase()}` : ""}
         </div>
         <div style={{ fontSize: 62, fontWeight: 800, lineHeight: 1.04, marginTop: 18, letterSpacing: -1.5 }}>{title}</div>
-        {people > 0 && <div style={{ fontSize: 30, fontWeight: 700, marginTop: 14, color: "#ffd2b8" }}>{people} nəfər üçün</div>}
+        {people > 0 && <div style={{ fontSize: 30, fontWeight: 700, marginTop: 14, color: "#cfe0ff" }}>{people} nəfər üçün</div>}
         {data.intro && <div style={{ fontSize: 20, color: "#cfc9c2", marginTop: 24, lineHeight: 1.5 }}>{data.intro}</div>}
       </div>
     </div>

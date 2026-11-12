@@ -40,9 +40,9 @@ interface Layer {
 }
 
 const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="120" viewBox="0 0 400 120">
-      <rect x="4" y="20" width="80" height="80" rx="20" fill="#ff7a1a"/>
+      <rect x="4" y="20" width="80" height="80" rx="20" fill="#0066ff"/>
       <text x="44" y="78" font-family="Arial" font-weight="900" font-size="52" fill="#fff" text-anchor="middle">L</text>
-      <text x="100" y="80" font-family="Arial" font-weight="900" font-size="60" fill="#ff4a2b">LOGO</text>
+      <text x="100" y="80" font-family="Arial" font-weight="900" font-size="60" fill="#0047ff">LOGO</text>
     </svg>`;
 // base64 formatında: server yalnız belə data URL-ləri qəbul edir
 const SAMPLE_LOGO = "data:image/svg+xml;base64," + btoa(SAMPLE_SVG);
@@ -88,7 +88,7 @@ const FONTS: { id: string; label: string; css: string }[] = [
   { id: "display", label: "Qalın", css: "Impact, 'Arial Black', sans-serif" },
   { id: "mono", label: "Maşın", css: "'Courier New', monospace" },
 ];
-const COLORS = ["#111111", "#ffffff", "#ff5a1f", "#e11d48", "#2563eb", "#16a34a", "#f5b301"];
+const COLORS = ["#111111", "#ffffff", "#0066ff", "#e11d48", "#2563eb", "#16a34a", "#f5b301"];
 
 /** Yazını şəffaf fonlu şəkil kimi çəkir */
 function renderText(o: { text: string; font: string; bold: boolean; italic: boolean; color: string }) {

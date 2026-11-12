@@ -87,7 +87,7 @@ export default async function CostsPage({ searchParams }: { searchParams: Promis
                   <td className="py-3 text-center text-neutral-600">{own.length}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap justify-end gap-1.5">
-                      <Link href={`/admin/costs/${p.id}#sayt`} className={`rounded px-2 py-1 text-xs font-semibold ${p.siteProductId ? "bg-[#1f7a3a]/10 text-[#1f7a3a]" : "bg-[#ff5a1f] text-white"}`}>{p.siteProductId ? "Saytda ✓" : "Saytda göstər"}</Link>
+                      <Link href={`/admin/costs/${p.id}#sayt`} className={`rounded px-2 py-1 text-xs font-semibold ${p.siteProductId ? "bg-[#1f7a3a]/10 text-[#1f7a3a]" : "bg-[#0066ff] text-white"}`}>{p.siteProductId ? "Saytda ✓" : "Saytda göstər"}</Link>
                       <Link href={`/admin/costs/${p.id}`} className="rounded bg-[var(--surface)] px-2 py-1 text-xs font-semibold">Redaktə</Link>
                       <form action={deleteCostProduct}>
                         <input type="hidden" name="id" value={p.id} />

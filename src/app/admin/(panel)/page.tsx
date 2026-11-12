@@ -83,7 +83,7 @@ export default async function Dashboard() {
         {stats.map((s) => (
           <div key={s.label} className="px-5 py-4">
             <dt className="text-sm text-neutral-500">{s.label}</dt>
-            <dd className={`num mt-1 font-display text-3xl font-bold ${s.hot ? "text-[#ff5a1f]" : ""}`}>{s.value}</dd>
+            <dd className={`num mt-1 font-display text-3xl font-bold ${s.hot ? "text-[#0066ff]" : ""}`}>{s.value}</dd>
           </div>
         ))}
       </dl>
@@ -98,7 +98,7 @@ export default async function Dashboard() {
           <div className="divide-y divide-[var(--line)] overflow-hidden rounded-xl bg-white">
             {newRequests.map((r) => (
               <Link key={r.id} href={`/admin/requests/${r.id}`} className="relative flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-[var(--surface)]/50">
-                <span className="absolute inset-y-0 left-0 w-[3px] bg-[#ff5a1f]" />
+                <span className="absolute inset-y-0 left-0 w-[3px] bg-[#0066ff]" />
                 <span className="min-w-0">
                   <span className="block truncate font-semibold">{r.message}</span>
                   <span className="block truncate text-sm text-neutral-500">{r.customer_name}</span>

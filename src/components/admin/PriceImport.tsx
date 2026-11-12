@@ -8,7 +8,7 @@ import { parseCsv, parseXlsx, type Sheet } from "@/lib/sheet-parse";
 import { buildXlsx } from "@/lib/sheet-write";
 
 type Existing = { id: string; code: string | null; name: string; category: string };
-const inp = "w-full rounded-md border border-[var(--line)] bg-white px-2 py-1.5 text-sm outline-none focus:border-[#ff5a1f]";
+const inp = "w-full rounded-md border border-[var(--line)] bg-white px-2 py-1.5 text-sm outline-none focus:border-[#0066ff]";
 const lbl = "mb-1 block text-xs font-semibold text-neutral-500";
 
 export function PriceImport({ existing, suppliers, categories, fields }: { existing: Existing[]; suppliers: string[]; categories: string[]; fields: { id: string; label: string }[] }) {
@@ -128,7 +128,7 @@ export function PriceImport({ existing, suppliers, categories, fields }: { exist
               {Array.from({ length: width }, (_, ci) => {
                 const c = cols[ci] ?? { key: "skip" as ColKey };
                 return (
-                  <div key={ci} className={`w-44 shrink-0 rounded-lg border p-2 ${c.key === "skip" ? "border-[var(--line)] opacity-60" : "border-[#ff5a1f]/50"}`}>
+                  <div key={ci} className={`w-44 shrink-0 rounded-lg border p-2 ${c.key === "skip" ? "border-[var(--line)] opacity-60" : "border-[#0066ff]/50"}`}>
                     <p className="truncate text-xs font-semibold" title={headRow[ci]}>{headRow[ci] || `Sütun ${ci + 1}`}</p>
                     <p className="truncate text-[11px] text-neutral-500">{sheet.rows[header + 1]?.[ci] ?? ""}</p>
                     <select className={`${inp} mt-1`} value={c.key} onChange={(e) => rebuild(header, cols.map((x, i) => (i === ci ? { key: e.target.value as ColKey, qty: e.target.value === "tier" ? x.qty ?? 100 : undefined } : x)))}>
@@ -176,7 +176,7 @@ export function PriceImport({ existing, suppliers, categories, fields }: { exist
                         </td>
                         <td className="py-1.5 pr-2 text-xs">
                           {m ? (
-                            <span className="block rounded bg-[#ff5a1f]/10 px-2 py-1 text-[#b8400f]">{m.code} · {m.name} <button type="button" onClick={() => patch(r.key, { productId: null })} className="font-semibold underline">ayrı yarat</button></span>
+                            <span className="block rounded bg-[#0066ff]/10 px-2 py-1 text-[#0047b3]">{m.code} · {m.name} <button type="button" onClick={() => patch(r.key, { productId: null })} className="font-semibold underline">ayrı yarat</button></span>
                           ) : (
                             <span className="text-neutral-500">yeni məhsul{match(r) && <button type="button" onClick={() => patch(r.key, { productId: match(r)!.id })} className="ml-1 font-semibold underline">bazadakına bağla</button>}</span>
                           )}
@@ -189,7 +189,7 @@ export function PriceImport({ existing, suppliers, categories, fields }: { exist
               {!rows.length && <p className="py-6 text-center text-sm text-neutral-500">Qiymət sətri tapılmadı. Başlıq sətrini və sütunları yoxlayın.</p>}
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <button type="button" onClick={submit} disabled={pending || !chosen.length || problems > 0} className="rounded-md bg-[#ff5a1f] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#e04810] disabled:opacity-50">
+              <button type="button" onClick={submit} disabled={pending || !chosen.length || problems > 0} className="rounded-md bg-[#0066ff] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#0052cc] disabled:opacity-50">
                 {pending ? "Yazılır…" : `${chosen.length} sətri bazaya yaz`}
               </button>
               {problems > 0 && <span className="text-sm text-accent">{problems} sətirdə ad, kateqoriya, təchizatçı və ya alış qiyməti boşdur.</span>}

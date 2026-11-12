@@ -17,7 +17,7 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
       title="Təchizatçılar"
       sub="Bütün şirkətlər. Əlavə etdiyiniz şirkət məhsul formasındakı təchizatçı siyahısında avtomatik görünür."
       msg={sp.msg}
-      action={<a href="#yeni" className="rounded-md bg-[#ff5a1f] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#e04810]">+ Təchizatçı əlavə et</a>}
+      action={<a href="#yeni" className="rounded-md bg-[#0066ff] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#0052cc]">+ Təchizatçı əlavə et</a>}
     />
   );
   if (error) return <div className="space-y-4">{head}<CostTablesMissing /></div>;
@@ -66,11 +66,11 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
         {!list.length && <p className="px-5 py-10 text-center text-neutral-500">Təchizatçı tapılmadı.</p>}
       </div>
 
-      <form id="yeni" action={saveSupplier} className={`scroll-mt-6 space-y-3 rounded-xl bg-white p-5 ${sp.new ? "ring-2 ring-[#ff5a1f]" : ""}`}>
+      <form id="yeni" action={saveSupplier} className={`scroll-mt-6 space-y-3 rounded-xl bg-white p-5 ${sp.new ? "ring-2 ring-[#0066ff]" : ""}`}>
         <h2 className="font-bold">Yeni təchizatçı</h2>
         <input type="hidden" name="back" value="/admin/suppliers" />
         <SupplierFields />
-        <button className="rounded-md bg-[#ff5a1f] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#e04810]">Əlavə et</button>
+        <button className="rounded-md bg-[#0066ff] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#0052cc]">Əlavə et</button>
       </form>
     </div>
   );

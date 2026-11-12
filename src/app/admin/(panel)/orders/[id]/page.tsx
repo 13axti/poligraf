@@ -67,7 +67,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             <form action={setOrderStatus}>
               <input type="hidden" name="id" value={o.id} />
               <input type="hidden" name="status" value={NEXT[o.status]!.to} />
-              <button className="rounded-md bg-[#ff5a1f] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#e04810]">{NEXT[o.status]!.label}</button>
+              <button className="rounded-md bg-[#0066ff] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#0052cc]">{NEXT[o.status]!.label}</button>
             </form>
           )}
           <PrintButton className="rounded-md bg-white px-4 py-2.5 text-sm font-semibold hover:bg-[var(--surface)]" />

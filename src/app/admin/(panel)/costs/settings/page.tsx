@@ -114,7 +114,7 @@ export default async function CostSettings({ searchParams }: { searchParams: Pro
           {CURRENCIES.filter((c) => c !== "AZN").map((c) => (
             <label key={c}><span className={costLabel}>1 {c} =</span><input name={`rate_${c}`} inputMode="decimal" defaultValue={String(rates[c]).replace(".", ",")} className={`${costInput} w-28`} /></label>
           ))}
-          <button className="rounded-md bg-[#ff5a1f] px-4 py-2 text-sm font-bold text-white">Saxla</button>
+          <button className="rounded-md bg-[#0066ff] px-4 py-2 text-sm font-bold text-white">Saxla</button>
         </form>
       </section>
     </div>

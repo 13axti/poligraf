@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { getSettings } from "@/lib/settings";
-import { LogoVideo } from "@/components/LogoVideo";
+import { SiteLogo } from "@/components/SiteLogo";
 import { SEO_DESCRIPTION, SITE_URL, phoneHref } from "@/lib/site-config";
 import { ScrollProgress } from "@/components/ScrollProgress";
 import { DevPreviewLink } from "@/components/DevPreviewLink";
@@ -20,7 +20,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="blob-a absolute left-0 top-[28%] h-[26rem] w-[36rem] rounded-full bg-brand/50 blur-[110px]" />
         <div className="blob-b absolute right-0 top-[28%] h-[26rem] w-[32rem] rounded-full bg-[#e4e4ea]/30 blur-[110px]" />
-        <div className="blob-c absolute bottom-[-6%] left-[25%] h-[20rem] w-[30rem] rounded-full bg-[#ff8a4a]/30 blur-[110px]" />
+        <div className="blob-c absolute bottom-[-6%] left-[25%] h-[20rem] w-[30rem] rounded-full bg-[#4d94ff]/30 blur-[110px]" />
       </div>
       <ScrollProgress />
       <Suspense fallback={<HeaderShell />}>
@@ -48,7 +48,7 @@ async function Header() {
     <header className="sticky top-0 z-40 bg-[var(--header-bg)] backdrop-blur-lg">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
         <Link href="/" aria-label={site.name} className="flex items-center">
-          <LogoVideo label={site.name} className="h-9 md:h-10" />
+          <SiteLogo label={site.name} className="h-9 md:h-11" />
         </Link>
         <nav className="hidden items-center gap-1 rounded-full border border-brand/30 bg-[var(--tint)] p-1 text-sm font-medium md:flex">
           <Link href="/" className="rounded-full px-4 py-2 transition hover:bg-brand hover:text-white">Ana səhifə</Link>

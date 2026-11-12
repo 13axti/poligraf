@@ -14,7 +14,7 @@ export function LoginForm() {
       {state?.error && <p className="text-sm font-semibold text-accent">{state.error}</p>}
       <button
         disabled={pending}
-        className="w-full rounded-md bg-[#ff5a1f] px-4 py-3 font-bold text-white transition-colors hover:bg-[#e04810] disabled:opacity-60"
+        className="w-full rounded-md bg-[#0066ff] px-4 py-3 font-bold text-white transition-colors hover:bg-[#0052cc] disabled:opacity-60"
       >
         {pending ? "Daxil olunur…" : "Daxil ol"}
       </button>

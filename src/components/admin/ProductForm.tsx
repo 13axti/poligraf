@@ -325,7 +325,7 @@ export function ProductForm({
             );
           })}
         </div>
-        {tplNote && <p className="mt-3 rounded-md bg-[#ff5a1f]/10 px-3 py-2 text-sm text-[#b8400f]">{tplNote}</p>}
+        {tplNote && <p className="mt-3 rounded-md bg-[#0066ff]/10 px-3 py-2 text-sm text-[#0047b3]">{tplNote}</p>}
         {!variants.length && <p className="text-sm text-neutral-500">Seçim yoxdur. Kalkulyatorda yalnız tiraj görünəcək.</p>}
       </section>
 

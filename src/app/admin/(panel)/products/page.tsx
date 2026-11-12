@@ -17,7 +17,7 @@ function Toggle({ id, field, value, on, off, back }: { id: string; field: "activ
       <button
         title={value ? "Söndürmək üçün klik" : "Yandırmaq üçün klik"}
         className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
-          value ? (field === "featured" ? "bg-[#ff5a1f] text-white" : "bg-[#1b1d1f] text-white") : "bg-[var(--surface)] text-neutral-600 hover:bg-[var(--line)]"
+          value ? (field === "featured" ? "bg-[#0066ff] text-white" : "bg-[#1b1d1f] text-white") : "bg-[var(--surface)] text-neutral-600 hover:bg-[var(--line)]"
         }`}
       >
         {value ? on : off}
@@ -87,7 +87,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             {total} məhsul
           </p>
         </div>
-        <Link href="/admin/products/new" className="rounded-md bg-[#ff5a1f] px-4 py-2 text-sm font-bold text-white hover:bg-[#e04810]">+ Yeni məhsul</Link>
+        <Link href="/admin/products/new" className="rounded-md bg-[#0066ff] px-4 py-2 text-sm font-bold text-white hover:bg-[#0052cc]">+ Yeni məhsul</Link>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[15rem_1fr]">
@@ -168,7 +168,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             ) : (
               <div className="px-5 py-12 text-center">
                 <p className="text-neutral-500">{sp.q || sp.cat || sp.st ? "Bu seçimə uyğun məhsul yoxdur." : "Kataloqda hələ məhsul yoxdur."}</p>
-                <Link href="/admin/products/new" className="mt-3 inline-block rounded-md bg-[#ff5a1f] px-4 py-2 text-sm font-semibold text-white">Məhsul əlavə et</Link>
+                <Link href="/admin/products/new" className="mt-3 inline-block rounded-md bg-[#0066ff] px-4 py-2 text-sm font-semibold text-white">Məhsul əlavə et</Link>
               </div>
             )}
           </div>

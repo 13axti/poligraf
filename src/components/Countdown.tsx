@@ -31,7 +31,7 @@ export function Countdown({ to }: { to: string }) {
       {parts.map(([label, n]) => (
         <div key={label} className="w-[72px] rounded-2xl border border-white/10 bg-white/5 py-3 text-center backdrop-blur">
           <div className="text-3xl font-extrabold tabular-nums text-white">{pad(n)}</div>
-          <div className="text-[11px] font-semibold uppercase tracking-widest text-[#ff8a2a]">{label}</div>
+          <div className="text-[11px] font-semibold uppercase tracking-widest text-[#3385ff]">{label}</div>
         </div>
       ))}
     </div>

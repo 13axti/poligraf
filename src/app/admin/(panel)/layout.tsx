@@ -16,7 +16,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     <div className="flex min-h-screen flex-col md:flex-row">
       <aside className="print:hidden flex shrink-0 flex-col border-b border-[var(--line)] bg-white md:sticky md:top-0 md:h-screen md:w-56 md:border-b-0 md:border-r">
         <div className="flex items-center gap-2.5 px-4 py-4 md:py-5">
-          <span className="grid h-8 w-8 place-items-center rounded-md bg-[#ff5a1f] font-display text-base font-bold text-white">L</span>
+          <span className="grid h-8 w-8 place-items-center rounded-md bg-[#0066ff] font-display text-base font-bold text-white">L</span>
           <div className="leading-tight">
             <p className="font-display text-[15px] font-bold">Lemur Group</p>
             <p className="text-xs text-neutral-500">Sifariş masası</p>

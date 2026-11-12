@@ -27,7 +27,7 @@ export function OrderRow({ o, thumb }: { o: OrderRowData; thumb?: string | null 
       href={`/admin/orders/${o.id}`}
       className="group relative grid grid-cols-[3rem_1fr_auto] items-center gap-3 px-4 py-3 transition-colors hover:bg-[var(--surface)]/50 sm:grid-cols-[3rem_1.5fr_1fr_5.5rem_7.5rem]"
     >
-      {o.status === "new" && <span className="absolute inset-y-0 left-0 w-[3px] bg-[#ff5a1f]" />}
+      {o.status === "new" && <span className="absolute inset-y-0 left-0 w-[3px] bg-[#0066ff]" />}
       <span className="h-12 w-12 overflow-hidden rounded-md bg-[var(--surface)]">
         {thumb && (
           // eslint-disable-next-line @next/next/no-img-element

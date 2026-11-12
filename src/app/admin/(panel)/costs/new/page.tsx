@@ -13,7 +13,7 @@ export default async function NewCostProduct({ searchParams }: { searchParams: P
   return (
     <div className="space-y-5">
       {head}
-      {!suppliers.length && <p className="rounded-lg bg-white p-4 text-sm">Əvvəl <a href="/admin/suppliers?new=1" className="font-semibold text-[#c2410c] underline">təchizatçı əlavə edin</a>, sonra məhsulu yazın.</p>}
+      {!suppliers.length && <p className="rounded-lg bg-white p-4 text-sm">Əvvəl <a href="/admin/suppliers?new=1" className="font-semibold text-[#0047b3] underline">təchizatçı əlavə edin</a>, sonra məhsulu yazın.</p>}
       <CostProductForm create action={createCostProduct} categories={categories} fields={fields} suppliers={suppliers.map((s) => ({ id: s.id, name: s.name }))} />
     </div>
   );

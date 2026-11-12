@@ -9,7 +9,7 @@ export function DevPreviewLink({ href, children, className = "" }: { href: strin
   return (
     <Link
       href={href}
-      className={`fixed z-50 rounded-full bg-[#ff7a1a] px-5 py-3 text-sm font-bold text-black shadow-xl shadow-black/30 transition hover:-translate-y-0.5 hover:bg-[#ff9a4a] ${className}`}
+      className={`fixed z-50 rounded-full bg-[#0066ff] px-5 py-3 text-sm font-bold text-black shadow-xl shadow-black/30 transition hover:-translate-y-0.5 hover:bg-[#66a3ff] ${className}`}
     >
       {children}
     </Link>

@@ -11,7 +11,7 @@ export default async function CategoriesPage() {
         <p className="mt-1 text-sm text-neutral-500">{cats?.length ?? 0} kateqoriya. Sıra kiçik olan əvvəldə görünür, saytda menyuda və kataloqda bu ardıcıllıqla düzülür.</p>
       </div>
       <details className="group rounded-xl bg-white">
-        <summary className="cursor-pointer list-none px-4 py-3 text-sm font-bold text-[#ff5a1f] marker:hidden">+ Yeni kateqoriya əlavə et</summary>
+        <summary className="cursor-pointer list-none px-4 py-3 text-sm font-bold text-[#0066ff] marker:hidden">+ Yeni kateqoriya əlavə et</summary>
         <div className="border-t border-[var(--line)]">
           <CategoryForm />
         </div>

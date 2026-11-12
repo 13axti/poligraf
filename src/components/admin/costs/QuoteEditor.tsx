@@ -13,7 +13,7 @@ export interface QuoteInit {
   quoteDate: string; note: string; margin: number; vat: boolean; source: string; lines: QuoteLine[];
 }
 
-const inp = "w-full rounded-md border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[#ff5a1f]";
+const inp = "w-full rounded-md border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[#0066ff]";
 const lbl = "mb-1 block text-xs font-semibold text-neutral-500";
 const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -115,11 +115,11 @@ export function QuoteEditor({ init, products, offers, rates, day, fileMode }: { 
         </div>
       </section>
 
-      <section className={`rounded-xl bg-white p-5 ${fileMode ? "ring-2 ring-[#ff5a1f]/40" : ""}`}>
+      <section className={`rounded-xl bg-white p-5 ${fileMode ? "ring-2 ring-[#0066ff]/40" : ""}`}>
         <h3 className="mb-2 font-bold">Fayldan avtomatik təklif</h3>
         <p className="mb-3 text-sm text-neutral-500">Müştərinin göndərdiyi PDF, Excel, Word və ya şəkil. Sistem məhsulları və miqdarları oxuyur, bazada uyğun məhsulu tapır və ən ucuz alış qiyməti ilə hesablayır. Nəticəni aşağıda yoxlayıb düzəldin.</p>
         <input type="file" accept=".pdf,.xlsx,.csv,.docx,.txt,image/*" disabled={Boolean(busy)} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void onFile(f); }} className="block text-sm" />
-        {busy && <p className="mt-2 text-sm font-semibold text-[#c2410c]">{busy}</p>}
+        {busy && <p className="mt-2 text-sm font-semibold text-[#0047b3]">{busy}</p>}
       </section>
 
       <section className="rounded-xl bg-white p-5">
@@ -218,7 +218,7 @@ export function QuoteEditor({ init, products, offers, rates, day, fileMode }: { 
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--line)] bg-white/95 px-4 py-3 backdrop-blur md:left-56">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3">
-          <button type="button" onClick={save} disabled={pending} className="rounded-md bg-[#ff5a1f] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#e04810] disabled:opacity-60">{pending ? "Saxlanılır…" : "Saxla"}</button>
+          <button type="button" onClick={save} disabled={pending} className="rounded-md bg-[#0066ff] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#0052cc] disabled:opacity-60">{pending ? "Saxlanılır…" : "Saxla"}</button>
           {q.id && <a href={`/admin/quote-pdf/${q.id}`} target="_blank" rel="noopener noreferrer" className={`rounded-md px-4 py-2.5 text-sm font-semibold ${dirty ? "pointer-events-none bg-[var(--surface)] text-neutral-400" : "bg-[#1b1d1f] text-white hover:bg-black"}`}>PDF</a>}
           {dirty && <span className="text-sm text-neutral-500">Saxlanmamış dəyişiklik var{q.id ? ", PDF üçün əvvəl saxlayın" : ""}</span>}
           {unmatched > 0 && <span className="text-sm text-accent">{unmatched} sətirdə bazadan məhsul seçilməyib</span>}

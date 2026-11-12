@@ -7,7 +7,7 @@ export default function LoginPage() {
     <div className="grid min-h-screen place-items-center p-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-lg bg-[#ff5a1f] font-display text-xl font-bold text-white">L</span>
+          <span className="grid h-11 w-11 place-items-center rounded-lg bg-[#0066ff] font-display text-xl font-bold text-white">L</span>
           <div className="leading-tight">
             <p className="font-display text-xl font-bold">{BRAND}</p>
             <p className="text-sm text-neutral-500">Sifariş masası</p>

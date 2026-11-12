@@ -17,7 +17,7 @@ export interface CatalogProduct {
 }
 interface Meta { title: string; client: string; people: number }
 
-const inp = "w-full rounded-md border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[#ff5a1f]";
+const inp = "w-full rounded-md border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[#0066ff]";
 const lbl = "mb-1 block text-xs font-semibold text-neutral-500";
 const card = "rounded-xl bg-white p-5";
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -152,7 +152,7 @@ export function PresentationEditor({
                 {p.image ? <img src={p.image} alt="" className="h-10 w-10 rounded object-cover" /> : <span className="h-10 w-10 rounded bg-[var(--surface)]" />}
                 <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{p.name}</span><span className="text-xs text-neutral-500">{p.category}</span></span>
                 <span className="shrink-0 text-xs text-neutral-500">{p.tiers.length ? `${money(Math.min(...p.tiers.map((t) => t.unitPrice)))} ₼-dən` : "qiymət yoxdur"}</span>
-                <span className="shrink-0 rounded bg-[#ff5a1f] px-2 py-1 text-xs font-bold text-white">+ əlavə et</span>
+                <span className="shrink-0 rounded bg-[#0066ff] px-2 py-1 text-xs font-bold text-white">+ əlavə et</span>
               </button>
             ))}
           </div>
@@ -254,7 +254,7 @@ export function PresentationEditor({
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--line)] bg-white/95 px-4 py-3 backdrop-blur md:left-56">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3">
-          <button type="button" onClick={save} disabled={pending} className="rounded-md bg-[#ff5a1f] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#e04810] disabled:opacity-60">{pending ? "Saxlanılır…" : "Saxla"}</button>
+          <button type="button" onClick={save} disabled={pending} className="rounded-md bg-[#0066ff] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#0052cc] disabled:opacity-60">{pending ? "Saxlanılır…" : "Saxla"}</button>
           {dirty && !msg && <span className="text-sm text-neutral-500">Saxlanmamış dəyişiklik var</span>}
           {msg && <span className={`text-sm font-semibold ${msg.ok ? "text-[#1f7a3a]" : "text-accent"}`}>{msg.text}</span>}
           <span className="ml-auto flex flex-wrap gap-2">

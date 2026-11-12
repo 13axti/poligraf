@@ -21,13 +21,13 @@ export function QuotePdfView({ q, site, toolbar }: { q: PdfQuote; site: PdfSite;
       {toolbar}
       <div className="sheet mx-auto w-[210mm] min-h-[297mm] bg-white px-[14mm] py-[14mm] shadow-xl">
         {/* Başlıq */}
-        <div className="flex items-start justify-between border-b-4 border-[#ff5a1f] pb-5">
+        <div className="flex items-start justify-between border-b-4 border-[#0066ff] pb-5">
           <div>
-            <img src="/brand/lemur-logo-last.jpg" alt="Lemur Group" className="h-14 w-auto" />
+            <img src="/brand/logo-light.png" alt="Lemur Group" className="h-14 w-auto" />
             <p className="mt-1 text-[11px] uppercase tracking-[0.25em] text-neutral-500">Promo · Poliqrafiya · Reklam</p>
           </div>
           <div className="text-right">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-[#ff5a1f]">Qiymət təklifi</p>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-[#0066ff]">Qiymət təklifi</p>
             <p className="font-mono text-2xl font-bold">{q.number}</p>
             <p className="text-sm text-neutral-600">Tarix: {azDate(q.quote_date)}</p>
           </div>
@@ -64,7 +64,7 @@ export function QuotePdfView({ q, site, toolbar }: { q: PdfQuote; site: PdfSite;
           </thead>
           <tbody>
             {lines.map((l, i) => (
-              <tr key={l.key} className={i % 2 ? "bg-[#fff4ee]" : ""}>
+              <tr key={l.key} className={i % 2 ? "bg-[#eef4ff]" : ""}>
                 <td className="px-3 py-3 align-top text-neutral-500">{i + 1}</td>
                 <td className="px-3 py-3 align-top">
                   <p className="font-semibold">{l.name}</p>
@@ -83,13 +83,13 @@ export function QuotePdfView({ q, site, toolbar }: { q: PdfQuote; site: PdfSite;
           <div className="w-72 text-sm">
             <div className="flex justify-between border-b border-neutral-200 py-1.5"><span className="text-neutral-600">Cəmi (ƏDV-siz)</span><span>{money(sums.subtotal)} ₼</span></div>
             {q.vat && <div className="flex justify-between border-b border-neutral-200 py-1.5"><span className="text-neutral-600">ƏDV 18%</span><span>{money(sums.vat)} ₼</span></div>}
-            <div className="mt-2 flex justify-between rounded bg-[#ff5a1f] px-3 py-2.5 text-base font-bold text-white"><span>Ümumi məbləğ</span><span>{money(sums.total)} ₼</span></div>
+            <div className="mt-2 flex justify-between rounded bg-[#0066ff] px-3 py-2.5 text-base font-bold text-white"><span>Ümumi məbləğ</span><span>{money(sums.total)} ₼</span></div>
             {!q.vat && <p className="mt-1 text-right text-[11px] text-neutral-500">Qiymətlərə ƏDV daxil deyil</p>}
           </div>
         </div>
 
         {q.note && (
-          <div className="mt-8 rounded-lg border-l-4 border-[#ff5a1f] bg-neutral-50 px-4 py-3 text-sm">
+          <div className="mt-8 rounded-lg border-l-4 border-[#0066ff] bg-neutral-50 px-4 py-3 text-sm">
             <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-400">Qeyd</p>
             <p className="whitespace-pre-line">{q.note}</p>
           </div>
@@ -97,7 +97,7 @@ export function QuotePdfView({ q, site, toolbar }: { q: PdfQuote; site: PdfSite;
 
         <div className="mt-12 flex items-end justify-between border-t border-neutral-200 pt-4 text-xs text-neutral-500">
           <p>Təklif üçün təşəkkür edirik. Suallarınız üçün bizimlə əlaqə saxlayın.</p>
-          <p className="font-semibold text-[#ff5a1f]">lemur group</p>
+          <p className="font-semibold text-[#0066ff]">lemur group</p>
         </div>
       </div>
     </div>

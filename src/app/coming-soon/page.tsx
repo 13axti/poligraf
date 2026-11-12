@@ -13,7 +13,7 @@ export const metadata = {
   description: `${BRAND}: poliqrafiya, promo məhsullar, reklam və vinil kəsim. Yeni saytımız tezliklə açılır.`,
 };
 
-const ORANGE = "#ff7a1a";
+const ORANGE = "#0066ff";
 const chips = ["Poliqrafiya", "Promo hədiyyələr", "Reklam & Banner", "Vinil kəsim"];
 
 async function Contact() {
@@ -53,7 +53,7 @@ export default function ComingSoonPage() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black via-black/70 to-black/10 lg:via-black/30 lg:to-transparent" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black via-transparent to-black/40" />
         {/* narıncı işıq */}
-        <div className="pointer-events-none absolute -left-40 top-1/4 -z-10 h-[28rem] w-[28rem] rounded-full bg-[#ff7a1a]/20 blur-[120px]" />
+        <div className="pointer-events-none absolute -left-40 top-1/4 -z-10 h-[28rem] w-[28rem] rounded-full bg-[#0066ff]/20 blur-[120px]" />
 
         <div className="mx-auto flex w-full max-w-[90rem] flex-col justify-between px-6 py-8 sm:px-12 sm:py-10 lg:px-20">
           <div />
@@ -61,10 +61,10 @@ export default function ComingSoonPage() {
           {/* mərkəz: mətn */}
           <div className="max-w-xl py-14">
             <Reveal delay={100}>
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#ff7a1a]/40 bg-[#ff7a1a]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#ff9a4a]">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#0066ff]/40 bg-[#0066ff]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#66a3ff]">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ff7a1a] opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#ff7a1a]" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0066ff] opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#0066ff]" />
                 </span>
                 Yeni sayt hazırlanır
               </span>
@@ -78,7 +78,7 @@ export default function ComingSoonPage() {
             </Reveal>
 
             <Reveal delay={300}>
-              <p className="mt-5 text-xl font-semibold text-[#ff9a4a] sm:text-2xl">
+              <p className="mt-5 text-xl font-semibold text-[#66a3ff] sm:text-2xl">
                 Loqonu yüklə, nəticəni gör, sifariş ver.
               </p>
               <p className="mt-4 max-w-md text-base leading-relaxed text-white/65">
@@ -91,7 +91,7 @@ export default function ComingSoonPage() {
                 {chips.map((c) => (
                   <li
                     key={c}
-                    className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/85 backdrop-blur transition hover:border-[#ff7a1a] hover:text-[#ff9a4a]"
+                    className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/85 backdrop-blur transition hover:border-[#0066ff] hover:text-[#66a3ff]"
                   >
                     {c}
                   </li>

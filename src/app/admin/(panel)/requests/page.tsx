@@ -55,7 +55,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
                   href={`/admin/requests/${r.id}`}
                   className="relative grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 transition-colors hover:bg-[var(--surface)]/50 sm:grid-cols-[1.6fr_1fr_7rem_8rem]"
                 >
-                  {r.status === "new" && <span className="absolute inset-y-0 left-0 w-[3px] bg-[#ff5a1f]" />}
+                  {r.status === "new" && <span className="absolute inset-y-0 left-0 w-[3px] bg-[#0066ff]" />}
                   <span className="min-w-0">
                     <span className="block truncate font-semibold">{r.message}</span>
                     <span className="block truncate text-sm text-neutral-500 sm:hidden">{r.customer_name} · {ago(r.created_at)}</span>

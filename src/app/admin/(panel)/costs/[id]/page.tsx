@@ -62,7 +62,7 @@ export default async function CostProductPage({ params, searchParams }: { params
           </form>
         </div>
         {winner && (
-          <p className="mb-3 rounded-lg bg-[#ff5a1f]/10 px-3 py-2 text-sm">
+          <p className="mb-3 rounded-lg bg-[#0066ff]/10 px-3 py-2 text-sm">
             <b>{qty} {winner.offer.priceUnit}</b> üçün ən ucuz uyğun təchizatçı: <b>{winner.offer.supplier}</b>, vahid maya <b>{money(winner.effAZN, 3)} ₼</b>, cəmi <b>{money(winner.effAZN * qty)} ₼</b>{winner.offer.leadDays != null && `, ${winner.offer.leadDays} günə hazır`}.
           </p>
         )}
@@ -79,7 +79,7 @@ export default async function CostProductPage({ params, searchParams }: { params
                   <tr key={o.id} className={!suitable(r) ? "text-neutral-400" : ""}>
                     <td className="py-2.5 pr-3">
                       <Link href={`/admin/suppliers/${o.supplierId}`} className="font-semibold hover:underline">{o.supplier}</Link>
-                      {win && <span className="ml-2 rounded bg-[#ff5a1f] px-1.5 py-0.5 text-[10px] font-bold text-white">ƏN UCUZ</span>}
+                      {win && <span className="ml-2 rounded bg-[#0066ff] px-1.5 py-0.5 text-[10px] font-bold text-white">ƏN UCUZ</span>}
                       <span className="block text-xs">{[o.priceDate && `tarix ${o.priceDate}`, o.vatIncluded && "ƏDV daxil", r.expired && "köhnəlib", o.note].filter(Boolean).join(" · ")}</span>
                     </td>
                     <td className="pr-3">{money(o.unitPrice, 3)} {o.currency}<span className="block text-xs text-neutral-500">/ {o.priceUnit}</span></td>
@@ -87,7 +87,7 @@ export default async function CostProductPage({ params, searchParams }: { params
                     <td className="pr-3">{o.minOrder ?? "—"}{r.belowMin && <span className="block text-xs text-[#c42b0d]">say azdır</span>}</td>
                     <td className="pr-3">{o.deliveryFee ? `${money(o.deliveryFee)} ${o.currency}` : "—"}</td>
                     <td className="pr-3">{o.leadDays != null ? `${o.leadDays} gün` : "—"}</td>
-                    <td className={`pr-3 text-right ${win ? "font-bold text-[#c2410c]" : ""}`}>{money(r.effAZN, 3)}</td>
+                    <td className={`pr-3 text-right ${win ? "font-bold text-[#0047b3]" : ""}`}>{money(r.effAZN, 3)}</td>
                     <td className="pl-2 text-right">
                       <details className="relative inline-block text-left">
                         <summary className="cursor-pointer text-xs font-semibold text-neutral-600 hover:text-foreground">Redaktə</summary>
@@ -96,7 +96,7 @@ export default async function CostProductPage({ params, searchParams }: { params
                           <form action={saveOffer} className="space-y-3">
                             <input type="hidden" name="product_id" value={p.id} />
                             <OfferFields offer={o} suppliers={sList} fixedSupplier />
-                            <button className="w-full rounded-md bg-[#ff5a1f] px-4 py-2 text-sm font-bold text-white">Saxla</button>
+                            <button className="w-full rounded-md bg-[#0066ff] px-4 py-2 text-sm font-bold text-white">Saxla</button>
                           </form>
                           <form action={deleteOffer} className="mt-2 text-center">
                             <input type="hidden" name="id" value={o.id} />
@@ -116,12 +116,12 @@ export default async function CostProductPage({ params, searchParams }: { params
       </section>
 
       <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-        <section className="rounded-xl bg-white p-5 ring-2 ring-[#ff5a1f]/30">
+        <section className="rounded-xl bg-white p-5 ring-2 ring-[#0066ff]/30">
           <h3 className="mb-3 font-bold">Başqa təchizatçının qiymətini əlavə et</h3>
           <form action={saveOffer} className="space-y-3">
             <input type="hidden" name="product_id" value={p.id} />
             <OfferFields suppliers={sList.filter((s) => !used.has(s.id))} />
-            <button className="rounded-md bg-[#ff5a1f] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#e04810]">Qiyməti əlavə et</button>
+            <button className="rounded-md bg-[#0066ff] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#0052cc]">Qiyməti əlavə et</button>
           </form>
         </section>
 

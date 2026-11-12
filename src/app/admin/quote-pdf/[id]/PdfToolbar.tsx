@@ -7,7 +7,7 @@ export function PdfToolbar({ number }: { number: string }) {
       <button
         type="button"
         onClick={() => { const t = document.title; document.title = `Lemur-teklif-${number}`; window.print(); document.title = t; }}
-        className="rounded-md bg-[#ff5a1f] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#e04810]"
+        className="rounded-md bg-[#0066ff] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#0052cc]"
       >
         PDF kimi saxla
       </button>

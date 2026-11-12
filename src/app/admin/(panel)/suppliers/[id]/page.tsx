@@ -45,7 +45,7 @@ export default async function SupplierPage({ params, searchParams }: { params: P
                     <td className="pr-3">{o.minOrder ?? "—"}</td>
                     <td className="pr-3">{o.leadDays != null ? `${o.leadDays} gün` : "—"}</td>
                     <td className="pr-3 text-xs">{o.priceDate ?? "—"}</td>
-                    <td className="pr-3 text-xs">{win?.offer.id === o.id ? <b className="text-[#c2410c]">bəli ({q} əd.)</b> : win ? `yox, ${win.offer.supplier}` : "—"}</td>
+                    <td className="pr-3 text-xs">{win?.offer.id === o.id ? <b className="text-[#0047b3]">bəli ({q} əd.)</b> : win ? `yox, ${win.offer.supplier}` : "—"}</td>
                     <td>
                       <form action={deleteOffer}>
                         <input type="hidden" name="id" value={o.id} />

@@ -8,15 +8,15 @@ import { useRef } from "react";
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /**
- * Şəbəkədəki şəkillər müvəqqətidir: Unsplash fotoları (pulsuz lisenziya) pastel rəngə boyanıb, üzərinə "lemur" yazılıb. public/hero/v2/.
+ * Şəbəkədəki şəkillər müvəqqətidir: Unsplash fotoları (pulsuz lisenziya) pastel rəngə boyanıb; mərkəzdəki 5 foto Lemur Group-un öz brend şəkilləridir. public/hero/v3/.
  * Sütunlar ortaya doğru yüksəlir (V forması); h = şəklin hündürlüyü, top = sütunun yuxarıdan boşluğu (hər ikisi ~200px enə nisbətdə).
  */
 const COLS: { top: number; tiles: { src: string; alt: string; h: number }[]; show: string }[] = [
   { top: 150, show: "hidden lg:flex", tiles: [{ src: "tote", alt: "Kətan çanta", h: 150 }] },
   { top: 80, show: "hidden sm:flex", tiles: [{ src: "bottle", alt: "Termos", h: 290 }] },
-  { top: 45, show: "flex", tiles: [{ src: "cap", alt: "Kepka", h: 200 }, { src: "card", alt: "Vizit kart", h: 150 }] },
-  { top: 0, show: "flex", tiles: [{ src: "mug", alt: "Fincan", h: 250 }, { src: "stickers", alt: "Stikerlər", h: 190 }] },
-  { top: 45, show: "flex", tiles: [{ src: "notebook", alt: "Bloknot", h: 150 }, { src: "box", alt: "Qutu", h: 200 }] },
+  { top: 45, show: "flex", tiles: [{ src: "team", alt: "Lemur Group komandası", h: 200 }, { src: "card", alt: "Vizit kart", h: 150 }] },
+  { top: 0, show: "flex", tiles: [{ src: "brandset", alt: "Loqolu bloknot, termos və qələm", h: 250 }, { src: "tech", alt: "Loqolu powerbank, fincan və yaxa kartı", h: 190 }] },
+  { top: 45, show: "flex", tiles: [{ src: "coffee", alt: "Loqolu kağız stəkan və şüşə qablar", h: 150 }, { src: "gift", alt: "Loqolu hədiyyə qutuları və çanta", h: 200 }] },
   { top: 125, show: "hidden sm:flex", tiles: [{ src: "tshirt", alt: "Köynək", h: 200 }] },
   { top: 150, show: "hidden lg:flex", tiles: [{ src: "cup", alt: "Kağız stəkan", h: 150 }] },
 ];
@@ -37,7 +37,7 @@ function Column({ col, i, y }: { col: (typeof COLS)[number]; i: number; y: Motio
           style={{ aspectRatio: `200 / ${t.h}` }}
         >
           <Image
-            src={`/hero/v2/${t.src}.webp`}
+            src={`/hero/v3/${t.src}.webp`}
             alt={t.alt}
             fill
             sizes="(min-width: 1024px) 190px, (min-width: 640px) 20vw, 33vw"
@@ -82,7 +82,7 @@ export function HomeHero({
     reduce ? {} : { animate: { y: [0, -dist, 0] }, transition: { duration: 5 + d, repeat: Infinity, ease: "easeInOut" as const, delay: d } };
 
   // Başlıqdakı kiçik dairələr: seçilmiş məhsulların şəkilləri (yoxdursa şəbəkədəkilər)
-  const thumbs = (items.length ? items.map((p) => p.image) : ["/hero/v2/mug.webp", "/hero/v2/cap.webp", "/hero/v2/tote.webp"]).slice(0, 3);
+  const thumbs = (items.length ? items.map((p) => p.image) : ["/hero/v3/brandset.webp", "/hero/v3/gift.webp", "/hero/v3/tech.webp"]).slice(0, 3);
 
   return (
     <section ref={ref} className="relative overflow-hidden px-4 pb-10 pt-10 sm:pt-14">
@@ -102,13 +102,13 @@ export function HomeHero({
 
       {/* Uçan bəzəklər */}
       <motion.svg {...float(0)} aria-hidden viewBox="0 0 40 40" className="pointer-events-none absolute left-[6%] top-16 hidden h-8 w-8 md:block">
-        <path d="M6 30 L20 4 L26 34 Z" fill="#ff5a1f" />
-        <path d="M20 4 L26 34 L34 22 Z" fill="#c43d0f" />
+        <path d="M6 30 L20 4 L26 34 Z" fill="#0066ff" />
+        <path d="M20 4 L26 34 L34 22 Z" fill="#0040a8" />
       </motion.svg>
-      <motion.div {...float(1.2, 14)} aria-hidden className="pointer-events-none absolute right-[14%] top-24 hidden h-14 w-14 rounded-full bg-gradient-to-br from-[#ffd2b8] to-brand/30 blur-[1px] md:block" />
+      <motion.div {...float(1.2, 14)} aria-hidden className="pointer-events-none absolute right-[14%] top-24 hidden h-14 w-14 rounded-full bg-gradient-to-br from-[#cfe0ff] to-brand/30 blur-[1px] md:block" />
       <motion.div {...float(0.6, 12)} aria-hidden className="pointer-events-none absolute left-[11%] top-[19rem] hidden rotate-[-8deg] rounded-xl bg-[var(--card)] p-2 shadow-xl ring-1 ring-[var(--hair)] lg:block">
         <div className="mb-1.5 flex gap-1">
-          {["#ff5a1f", "#ffb347", "#f6e05e", "#6ee7b7"].map((c) => <i key={c} className="block h-1.5 w-4 rounded-full" style={{ background: c }} />)}
+          {["#0066ff", "#7fb2ff", "#f6e05e", "#6ee7b7"].map((c) => <i key={c} className="block h-1.5 w-4 rounded-full" style={{ background: c }} />)}
         </div>
         <div className="space-y-1">
           <i className="block h-1.5 w-14 rounded-full bg-[var(--hair)]" />
@@ -119,8 +119,8 @@ export function HomeHero({
       <motion.svg {...float(2, 8)} aria-hidden viewBox="0 0 40 40" className="pointer-events-none absolute left-[7%] top-[30rem] hidden h-12 w-12 lg:block">
         <defs>
           <linearGradient id="hh-g" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#ffd2b8" />
-            <stop offset="1" stopColor="#ff5a1f" />
+            <stop offset="0" stopColor="#cfe0ff" />
+            <stop offset="1" stopColor="#0066ff" />
           </linearGradient>
         </defs>
         <path d="M2 6 L38 6 L20 38 Z" fill="url(#hh-g)" />
@@ -145,9 +145,9 @@ export function HomeHero({
         <h1 className="mt-6 text-[2.4rem] font-extrabold leading-[1.08] tracking-tight sm:text-6xl lg:text-7xl">
           <motion.span {...fade(0.15)} className="block">
             Brendiniz üçün{" "}
-            <span className="relative inline-block bg-gradient-to-r from-[#ff8a4c] to-[#ff3d00] bg-clip-text text-transparent">
+            <span className="relative inline-block bg-gradient-to-r from-[#4d94ff] to-[#0047ff] bg-clip-text text-transparent">
               yaradıcı
-              <span className="absolute inset-x-0 -bottom-1 h-[3px] rounded-full bg-gradient-to-r from-[#ff8a4c] to-[#ff3d00] sm:-bottom-2 sm:h-1" />
+              <span className="absolute inset-x-0 -bottom-1 h-[3px] rounded-full bg-gradient-to-r from-[#4d94ff] to-[#0047ff] sm:-bottom-2 sm:h-1" />
             </span>
           </motion.span>
           <motion.span {...fade(0.28)} className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
@@ -168,7 +168,7 @@ export function HomeHero({
               <span className="grid h-12 w-12 place-items-center rounded-full bg-brand">
                 <span className="h-6 w-6 rounded-full border-[5px] border-white" />
               </span>
-              <span className="-ml-4 h-12 w-12 rounded-full bg-[#ffb347]/80" />
+              <span className="-ml-4 h-12 w-12 rounded-full bg-[#7fb2ff]/80" />
               <svg viewBox="0 0 70 30" className="ml-2 h-8 w-16 text-brand">
                 <path d="M2 18 C 20 6, 40 6, 64 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                 <path d="M54 8 L65 16 L53 23" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -184,7 +184,7 @@ export function HomeHero({
         <motion.div {...fade(0.55)} className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/kataloq"
-            className="group inline-flex items-center gap-3 rounded-full bg-brand py-1.5 pl-1.5 pr-6 text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-[#ff6f3a]"
+            className="group inline-flex items-center gap-3 rounded-full bg-brand py-1.5 pl-1.5 pr-6 text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-[#1a75ff]"
           >
             <span className="grid h-9 w-9 place-items-center rounded-full bg-white text-brand transition group-hover:translate-x-0.5">→</span>
             Kataloqa bax

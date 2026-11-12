@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { CURRENCIES, PRICE_UNITS, QTY_PRESETS, tierLabel, today, type CostOffer } from "@/lib/costs";
 
-export const inp = "w-full rounded-md border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[#ff5a1f]";
+export const inp = "w-full rounded-md border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[#0066ff]";
 export const lbl = "mb-1 block text-xs font-semibold text-neutral-500";
 
 /** Təchizatçı qiyməti xanaları: alış qiyməti, valyuta, vahid, minimum, miqdara görə qiymətlər, ƏDV, çatdırılma, hazırlanma, tarix, qeyd */
@@ -22,7 +22,7 @@ export function OfferFields({ offer, suppliers, fixedSupplier }: { offer?: CostO
             <option value="">Seçin</option>
             {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
-          <a href="/admin/suppliers?new=1" target="_blank" className="mt-1 inline-block text-xs font-semibold text-[#c2410c] underline">+ Yeni təchizatçı əlavə et</a>
+          <a href="/admin/suppliers?new=1" target="_blank" className="mt-1 inline-block text-xs font-semibold text-[#0047b3] underline">+ Yeni təchizatçı əlavə et</a>
         </label>
       )}
       <div className="grid gap-2 sm:grid-cols-4">

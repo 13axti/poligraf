@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { ago } from "@/lib/ago";
 import { createPresentation, deletePresentation } from "../../presentation-actions";
 
-const input = "w-full rounded-md border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[#ff5a1f]";
+const input = "w-full rounded-md border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[#0066ff]";
 
 export default async function PresentationsPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const sp = await searchParams;
@@ -46,7 +46,7 @@ export default async function PresentationsPage({ searchParams }: { searchParams
         <label className="text-sm font-semibold text-neutral-600">Nəfər sayı
           <input name="people" type="number" min={0} placeholder="230" className={`${input} mt-1`} />
         </label>
-        <button className="rounded-md bg-[#ff5a1f] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#e04810]">Yarat</button>
+        <button className="rounded-md bg-[#0066ff] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#0052cc]">Yarat</button>
       </form>
 
       <div className="divide-y divide-[var(--line)] overflow-hidden rounded-xl bg-white">

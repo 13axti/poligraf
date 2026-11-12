@@ -11,8 +11,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--strong);
-  --color-brand: #ff5a1f;
-  --color-brand-dark: #e04810;
+  --color-brand: #0066ff;
+  --color-brand-dark: #0052cc;
   --color-accent: #e5341d;
   --color-surface: var(--surface);
   --color-card: var(--card);
@@ -39,7 +39,7 @@ body {
 /* Ictimai sayt: qara + narıncı tema (admin panel açıq qalır) */
 .site-dark {
   --background: #161616;
-  --strong: #ff5a1f;
+  --strong: #0066ff;
   --surface: #1f1f1f;
   --card: #1d1d1d;
   --ink: #f5f5f5;
@@ -53,9 +53,9 @@ body {
   --color-neutral-600: #b8b8b8;
   --color-neutral-700: #d4d4d4;
   background:
-    radial-gradient(70rem 36rem at 72% -4%, rgba(255, 90, 31, 0.22), transparent 62%),
-    radial-gradient(60rem 30rem at 105% 100%, rgba(255, 90, 31, 0.2), transparent 60%),
-    radial-gradient(40rem 24rem at -5% 55%, rgba(255, 90, 31, 0.08), transparent 60%),
+    radial-gradient(70rem 36rem at 72% -4%, rgba(0, 102, 255, 0.22), transparent 62%),
+    radial-gradient(60rem 30rem at 105% 100%, rgba(0, 102, 255, 0.2), transparent 60%),
+    radial-gradient(40rem 24rem at -5% 55%, rgba(0, 102, 255, 0.08), transparent 60%),
     #161616;
   color: #f5f5f5;
   color-scheme: dark;
@@ -69,7 +69,7 @@ body:has(.site-dark) { background: #161616; }
 /* ====== Açıq tema: ağ + narıncı ====== */
 [data-theme="light"] .site-dark {
   --background: #ffffff;
-  --strong: #ff5a1f;
+  --strong: #0066ff;
   --surface: #f4f2f0;
   --card: #ffffff;
   --ink: #1a1a1a;
@@ -83,8 +83,8 @@ body:has(.site-dark) { background: #161616; }
   --color-neutral-600: #525252;
   --color-neutral-700: #3b3b3b;
   background:
-    radial-gradient(70rem 36rem at 72% -4%, rgba(255, 90, 31, 0.12), transparent 62%),
-    radial-gradient(60rem 30rem at 105% 100%, rgba(255, 90, 31, 0.1), transparent 60%),
+    radial-gradient(70rem 36rem at 72% -4%, rgba(0, 102, 255, 0.12), transparent 62%),
+    radial-gradient(60rem 30rem at 105% 100%, rgba(0, 102, 255, 0.1), transparent 60%),
     #ffffff;
   color: var(--ink);
   color-scheme: light;
@@ -157,7 +157,7 @@ html { scroll-behavior: smooth; }
 }
 .admin-ui input:focus-visible, .admin-ui select:focus-visible, .admin-ui textarea:focus-visible,
 .admin-ui a:focus-visible, .admin-ui button:focus-visible {
-  outline: 2px solid #ff5a1f;
+  outline: 2px solid #0066ff;
   outline-offset: 2px;
 }
 .admin-ui .num { font-variant-numeric: tabular-nums; }
@@ -176,3 +176,8 @@ html { scroll-behavior: smooth; }
 .logo-video video, .logo-video img { filter: invert(1) hue-rotate(180deg) url(#lemur-key-dark); }
 [data-theme="light"] .logo-video video, [data-theme="light"] .logo-video img { filter: url(#lemur-key-light); }
 
+
+/* Loqo: tünd tema ağ yazılı, açıq tema qara yazılı */
+.logo-on-light { display: none; }
+[data-theme="light"] .logo-on-dark { display: none; }
+[data-theme="light"] .logo-on-light { display: block; }

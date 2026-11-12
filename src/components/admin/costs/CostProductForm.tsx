@@ -77,7 +77,7 @@ export function CostProductForm({
         </section>
       )}
 
-      <button className="rounded-md bg-[#ff5a1f] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#e04810]">{create ? "Məhsulu əlavə et" : "Saxla"}</button>
+      <button className="rounded-md bg-[#0066ff] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#0052cc]">{create ? "Məhsulu əlavə et" : "Saxla"}</button>
     </form>
   );
 }
