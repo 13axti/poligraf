@@ -13,11 +13,11 @@ const ease = [0.22, 1, 0.36, 1] as const;
  */
 const COLS: { top: number; tiles: { src: string; alt: string; h: number }[]; show: string }[] = [
   { top: 150, show: "hidden lg:flex", tiles: [{ src: "tote", alt: "Kətan çanta", h: 150 }] },
-  { top: 80, show: "hidden sm:flex", tiles: [{ src: "bottle", alt: "Termos", h: 290 }] },
+  { top: 80, show: "hidden sm:flex", tiles: [{ src: "poster", alt: "Lemur Group küçə reklam posteri", h: 290 }] },
   { top: 45, show: "flex", tiles: [{ src: "team", alt: "Lemur Group komandası", h: 200 }, { src: "card", alt: "Vizit kart", h: 150 }] },
   { top: 0, show: "flex", tiles: [{ src: "brandset", alt: "Loqolu bloknot, termos və qələm", h: 250 }, { src: "tech", alt: "Loqolu powerbank, fincan və yaxa kartı", h: 190 }] },
   { top: 45, show: "flex", tiles: [{ src: "coffee", alt: "Loqolu kağız stəkan və şüşə qablar", h: 150 }, { src: "gift", alt: "Loqolu hədiyyə qutuları və çanta", h: 200 }] },
-  { top: 125, show: "hidden sm:flex", tiles: [{ src: "tshirt", alt: "Köynək", h: 200 }] },
+  { top: 125, show: "hidden sm:flex", tiles: [{ src: "claw", alt: "Siz də Lemuru seçin — loqolu hədiyyələr", h: 200 }] },
   { top: 150, show: "hidden lg:flex", tiles: [{ src: "cup", alt: "Kağız stəkan", h: 150 }] },
 ];
 const SPEEDS = [-30, -70, -110, -150, -110, -70, -30];
