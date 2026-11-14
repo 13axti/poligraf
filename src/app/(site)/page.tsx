@@ -21,12 +21,19 @@ const BENTO = [
 
 /** "İşlərimiz" bloku: image (şəkil) və ya video (mp4) yazın, ikisi də boşdursa yer tutucu görünür. Fayllar public/works/ qovluğunda. */
 const WORKS: { title: string; tag: string; image?: string; video?: string }[] = [
-  { title: "Fasad banneri", tag: "Banner" },
-  { title: "Korporativ hədiyyə dəsti", tag: "Promo" },
-  { title: "Vitrin vinili", tag: "Vinil" },
-  { title: "Sərgi stendi", tag: "Roll-up" },
-  { title: "Brend paketləri", tag: "Qablaşdırma" },
-  { title: "Vizit kart və blanklar", tag: "Mətbəə" },
+  { title: "Miroğlu, Green Wood, Driftmania", tag: "Fasad", image: "/works/miroglu-fasad.webp" },
+  { title: "Gavali", tag: "Həcmli hərflər", image: "/works/gavali.webp" },
+  { title: "Go Sushi", tag: "Lövhə və markiza", image: "/works/go-sushi.webp" },
+  { title: "Yaban Music Hall", tag: "Neon", image: "/works/yaban.webp" },
+  { title: "Koshque 21", tag: "İşıqlı lövhə", image: "/works/koshque.webp" },
+  { title: "Driftmania", tag: "İşıqlı loqo", image: "/works/driftmania.webp" },
+  { title: "Pendir Çörək", tag: "Neon", image: "/works/pendir-corek.webp" },
+  { title: "Nailmania", tag: "İnteryer loqosu", image: "/works/nailmania.webp" },
+  { title: "Təndir Mood", tag: "Həcmli hərflər", image: "/works/tendir-mood.webp" },
+  { title: "Driftmania", tag: "LED divar paneli", image: "/works/driftmania-divar.webp" },
+  { title: "Yadea", tag: "İşıqlı loqo", image: "/works/yadea.webp" },
+  { title: "Solgar", tag: "POS stend", image: "/works/solgar.webp" },
+  { title: "Love That Chicken", tag: "İşıqlı hərflər", image: "/works/love-that-chicken.webp" },
 ];
 
 export default async function HomePage() {
@@ -59,15 +66,15 @@ export default async function HomePage() {
             Sizə də edək
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 lg:grid-rows-2">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {WORKS.map((w, i) => (
-            <Reveal key={w.title} variant="scale" delay={i * 90} className={i === 0 ? "col-span-2 lg:col-span-1 lg:row-span-2" : ""}>
-              <div className={`group relative h-full overflow-hidden rounded-[2rem] bg-surface ${i === 0 ? "min-h-72 lg:min-h-[34rem]" : "aspect-[4/3]"}`}>
+            <Reveal key={w.image ?? w.title} variant="scale" delay={i * 90} className={i === 0 ? "col-span-2 row-span-2" : ""}>
+              <div className={`group relative h-full overflow-hidden rounded-[2rem] bg-surface ${i === 0 ? "min-h-96" : "aspect-[3/4]"}`}>
                 {w.video ? (
                   <video src={w.video} poster={w.image} autoPlay muted loop playsInline preload="metadata"
                     className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                 ) : w.image ? (
-                  <Image src={w.image} alt={w.title} fill sizes="(max-width:1024px) 50vw, 33vw" className="object-cover transition duration-500 group-hover:scale-105" />
+                  <Image src={w.image} alt={w.title} fill sizes="(max-width:1024px) 50vw, 25vw" className="object-cover transition duration-500 group-hover:scale-105" />
                 ) : (
                   <div className="absolute inset-3 grid place-items-center rounded-[1.5rem] border-2 border-dashed border-neutral-300 text-sm text-neutral-400">Şəkil tezliklə</div>
                 )}
