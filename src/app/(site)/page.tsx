@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getFeaturedProducts } from "@/lib/data";
+import { getAllProducts, getFeaturedProducts } from "@/lib/data";
 import { ProductCard } from "@/components/ProductCard";
 import { getSettings } from "@/lib/settings";
 import { phoneHref } from "@/lib/site-config";
@@ -37,7 +37,9 @@ const WORKS: { title: string; tag: string; image?: string; video?: string }[] = 
 ];
 
 export default async function HomePage() {
-  const featured = await getFeaturedProducts();
+  // Adminde "seçilmiş" işarələnməyibsə, şəkli olan ilk 8 məhsul göstərilir ki, blok boş qalmasın
+  const picked = await getFeaturedProducts();
+  const featured = picked.length ? picked : (await getAllProducts()).filter((p) => p.image && !p.image.includes("kalkulyator")).slice(0, 8);
   const site = await getSettings();
   // Zolaq boş görünməsin: ən azı 8 element olana qədər təkrarla, sonra sonsuz dövr üçün 2 dəfə
   const base = site.clients.length
@@ -53,23 +55,22 @@ export default async function HomePage() {
         phone={site.phone}
         phoneHref={phoneHref(site.phone)}
       />
-      <Perks />
-
       {/* İŞLƏRİMİZ */}
-      <section id="islerimiz" className="mx-auto max-w-7xl scroll-mt-20 px-4 pt-20">
-        <div className="mb-8 flex items-end justify-between gap-4">
+      <section id="islerimiz" className="mx-auto max-w-7xl scroll-mt-20 pt-12 sm:px-4 sm:pt-20">
+        <div className="mb-6 flex items-end justify-between gap-4 px-4 sm:mb-8 sm:px-0">
           <div>
             <p className="text-sm font-semibold uppercase tracking-widest text-brand">Portfolio</p>
-            <SplitHeading text="İşlərimiz" className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl" />
+            <SplitHeading text="İşlərimiz" className="mt-2 text-3xl font-extrabold tracking-tight sm:text-5xl" />
           </div>
           <Link href="/sifaris" className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand">
             Sizə də edək
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {/* Mobildə üfüqi sürüşdürmə (bir baxışda bir neçə iş), böyük ekranda şəbəkə */}
+        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2 [scrollbar-width:none] sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4 [&::-webkit-scrollbar]:hidden">
           {WORKS.map((w, i) => (
-            <Reveal key={w.image ?? w.title} variant="scale" delay={i * 90} className={i === 0 ? "col-span-2 row-span-2" : ""}>
-              <div className={`group relative h-full overflow-hidden rounded-[2rem] bg-surface ${i === 0 ? "min-h-96" : "aspect-[3/4]"}`}>
+            <Reveal key={w.image ?? w.title} variant="scale" delay={i * 90} className={`w-[68%] shrink-0 snap-start sm:w-auto ${i === 0 ? "sm:col-span-2 sm:row-span-2" : ""}`}>
+              <div className={`group relative h-full overflow-hidden rounded-[1.5rem] bg-surface sm:rounded-[2rem] ${i === 0 ? "aspect-[3/4] sm:aspect-auto sm:min-h-96" : "aspect-[3/4]"}`}>
                 {w.video ? (
                   <video src={w.video} poster={w.image} autoPlay muted loop playsInline preload="metadata"
                     className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
@@ -78,7 +79,8 @@ export default async function HomePage() {
                 ) : (
                   <div className="absolute inset-3 grid place-items-center rounded-[1.5rem] border-2 border-dashed border-neutral-300 text-sm text-neutral-400">Şəkil tezliklə</div>
                 )}
-                <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
+                <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/50 to-transparent" />
+                <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-1.5 sm:bottom-4 sm:left-4 sm:gap-2">
                   <span className="rounded-full bg-brand px-3 py-1 text-xs font-bold text-white">{w.tag}</span>
                   <span className="rounded-full bg-card px-3 py-1 text-xs font-bold">{w.title}</span>
                 </div>
@@ -88,8 +90,27 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* POPULYAR */}
+      <section className="mx-auto max-w-7xl px-4 pt-12 sm:pt-20">
+        <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
+          <SplitHeading text="Məhsullarımız" className="text-3xl sm:text-4xl font-extrabold tracking-tight" />
+          <Link href="/kataloq" className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand">
+            Hamısı
+          </Link>
+        </div>
+        <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-6 sm:overflow-visible sm:px-0 lg:grid-cols-4 [&::-webkit-scrollbar]:hidden">
+          {featured.map((p, i) => (
+            <Reveal key={p.id} delay={i * 90} className="w-[46%] shrink-0 snap-start sm:w-auto">
+              <ProductCard product={p} />
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <div className="pt-12 sm:pt-20"><Perks /></div>
+
       {/* BENTO */}
-      <section className="mx-auto max-w-7xl px-4 py-20">
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:py-20">
         <Reveal className="grid gap-4 lg:grid-cols-[1fr_2fr]">
           <div className="flex flex-col justify-center rounded-[2rem] p-4 lg:p-8">
             <SplitHeading
@@ -128,23 +149,6 @@ export default async function HomePage() {
             ))}
           </div>
         </Reveal>
-      </section>
-
-      {/* POPULYAR */}
-      <section className="mx-auto max-w-7xl px-4 pb-20">
-        <div className="mb-8 flex items-end justify-between">
-          <SplitHeading text="Seçilmiş məhsullar" className="text-4xl font-extrabold tracking-tight" />
-          <Link href="/kataloq" className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand">
-            Hamısı
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-          {featured.map((p, i) => (
-            <Reveal key={p.id} delay={i * 90}>
-              <ProductCard product={p} />
-            </Reveal>
-          ))}
-        </div>
       </section>
 
       {/* MÜŞTƏRİLƏR */}

@@ -46,22 +46,29 @@ export function SplitHeading({
   as?: "h1" | "h2" | "h3";
 }) {
   const words = text.split(" ");
+  const MotionTag = motion[Tag];
+  // Görünmə izlənməsi başlığın özündədir: sözlər overflow-hidden maskanın xaricində olduğu üçün
+  // onları ayrıca izləsək IntersectionObserver heç vaxt işə düşmür və başlıq gizli qalır.
   return (
-    <Tag className={className} aria-label={text}>
+    <MotionTag
+      className={className}
+      aria-label={text}
+      initial="hidden"
+      whileInView="shown"
+      viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+    >
       {words.map((w, i) => (
         <span key={i} aria-hidden className="inline-block overflow-hidden pb-[0.12em] align-bottom">
           <motion.span
             className="inline-block"
-            initial={{ y: "110%" }}
-            whileInView={{ y: 0 }}
-            viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+            variants={{ hidden: { y: "110%" }, shown: { y: 0 } }}
             transition={{ duration: 0.8, delay: i * 0.06, ease }}
           >
             {w}
-            {i < words.length - 1 ? " " : ""}
+            {i < words.length - 1 ? " " : ""}
           </motion.span>
         </span>
       ))}
-    </Tag>
+    </MotionTag>
   );
 }
