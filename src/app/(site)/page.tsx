@@ -19,8 +19,8 @@ const BENTO = [
   { name: "Təqvimlər", href: "/kataloq/teqvimler", image: "/promo/teqvim.webp" },
 ];
 
-/** "İşlərimiz" bloku: image boşdursa yer tutucu görünür. Şəkilləri public/works/ qovluğuna qoyub yolunu yazın. */
-const WORKS: { title: string; tag: string; image?: string }[] = [
+/** "İşlərimiz" bloku: image (şəkil) və ya video (mp4) yazın, ikisi də boşdursa yer tutucu görünür. Fayllar public/works/ qovluğunda. */
+const WORKS: { title: string; tag: string; image?: string; video?: string }[] = [
   { title: "Fasad banneri", tag: "Banner" },
   { title: "Korporativ hədiyyə dəsti", tag: "Promo" },
   { title: "Vitrin vinili", tag: "Vinil" },
@@ -63,7 +63,10 @@ export default async function HomePage() {
           {WORKS.map((w, i) => (
             <Reveal key={w.title} variant="scale" delay={i * 90} className={i === 0 ? "col-span-2 lg:col-span-1 lg:row-span-2" : ""}>
               <div className={`group relative h-full overflow-hidden rounded-[2rem] bg-surface ${i === 0 ? "min-h-72 lg:min-h-[34rem]" : "aspect-[4/3]"}`}>
-                {w.image ? (
+                {w.video ? (
+                  <video src={w.video} poster={w.image} autoPlay muted loop playsInline preload="metadata"
+                    className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                ) : w.image ? (
                   <Image src={w.image} alt={w.title} fill sizes="(max-width:1024px) 50vw, 33vw" className="object-cover transition duration-500 group-hover:scale-105" />
                 ) : (
                   <div className="absolute inset-3 grid place-items-center rounded-[1.5rem] border-2 border-dashed border-neutral-300 text-sm text-neutral-400">Şəkil tezliklə</div>
