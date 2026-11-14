@@ -19,6 +19,16 @@ const BENTO = [
   { name: "Təqvimlər", href: "/kataloq/teqvimler", image: "/promo/teqvim.webp" },
 ];
 
+/** "İşlərimiz" bloku: image boşdursa yer tutucu görünür. Şəkilləri public/works/ qovluğuna qoyub yolunu yazın. */
+const WORKS: { title: string; tag: string; image?: string }[] = [
+  { title: "Fasad banneri", tag: "Banner" },
+  { title: "Korporativ hədiyyə dəsti", tag: "Promo" },
+  { title: "Vitrin vinili", tag: "Vinil" },
+  { title: "Sərgi stendi", tag: "Roll-up" },
+  { title: "Brend paketləri", tag: "Qablaşdırma" },
+  { title: "Vizit kart və blanklar", tag: "Mətbəə" },
+];
+
 export default async function HomePage() {
   const featured = await getFeaturedProducts();
   const site = await getSettings();
@@ -37,6 +47,36 @@ export default async function HomePage() {
         phoneHref={phoneHref(site.phone)}
       />
       <Perks />
+
+      {/* İŞLƏRİMİZ */}
+      <section id="islerimiz" className="mx-auto max-w-7xl scroll-mt-20 px-4 pt-20">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-widest text-brand">Portfolio</p>
+            <SplitHeading text="İşlərimiz" className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl" />
+          </div>
+          <Link href="/sifaris" className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand">
+            Sizə də edək
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 lg:grid-rows-2">
+          {WORKS.map((w, i) => (
+            <Reveal key={w.title} variant="scale" delay={i * 90} className={i === 0 ? "col-span-2 lg:col-span-1 lg:row-span-2" : ""}>
+              <div className={`group relative h-full overflow-hidden rounded-[2rem] bg-surface ${i === 0 ? "min-h-72 lg:min-h-[34rem]" : "aspect-[4/3]"}`}>
+                {w.image ? (
+                  <Image src={w.image} alt={w.title} fill sizes="(max-width:1024px) 50vw, 33vw" className="object-cover transition duration-500 group-hover:scale-105" />
+                ) : (
+                  <div className="absolute inset-3 grid place-items-center rounded-[1.5rem] border-2 border-dashed border-neutral-300 text-sm text-neutral-400">Şəkil tezliklə</div>
+                )}
+                <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-brand px-3 py-1 text-xs font-bold text-white">{w.tag}</span>
+                  <span className="rounded-full bg-card px-3 py-1 text-xs font-bold">{w.title}</span>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
 
       {/* BENTO */}
       <section className="mx-auto max-w-7xl px-4 py-20">
