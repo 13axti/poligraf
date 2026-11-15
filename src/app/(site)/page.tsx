@@ -37,9 +37,10 @@ const WORKS: { title: string; tag: string; image?: string; video?: string }[] = 
 ];
 
 export default async function HomePage() {
-  // Adminde "seçilmiş" işarələnməyibsə, şəkli olan ilk 8 məhsul göstərilir ki, blok boş qalmasın
+  // Seçilmişlər əvvəldə; 8-dən azdırsa, şəkli olan digər məhsullarla tamamlanır ki, blok boş qalmasın
   const picked = await getFeaturedProducts();
-  const featured = picked.length ? picked : (await getAllProducts()).filter((p) => p.image && !p.image.includes("kalkulyator")).slice(0, 8);
+  const rest = (await getAllProducts()).filter((p) => !p.featured && p.image && !p.image.includes("kalkulyator"));
+  const featured = [...picked, ...rest].slice(0, Math.max(8, picked.length));
   const site = await getSettings();
   // Zolaq boş görünməsin: ən azı 8 element olana qədər təkrarla, sonra sonsuz dövr üçün 2 dəfə
   const base = site.clients.length
