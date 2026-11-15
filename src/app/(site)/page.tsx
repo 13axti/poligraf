@@ -57,7 +57,7 @@ export default async function HomePage() {
         phoneHref={phoneHref(site.phone)}
       />
       {/* İŞLƏRİMİZ */}
-      <section id="islerimiz" className="mx-auto max-w-7xl scroll-mt-20 pt-12 sm:px-4 sm:pt-20">
+      <section id="islerimiz" className="mx-auto max-w-7xl scroll-mt-20 pt-4 sm:px-4 sm:pt-6">
         <div className="mb-6 flex items-end justify-between gap-4 px-4 sm:mb-8 sm:px-0">
           <div>
             <p className="text-sm font-semibold uppercase tracking-widest text-brand">Portfolio</p>

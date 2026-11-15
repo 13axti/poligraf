@@ -28,7 +28,7 @@ const CHROME = [
   { src: "capsule", cls: "hidden md:block left-[5%] top-[27rem] w-20 lg:w-24", d: 12, r: 12 },
   { src: "ring", cls: "hidden lg:block right-[20%] top-4 w-28", d: 8, r: -6 },
 ];
-const SPEEDS = [-30, -70, -110, -150, -110, -70, -30];
+const SPEEDS = [-15, -35, -55, -75, -55, -35, -15]; // az saxlanılıb: çox olsa şəbəkənin altında boşluq qalır
 
 function Column({ col, i, y }: { col: (typeof COLS)[number]; i: number; y: MotionValue<number> }) {
   return (
@@ -93,7 +93,7 @@ export function HomeHero({
   const thumbs = (items.length ? items.map((p) => p.image) : ["/hero/v3/brandset.webp", "/hero/v3/gift.webp", "/hero/v3/tech.webp"]).slice(0, 3);
 
   return (
-    <section ref={ref} className="relative overflow-hidden px-4 pb-10 pt-10 sm:pt-14">
+    <section ref={ref} className="relative overflow-hidden px-4 pb-2 pt-10 sm:pt-14">
       {/* Fon: yumşaq narıncı işıq */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-1/2 top-[-10rem] h-[34rem] w-[60rem] -translate-x-1/2 rounded-full bg-brand/15 blur-[120px]" />
