@@ -3,13 +3,15 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { logout } from "../actions";
 import { NewOrderWatcher } from "@/components/admin/NewOrderWatcher";
 import { AdminNav } from "@/components/admin/AdminNav";
+import { ChatWatcher } from "@/components/admin/ChatWatcher";
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const { user, supabase } = await requireAdmin();
   // İki sayğacı paralel soruşuruq (ardıcıl deyil)
-  const [{ count: newCount }, { count: requestCount }] = await Promise.all([
+  const [{ count: newCount }, { count: requestCount }, { count: chatCount }] = await Promise.all([
     supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", "new"),
     supabase.from("requests").select("*", { count: "exact", head: true }).eq("status", "new"),
+    supabase.from("chat_threads").select("*", { count: "exact", head: true }).gt("unread_admin", 0),
   ]);
 
   return (
@@ -22,7 +24,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
             <p className="text-xs text-neutral-500">Sifariş masası</p>
           </div>
         </div>
-        <AdminNav newCount={newCount ?? 0} requestCount={requestCount ?? 0} />
+        <AdminNav newCount={newCount ?? 0} requestCount={requestCount ?? 0} chatCount={chatCount ?? 0} />
         <div className="hidden border-t border-[var(--line)] p-4 md:mt-auto md:block">
           <p className="truncate text-xs text-neutral-500">{user.email}</p>
           <form action={logout}>
@@ -47,6 +49,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
         </div>
       </main>
       <NewOrderWatcher />
+      <ChatWatcher />
     </div>
   );
 }

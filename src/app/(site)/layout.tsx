@@ -4,7 +4,7 @@ import { getSettings } from "@/lib/settings";
 import { SiteLogo } from "@/components/SiteLogo";
 import { SEO_DESCRIPTION, SITE_URL, phoneHref } from "@/lib/site-config";
 import { ScrollProgress } from "@/components/ScrollProgress";
-import { DevPreviewLink } from "@/components/DevPreviewLink";
+import { LiveChat } from "@/components/LiveChat";
 import { MotionProvider } from "@/components/MotionProvider";
 import { CatalogMenu } from "@/components/CatalogMenu";
 import { getCategories } from "@/lib/data";
@@ -30,12 +30,17 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <Suspense fallback={null}>
         <Footer />
       </Suspense>
-      <DevPreviewLink href="/coming-soon" className="bottom-5 right-5">
-        Tezliklə səhifəsinə bax →
-      </DevPreviewLink>
+      <Suspense fallback={null}>
+        <Chat />
+      </Suspense>
       </div>
     </MotionProvider>
   );
+}
+
+async function Chat() {
+  const site = await getSettings();
+  return <LiveChat phone={site.phone} phoneHref={phoneHref(site.phone)} />;
 }
 
 function HeaderShell() {

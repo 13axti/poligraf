@@ -8,6 +8,7 @@ const groups: { title?: string; items: { href: string; label: string; icon: Reac
     items: [
       { href: "/admin", label: "Ümumi baxış", icon: <path d="M3 12l9-8 9 8M5 10v10h5v-6h4v6h5V10" /> },
       { href: "/admin/orders", label: "Sifarişlər", icon: <path d="M6 3h12l2 4v14H4V7l2-4zM4 7h16M9 11h6" /> },
+      { href: "/admin/chat", label: "Canlı çat", icon: <path d="M12 3C6.5 3 2 6.8 2 11.5c0 2.3 1.1 4.4 2.9 6L4 21l4.2-1.7c1.2.4 2.5.7 3.8.7 5.5 0 10-3.8 10-8.5S17.5 3 12 3z" /> },
       { href: "/admin/requests", label: "Sorğular", icon: <path d="M4 5h16v11H8l-4 4V5zM8 9h8M8 12h5" /> },
       { href: "/admin/presentations", label: "Təqdimatlar", icon: <path d="M3 4h18v12H3V4zM12 16v4M8 20h8M7 12l3-3 3 2 4-4" /> },
 
@@ -34,7 +35,7 @@ const groups: { title?: string; items: { href: string; label: string; icon: Reac
   },
 ];
 
-export function AdminNav({ newCount, requestCount = 0 }: { newCount: number; requestCount?: number }) {
+export function AdminNav({ newCount, requestCount = 0, chatCount = 0 }: { newCount: number; requestCount?: number; chatCount?: number }) {
   const path = usePathname();
   const active = (href: string) => (href === "/admin" ? path === "/admin" : path.startsWith(href));
 
@@ -62,6 +63,9 @@ export function AdminNav({ newCount, requestCount = 0 }: { newCount: number; req
                 {n.href === "/admin/orders" && newCount > 0 && (
                   <span className="num ml-auto rounded bg-[#0066ff] px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{newCount}</span>
                 )}
+                {n.href === "/admin/chat" && chatCount > 0 && (
+                  <span className="num ml-auto rounded bg-red-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{chatCount}</span>
+                )}
                 {n.href === "/admin/requests" && requestCount > 0 && (
                   <span className="num ml-auto rounded bg-[#0066ff] px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{requestCount}</span>
                 )}
@@ -73,9 +77,6 @@ export function AdminNav({ newCount, requestCount = 0 }: { newCount: number; req
       <div className="ml-auto flex shrink-0 items-center gap-1 md:ml-0 md:mt-2 md:flex-col md:items-stretch md:gap-0.5 md:border-t md:border-[var(--line)] md:pt-3">
         <Link href="/" target="_blank" className="whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-neutral-500 hover:bg-[var(--surface)]/60 hover:text-foreground">
           Saytı aç
-        </Link>
-        <Link href="/coming-soon" target="_blank" className="whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-neutral-500 hover:bg-[var(--surface)]/60 hover:text-foreground">
-          Tezliklə səhifəsi
         </Link>
       </div>
     </nav>
