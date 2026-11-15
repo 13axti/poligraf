@@ -20,6 +20,14 @@ const COLS: { top: number; tiles: { src: string; alt: string; h: number }[]; sho
   { top: 125, show: "hidden sm:flex", tiles: [{ src: "claw", alt: "Siz də Lemuru seçin — loqolu hədiyyələr", h: 200 }] },
   { top: 150, show: "hidden lg:flex", tiles: [{ src: "newyear", alt: "Loqolu Yeni il hədiyyə qutusu", h: 150 }] },
 ];
+/** Xrom obyektlər: mobildə kiçik və kənarlarda (mətni örtməsin), böyük ekranda daha çox və böyük */
+const CHROME = [
+  { src: "torus", cls: "-left-8 top-4 w-24 sm:left-[3%] sm:top-10 sm:w-32 lg:w-40", d: 14, r: 8 },
+  { src: "sphere", cls: "-right-4 top-40 w-14 sm:right-[6%] sm:top-24 sm:w-20 lg:w-24", d: 10, r: 0 },
+  { src: "knot", cls: "hidden md:block right-[3%] top-[21rem] w-32 lg:w-44", d: 16, r: -10 },
+  { src: "capsule", cls: "hidden md:block left-[5%] top-[27rem] w-20 lg:w-24", d: 12, r: 12 },
+  { src: "ring", cls: "hidden lg:block right-[20%] top-4 w-28", d: 8, r: -6 },
+];
 const SPEEDS = [-30, -70, -110, -150, -110, -70, -30];
 
 function Column({ col, i, y }: { col: (typeof COLS)[number]; i: number; y: MotionValue<number> }) {
@@ -101,11 +109,25 @@ export function HomeHero({
       </div>
 
       {/* Uçan bəzəklər */}
-      <motion.svg {...float(0)} aria-hidden viewBox="0 0 40 40" className="pointer-events-none absolute left-[6%] top-16 hidden h-8 w-8 md:block">
-        <path d="M6 30 L20 4 L26 34 Z" fill="#0066ff" />
-        <path d="M20 4 L26 34 L34 22 Z" fill="#0040a8" />
-      </motion.svg>
-      <motion.div {...float(1.2, 14)} aria-hidden className="pointer-events-none absolute right-[14%] top-24 hidden h-14 w-14 rounded-full bg-gradient-to-br from-[#cfe0ff] to-brand/30 blur-[1px] md:block" />
+      {/* Gümüşü xrom 3D obyektlər (three.js ilə əvvəlcədən render olunub: public/chrome/) */}
+      {CHROME.map((c, i) => (
+        <motion.div
+          key={c.src}
+          aria-hidden
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.1, delay: 0.3 + i * 0.12, ease }}
+          className={`pointer-events-none absolute ${c.cls}`}
+        >
+          <motion.img
+            src={`/chrome/${c.src}.webp`}
+            alt=""
+            draggable={false}
+            className="h-auto w-full select-none drop-shadow-[0_18px_30px_rgba(0,20,60,0.45)]"
+            {...(reduce ? {} : { animate: { y: [0, -c.d, 0], rotate: [0, c.r, 0] }, transition: { duration: 6 + i, repeat: Infinity, ease: "easeInOut" as const } })}
+          />
+        </motion.div>
+      ))}
       <motion.div {...float(0.6, 12)} aria-hidden className="pointer-events-none absolute left-[11%] top-[19rem] hidden rotate-[-8deg] rounded-xl bg-[var(--card)] p-2 shadow-xl ring-1 ring-[var(--hair)] lg:block">
         <div className="mb-1.5 flex gap-1">
           {["#0066ff", "#7fb2ff", "#f6e05e", "#6ee7b7"].map((c) => <i key={c} className="block h-1.5 w-4 rounded-full" style={{ background: c }} />)}
@@ -116,15 +138,6 @@ export function HomeHero({
           <i className="block h-1.5 w-12 rounded-full bg-[var(--hair)]" />
         </div>
       </motion.div>
-      <motion.svg {...float(2, 8)} aria-hidden viewBox="0 0 40 40" className="pointer-events-none absolute left-[7%] top-[30rem] hidden h-12 w-12 lg:block">
-        <defs>
-          <linearGradient id="hh-g" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#cfe0ff" />
-            <stop offset="1" stopColor="#0066ff" />
-          </linearGradient>
-        </defs>
-        <path d="M2 6 L38 6 L20 38 Z" fill="url(#hh-g)" />
-      </motion.svg>
 
       <div className="relative mx-auto max-w-4xl text-center text-[var(--ink)]">
         <motion.div
