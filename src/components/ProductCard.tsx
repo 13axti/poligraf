@@ -38,7 +38,7 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         )}
         <span className="absolute inset-x-3 bottom-3 translate-y-3 rounded-full bg-white/95 px-3 py-2 text-center text-xs font-semibold text-brand opacity-0 shadow transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-          Loqonu yoxla →
+          Ətraflı bax →
         </span>
       </div>
       <div className="flex flex-1 flex-col p-3">
