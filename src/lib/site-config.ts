@@ -12,7 +12,7 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_P
 
 /** Axtarış sistemləri üçün əsas təsvir: reklam işləri, çap, promo, Bakı */
 export const SEO_DESCRIPTION =
-  "Lemur Group: Bakıda reklam işləri, banner və vinil çapı, roll-up, lövhələr, vizit kart, flayer, buklet və promo məhsullar. Qiyməti saytda dərhal hesablayın, loqonuzu məhsul üzərində görün və onlayn sifariş verin.";
+  "Lemur Group: Bakıda reklam işləri, banner və vinil çapı, roll-up, lövhələr, vizit kart, flayer, buklet və promo məhsullar. Qiyməti saytda dərhal hesablayın və onlayn sifariş verin.";
 
 export interface SiteSettings {
   name: string;

@@ -2,6 +2,9 @@
 
 import Image from "next/image";
 import { useRef, useState } from "react";
+
+/** Məhsul üzərində loqo yoxlama müvəqqəti söndürülüb (ana səhifədə ayrıca blok olacaq). Qaytarmaq üçün true edin. */
+const SHOW_MOCKUP = false;
 import type { Product } from "@/lib/types";
 import { MockupEditor, type MockupExport } from "./MockupEditor";
 import { PriceCalculator, type CalcSelection } from "./PriceCalculator";
@@ -29,7 +32,7 @@ export function ProductConfigurator({
   return (
     <>
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-        {product.mockups?.length ? (
+        {SHOW_MOCKUP && product.mockups?.length ? (
           <div className="lg:sticky lg:top-24 lg:self-start">
             <MockupEditor mockups={product.mockups} productName={product.name} exportRef={exportRef} />
             <AiPresent
@@ -53,7 +56,7 @@ export function ProductConfigurator({
             <PriceCalculator product={product} onOrder={openOrder} />
           </div>
           <ul className="mt-6 grid grid-cols-3 gap-3 text-center text-xs font-semibold">
-            {["Dərhal qiymət", "Canlı nümunə", "Sürətli hazırlıq"].map((t) => (
+            {["Dərhal qiymət", "Dizayn təsdiqi", "Sürətli hazırlıq"].map((t) => (
               <li key={t} className="rounded-2xl bg-surface px-2 py-3">
                 {t}
               </li>

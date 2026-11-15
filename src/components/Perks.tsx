@@ -30,7 +30,7 @@ const icons = {
 
 const perks = [
   { icon: "price", t: "Dərhal qiymət", d: "Sayı yaz, qiymət saniyələr içində çıxsın." },
-  { icon: "eye", t: "Canlı nümunə", d: "Loqonu məhsulda çapdan əvvəl gör." },
+  { icon: "eye", t: "Dizayn təsdiqi", d: "Çapdan əvvəl eskizi təsdiqinizə göndəririk." },
   { icon: "shield", t: "Şəffaf qiymət", d: "Gizli ödəniş yoxdur, hər şey aydındır." },
   { icon: "truck", t: "Sürətli çatdırılma", d: "Bakı üzrə və regionlara." },
 ] as const;

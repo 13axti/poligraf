@@ -30,7 +30,6 @@ const FAQ = [
   { q: "Sifariş nə qədər müddətə hazırlanır?", a: "Müddət məhsula görə dəyişir və kalkulyatorda göstərilir. Əksər məhsullarda təcili hazırlanma (növbəti iş günü) seçimi də var." },
   { q: "Çatdırılma var?", a: "Ofisdən təhvil ala bilərsiniz, Bakı daxilində və rayonlara çatdırılma da var. Çatdırılmanın qiyməti kalkulyatorda ayrıca göstərilir." },
   { q: "Dizaynım yoxdursa nə edim?", a: "Kalkulyatorda dizayn xidmətini seçin, dizaynı biz hazırlayaq. Çap yalnız siz eskizi təsdiqlədikdən sonra başlayır." },
-  { q: "Loqomun məhsulda necə görünəcəyini əvvəlcədən görə bilərəm?", a: "Bəli. Məhsul səhifəsində loqonuzu yükləyib məhsul üzərində nümunəni görə bilərsiniz." },
 ];
 
 const fromPrice = (p: Product) => {
@@ -61,7 +60,7 @@ export default async function AdsPage() {
       <h1 className="max-w-4xl text-4xl font-extrabold leading-tight tracking-tight sm:text-6xl">Reklam işləri Bakıda</h1>
       <p className="mt-5 max-w-3xl text-lg text-[var(--ink-soft)]">
         Banner, vinil, roll-up və lövhələrdən vizit kart və promo məhsullara qədər bütün reklam və çap işləri bir yerdə.
-        Qiyməti saytda seçimlərə görə dərhal hesablayın, loqonuzu məhsul üzərində görün və sifarişi onlayn verin.
+        Qiyməti saytda seçimlərə görə dərhal hesablayın, və sifarişi onlayn verin.
       </p>
       <div className="mt-7 flex flex-wrap gap-3">
         <a href={phoneHref(site.phone)} className="rounded-full bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-dark">{site.phone}</a>
@@ -91,7 +90,7 @@ export default async function AdsPage() {
 
       <h2 className="mt-16 text-3xl font-extrabold tracking-tight">Sifariş necə verilir</h2>
       <ol className="mt-6 grid gap-4 md:grid-cols-4">
-        {[["Məhsulu seçin", "Kataloqdan və ya yuxarıdakı xidmətlərdən."], ["Qiyməti hesablayın", "Ölçü, material və tirajı seçin, məbləğ dərhal görünür."], ["Loqonu yükləyin", "Nümunəni məhsul üzərində görün."], ["Sifariş verin", "Eskizi təsdiqləyirsiniz, sonra çapa başlayırıq."]].map(([t, d], i) => (
+        {[["Məhsulu seçin", "Kataloqdan və ya yuxarıdakı xidmətlərdən."], ["Qiyməti hesablayın", "Ölçü, material və tirajı seçin, məbləğ dərhal görünür."], ["Dizaynı təsdiqləyin", "Eskizi sizə göndəririk."], ["Sifariş verin", "Eskizi təsdiqləyirsiniz, sonra çapa başlayırıq."]].map(([t, d], i) => (
           <li key={t} className="rounded-3xl bg-[var(--surface)] p-5">
             <span className="text-sm font-bold text-brand">{i + 1}</span>
             <p className="mt-1 font-bold">{t}</p>

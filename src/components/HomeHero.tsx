@@ -191,7 +191,7 @@ export function HomeHero({
         </h1>
 
         <motion.p {...fade(0.42)} className="mx-auto mt-6 max-w-xl text-base text-[var(--ink-soft)] sm:text-lg">
-          Loqonu yüklə, məhsul üzərində nəticəni gör, qiyməti dərhal öyrən və sifarişini bir kliklə ver.
+          Məhsulu seç, qiyməti dərhal öyrən və sifarişini bir kliklə ver.
         </motion.p>
 
         <motion.div {...fade(0.55)} className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -216,7 +216,7 @@ export function HomeHero({
         </motion.div>
 
         <motion.ul {...fade(0.68)} className="mt-7 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-sm text-[var(--ink-soft)]">
-          {["Canlı mockup", "Qiymət dərhal", "Bir kliklə sifariş"].map((t) => (
+          {["Sürətli hazırlıq", "Qiymət dərhal", "Bir kliklə sifariş"].map((t) => (
             <li key={t} className="flex items-center gap-2">
               <svg viewBox="0 0 20 20" className="h-4 w-4 text-brand" aria-hidden>
                 <circle cx="10" cy="10" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.5" />

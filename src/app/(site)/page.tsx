@@ -108,6 +108,18 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* LOQONU YOXLA: məhsul səhifələrindən çıxarılıb, burada ayrıca hazırlanacaq */}
+      <section id="loqonu-yoxla" className="mx-auto max-w-7xl scroll-mt-20 px-4 pt-12 sm:pt-20">
+        <div className="relative overflow-hidden rounded-[2rem] bg-[var(--card)] p-6 ring-1 ring-[var(--hair)] sm:p-10">
+          <div aria-hidden className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand/25 blur-3xl" />
+          <p className="text-sm font-semibold uppercase tracking-widest text-brand">Tezliklə</p>
+          <SplitHeading text="Loqonu məhsulda yoxla" className="mt-2 text-3xl font-extrabold tracking-tight sm:text-5xl" />
+          <p className="mt-3 max-w-xl text-[var(--ink-soft)]">
+            Loqonu yüklə və çapdan əvvəl məhsulun üzərində necə görünəcəyinə bax. Bu bölmə hazırlanır.
+          </p>
+        </div>
+      </section>
+
       <div className="pt-12 sm:pt-20"><Perks /></div>
 
       {/* BENTO */}
