@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import { motion } from "motion/react";
 
 const ease = [0.22, 1, 0.36, 1] as const; // Apple-ə yaxın yumşaq əyri
@@ -58,16 +59,19 @@ export function SplitHeading({
       viewport={{ once: true, margin: "0px 0px -10% 0px" }}
     >
       {words.map((w, i) => (
-        <span key={i} aria-hidden className="inline-block overflow-hidden pb-[0.12em] align-bottom">
-          <motion.span
-            className="inline-block"
-            variants={{ hidden: { y: "110%" }, shown: { y: 0 } }}
-            transition={{ duration: 0.8, delay: i * 0.06, ease }}
-          >
-            {w}
-            {i < words.length - 1 ? " " : ""}
-          </motion.span>
-        </span>
+        <Fragment key={i}>
+          <span aria-hidden className="inline-block overflow-hidden pb-[0.12em] align-bottom">
+            <motion.span
+              className="inline-block"
+              variants={{ hidden: { y: "110%" }, shown: { y: 0 } }}
+              transition={{ duration: 0.8, delay: i * 0.06, ease }}
+            >
+              {w}
+            </motion.span>
+          </span>
+          {/* Boşluq maskadan kənarda: inline-block içindəki son boşluq brauzerdə itir */}
+          {i < words.length - 1 ? " " : null}
+        </Fragment>
       ))}
     </MotionTag>
   );

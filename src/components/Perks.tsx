@@ -1,5 +1,3 @@
-import { Reveal } from "./Reveal";
-
 const icons = {
   price: (
     <>
@@ -35,34 +33,41 @@ const perks = [
   { icon: "truck", t: "Sürətli çatdırılma", d: "Bakı üzrə və regionlara." },
 ] as const;
 
+/** Sürüşdürdükcə kartlar bir-birinin üstünə qalaqlanır (sticky); hər biri azca əyri, sanki stola atılıb */
+const TILT = ["-rotate-2", "rotate-1", "-rotate-1", "rotate-2"];
+
 export function Perks() {
   return (
     <section className="px-4 pb-14 pt-4 text-[var(--ink)]">
-      <div className="mx-auto grid max-w-7xl gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
-        {perks.map((p, i) => (
-          <Reveal key={p.t} delay={i * 90} className="h-full">
-            <div className="group flex h-full items-start gap-4 rounded-3xl border border-[var(--hair)] bg-[var(--tint)] p-5 backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-brand/40 hover:bg-white/10">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand/15 text-brand transition duration-300 group-hover:bg-brand group-hover:text-black">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-6 w-6 fill-none stroke-current"
-                  strokeWidth={1.8}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden
-                >
-                  {icons[p.icon]}
-                </svg>
-              </span>
-              <div>
-                <h3 className="font-bold leading-tight">{p.t}</h3>
-                <p className="mt-1 text-sm text-[var(--ink-soft)] transition duration-300 group-hover:text-[var(--ink)]">
-                  {p.d}
-                </p>
+      <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[1fr_1.1fr] lg:gap-14">
+        <div className="lg:sticky lg:top-32 lg:self-start">
+          <p className="text-sm font-semibold uppercase tracking-widest text-brand">Niyə Lemur?</p>
+          <h2 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+            Çapı rahat, qiyməti aydın, nəticəsi <span className="text-brand">gözəl</span>.
+          </h2>
+          <p className="mt-4 max-w-sm text-[var(--ink-soft)]">Sifarişdən çatdırılmaya qədər hər addımda sizinləyik.</p>
+        </div>
+        <div className="relative">
+          {perks.map((p, i) => (
+            <div key={p.t} className="sticky pb-6" style={{ top: `${6 + i * 1.25}rem` }}>
+              <div className={`${TILT[i]} overflow-hidden rounded-3xl border border-[var(--hair)] bg-[var(--card)] shadow-2xl shadow-black/30 transition duration-500 hover:rotate-0`}>
+                <div className="flex items-center justify-between bg-brand px-5 py-3 text-white">
+                  <span className="h-2 w-2 rounded-full bg-white" />
+                  <h3 className="text-lg font-extrabold uppercase tracking-wide">{p.t}</h3>
+                  <span className="h-2 w-2 rounded-full bg-white" />
+                </div>
+                <div className="flex flex-col items-center gap-4 px-6 py-8 text-center sm:py-10">
+                  <span className="grid h-16 w-16 place-items-center rounded-full border border-[var(--hair)] text-brand">
+                    <svg viewBox="0 0 24 24" className="h-8 w-8 fill-none stroke-current" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      {icons[p.icon]}
+                    </svg>
+                  </span>
+                  <p className="max-w-xs text-[var(--ink-soft)]">{p.d}</p>
+                </div>
               </div>
             </div>
-          </Reveal>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -10,6 +10,7 @@ import { HomeHero } from "@/components/HomeHero";
 // import { Campaign } from "@/components/Campaign";
 // import { Suspense } from "react";
 import { Perks } from "@/components/Perks";
+import { ScrollFloaters } from "@/components/ScrollFloaters";
 
 /** "Rəqəmsaldan çapa" blokunun plitələri: Lemur Group-un öz brend fotoları (public/promo/) */
 const BENTO = [
@@ -49,7 +50,9 @@ export default async function HomePage() {
   const loop = [...base, ...base];
 
   return (
-    <>
+    <div className="relative">
+      <ScrollFloaters />
+      <div className="relative z-10">
       {/* HERO */}
       <HomeHero
         items={featured.map((p) => ({ id: p.id, name: p.name, image: p.image }))}
@@ -191,6 +194,7 @@ export default async function HomePage() {
 
       {/* T-SHIRT KAMPANİYASI: müvəqqəti söndürülüb. Qaytarmaq üçün yuxarıdakı import-ları açın və bunu əlavə edin:
           <Suspense fallback={<div id="kampaniya" className="min-h-96" />}><Campaign /></Suspense> */}
-    </>
+      </div>
+    </div>
   );
 }
