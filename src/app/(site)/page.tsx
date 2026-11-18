@@ -11,6 +11,8 @@ import { HomeHero } from "@/components/HomeHero";
 // import { Suspense } from "react";
 import { Perks } from "@/components/Perks";
 import { ScrollFloaters } from "@/components/ScrollFloaters";
+import { HowWeWork } from "@/components/HowWeWork";
+import { OutlineMarquee } from "@/components/OutlineMarquee";
 
 /** "Rəqəmsaldan çapa" blokunun plitələri: Lemur Group-un öz brend fotoları (public/promo/) */
 const BENTO = [
@@ -60,6 +62,7 @@ export default async function HomePage() {
         phoneHref={phoneHref(site.phone)}
       />
       {/* İŞLƏRİMİZ */}
+      <div className="pt-6"><OutlineMarquee text="İşlərimiz" /></div>
       <section id="islerimiz" className="mx-auto max-w-7xl scroll-mt-20 pt-4 sm:px-4 sm:pt-6">
         <div className="mb-6 flex items-end justify-between gap-4 px-4 sm:mb-8 sm:px-0">
           <div>
@@ -95,6 +98,7 @@ export default async function HomePage() {
       </section>
 
       {/* POPULYAR */}
+      <div className="pt-10"><OutlineMarquee text="Məhsullarımız" reverse /></div>
       <section className="mx-auto max-w-7xl px-4 pt-12 sm:pt-20">
         <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
           <SplitHeading text="Məhsullarımız" className="text-3xl sm:text-4xl font-extrabold tracking-tight" />
@@ -124,6 +128,8 @@ export default async function HomePage() {
       </section>
 
       <div className="pt-12 sm:pt-20"><Perks /></div>
+
+      <HowWeWork />
 
       {/* BENTO */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:py-20">
